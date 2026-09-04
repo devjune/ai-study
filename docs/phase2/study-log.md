@@ -64,6 +64,55 @@ curl -s https://formulae.brew.sh/api/formula/jq.json | jq -r .bottle.stable.root
 
 절차는 [offline-kit.md](./offline-kit.md).
 
-## 밟은 것
+## 밟은 것 — 데모를 만들며
 
-(작업하며 채운다)
+### VectorStore 빈이 앱 기동을 볼모로 잡는다
+
+`@Bean fun vectorStore(...)` 안에서 문서를 시드했더니 앱이 아예 안 떴다.
+
+```
+Error creating bean with name 'vectorStore' … Factory method 'vectorStore' threw exception
+  with message: I/O error on POST "http://localhost:11434/api/embed": Connection refused
+```
+
+`add(documents)`가 곧 임베딩 호출이라 **Ollama 가 떠 있어야만 컨텍스트가 뜬다.** RAG 축 하나 때문에 나머지 세 축도 못 보게 된다.
+
+빈 생성에서 첫 사용 시점으로 미뤘다. 앱은 항상 뜨고 RAG 실패는 그 카드에만 나타난다. 실패를 관측하는 게 목적인 데모에서는 **실패가 크래시가 아니라 결과여야 한다.**
+
+화면이 모델 수만큼 병렬로 때리므로 시드는 이중 검사 락으로 감쌌다.
+
+### 재시도 기본값이 화면을 몇 분간 멈춘다
+
+Ollama 를 끄고 호출했더니 응답이 40초가 지나도 안 왔다. 예외는 로그에 찍히는데 HTTP 응답이 안 돌아온다.
+
+`spring.ai.retry` 기본값 때문이다 — **max-attempts 10, 백오프 2초 → ×5 → 최대 3분.** 연결 거부처럼 즉시 실패하는 상황에서도 10번을 기다린다.
+
+```properties
+spring.ai.retry.max-attempts=1
+```
+
+껐더니 2.1초에 실패가 돌아온다. 비교 데모에서 재시도는 관측을 흐리기만 한다 — 알고 싶은 건 "첫 시도에 이 모델이 무엇을 했나"다.
+
+운영이라면 반대다. 기본값이 10회인 데는 이유가 있다.
+
+### Jackson 3 — `com.fasterxml.jackson.databind` 가 없다
+
+```
+e: Unresolved reference 'databind'
+```
+
+Boot 4 / Spring AI 2.0 이 Jackson 3 로 올라가면서 databind 가 `com.fasterxml.jackson` 아래에서 빠졌다. 1.x 코드를 그대로 옮기면 여기서 걸린다. 이 데모는 Jackson 을 직접 쓸 이유가 없어 의존 자체를 없앴다.
+
+### 확인 못 한 속성은 넣지 않았다
+
+`spring.ai.ollama.read-timeout` 으로 타임아웃을 늘리려 했으나 2.0 레퍼런스에서 확인되지 않는다. Spring Boot 는 모르는 속성을 조용히 무시하므로, 있으나 마나 한 줄이 설정에 남고 나중에 "설정했는데 왜 안 되지"가 된다. 확인된 것만 남겼다.
+
+## 설계에서 바꾼 것
+
+작업하며 [설계 문서](../superpowers/specs/2026-09-04-phase2-local-llm-design.md)와 달라진 부분.
+
+| 항목 | 설계 | 실제 | 이유 |
+| --- | --- | --- | --- |
+| 임베딩 | 로컬 ONNX(transformers) | Ollama (`nomic-embed-text`) | 반입 채널이 하나로 통일된다. ONNX 는 기본 URI 가 githubusercontent 라 phase1 에서 사내망에 막혔다 |
+| 대화 메모리 | H2 유지 | 제거 | 어떤 시험 축도 쓰지 않는다. 다중 턴 축을 넣게 되면 되살린다 |
+| 모델 옵션 | `OllamaChatOptions` | 포터블 `ChatOptions` | 벤더 중립이라 OpenAI 호환 사내 서버로 바꿔도 코드가 그대로다. 이식성이 논점인 데모에 더 맞다 |
