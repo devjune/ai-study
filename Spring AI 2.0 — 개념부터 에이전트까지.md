@@ -355,15 +355,21 @@ vectorStore.accept(TokenTextSplitter().apply(reader.read()))   // 읽기 → 분
 
 #### 임베딩 모델 — 기본값은 어디서 오나
 
-`vectorStore.add(documents)`가 임베딩을 "자동 생성"한다고 했는데, 그 벡터를 만드는 모델은 무엇일까요? **Spring AI에 전역 기본 임베딩 모델이 따로 있는 게 아니라, 클래스패스에 올라온 모델 계열 스타터(`spring-ai-starter-model-*`)가 정합니다.**
+`vectorStore.add(documents)`가 임베딩을 "자동 생성"한다고 했는데, 그 벡터를 만드는 모델은 무엇일까요?
 
-예컨대 `spring-ai-starter-model-transformers`를 넣으면 `TransformersEmbeddingModel`(기본 모델 `all-MiniLM-L6-v2`)이 자동 구성됩니다. ONNX 모델을 앱 안에서 직접 돌리므로 **Anthropic 외 추가 API 키가 필요 없고** 첫 기동에만 모델을 내려받아 로컬에 캐시합니다. 모델·캐시 위치는 `spring.ai.embedding.transformer.*`로 바꿉니다.
+> **Spring AI에 전역 기본 임베딩 모델이 따로 있는 게 아니라, 클래스패스에 올라온 모델 계열 스타터(`spring-ai-starter-model-*`)가 정합니다.**
 
-> **RAG = 모델 재학습 없이 지식만 실시간 주입.** 파인튜닝보다 싸고 빠르며, 문서가 바뀌면 DB만 갱신하면 됩니다.
+예컨대 `spring-ai-starter-model-transformers`를 넣으면 `TransformersEmbeddingModel`이 자동 구성됩니다. 
+
+> 기본 모델 **all-MiniLM-L6-v2**
+
+ONNX 모델을 앱 안에서 직접 돌리므로 **Anthropic 외 추가 API 키가 필요 없고** 첫 기동에만 모델을 내려받아 로컬에 캐시합니다. 
 
 ### 6. ToolSearch — 도구가 수백 개일 때 (2.0 신규)
 
-**도구가 수백 개여도 질문에 맞는 것만 골라 노출합니다.** 도구를 전부 프롬프트에 넣으면 토큰이 커지고 LLM의 선택 정확도가 떨어집니다. 2.0의 `ToolSearchToolCallingAdvisor`는 이 문제를 점진적 노출(progressive tool disclosure)로 풉니다.
+**도구가 수백 개여도 질문에 맞는 것만 골라 노출합니다.** 도구를 전부 프롬프트에 넣으면 토큰이 커지고 LLM의 선택 정확도가 떨어집니다. 
+
+2.0의 `ToolSearchToolCallingAdvisor`는 이 문제를 점진적 노출(progressive tool disclosure)로 풉니다.
 
 먼저 검색 대상이 될 도구들입니다. 서로 무관한 도구 넷을 한 객체에 담았습니다 — `description`이 곧 검색되는 텍스트라, ToolIndex는 이 문장들에서 질문과 맞는 것을 찾습니다.
 
