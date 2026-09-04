@@ -82,17 +82,17 @@ export OLLAMA_MODELS=/Volumes/<외장>/ollama-models
 ollama list
 ```
 
-## 3. 임베딩 캐시도 함께
+## 3. 임베딩 모델도 반입 목록에 넣는다
 
-RAG 데모는 로컬 ONNX 임베딩(`all-MiniLM-L6-v2`)을 쓰는데, 기본 URI가 githubusercontent라 **사내망에서 첫 기동 시 깨진다**(phase1에서 이미 밟았다).
+RAG 는 **`bge-m3`** 를 쓴다. 채팅 모델과 같은 Ollama 채널이라 반입 방법이 동일하다 — 위 경로 A/B 로 함께 나르면 된다.
 
-모델과 같은 방식으로 캐시를 나른 뒤 위치를 지정한다.
-
-```properties
-spring.ai.embedding.transformer.onnx.model-uri=file:/경로/model.onnx
-spring.ai.embedding.transformer.tokenizer.uri=file:/경로/tokenizer.json
-spring.ai.embedding.transformer.cache.directory=/경로/cache
+```bash
+ollama pull bge-m3      # 외부망에서 미리
 ```
+
+phase1 은 로컬 ONNX(`all-MiniLM-L6-v2`)를 썼는데 기본 URI 가 githubusercontent 라 사내망에서 첫 기동에 깨졌다. phase2 가 임베딩을 Ollama 로 옮긴 이유가 이것이다 — **반입 채널이 하나로 통일된다.**
+
+`bge-m3` 를 쓰는 이유는 사내망과 무관하다. `nomic-embed-text` 는 한국어 변별력이 없어 RAG 가 조용히 틀린다([study-log](./study-log.md#임베딩을-갈아치우기까지--rag-가-조용히-틀리는-과정)). **다른 임베딩으로 바꿀 거라면 한국어 문서로 유사도 점수를 먼저 재 보라.**
 
 ## 4. 오프라인 완주 검증
 
@@ -102,10 +102,10 @@ spring.ai.embedding.transformer.cache.directory=/경로/cache
 # Wi-Fi를 끄고
 ollama list                      # 모델이 다 보이는가
 ollama run qwen3-8b "안녕"        # 응답이 오는가
-cd demo && ./gradlew bootRun     # 기동되는가 (Gradle 의존성도 미리 받아둘 것)
+cd demo-phase2 && ./gradlew bootRun  # 기동되는가 (Gradle 의존성도 미리 받아둘 것)
 ```
 
-브라우저에서 각 시험 축을 한 번씩 눌러본다. **RAG가 특히 중요하다** — 임베딩 초기화는 첫 요청에 일어나므로 기동 성공만으로는 검증되지 않는다.
+브라우저에서 상담 봇으로 한 바퀴 돌려 본다(조회 → 규정 → 취소 → 승인). **규정 질문이 특히 중요하다** — 임베딩 초기화는 첫 요청에 일어나므로 기동 성공만으로는 검증되지 않는다.
 
 ### Gradle 의존성도 반입 대상이다
 
