@@ -7,3 +7,17 @@
 data/
 
 .kotlin/
+
+# ── phase2: 로컬 모델 자산 ──────────────────────────────
+# 모델 가중치는 저장소에 넣지 않는다. GitHub은 파일당 2GiB 제한이라
+# 애초에 담기지도 않고, 반입 경로는 docs/phase2/offline-kit.md 참고.
+*.gguf
+*.onnx
+models/
+ollama-models/
+
+# 로컬 임베딩(ONNX) 캐시 — 첫 기동에 내려받아 캐시된다
+embedding-cache/
+
+# oras pull 산출물 임시 디렉토리
+.oras/
