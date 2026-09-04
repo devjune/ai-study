@@ -2,15 +2,15 @@
 
 팀 내 AI 스터디 **학습 자료**. 대상은 Java/Spring 백엔드 개발자.
 
-Spring AI를 주제로 단계(phase)를 나눠 진행한다. 각 phase는 학습 자료 본문 · 결정 로그 · 학습 로그를 갖고, 데모 앱(`demo/`)은 현재 진행 중인 phase 기준으로 유지된다.
+Spring AI를 주제로 단계(phase)를 나눠 진행한다. 각 phase는 학습 자료 문서와 **독립된 데모 프로젝트**를 갖는다. phase 사이에 코드를 공유하지 않으므로, 이전 phase의 데모는 그 시점 그대로 계속 돌아간다.
 
 ## 진행 상황
 
-| Phase | 주제 | 상태 | 문서 |
-| --- | --- | --- | --- |
-| 1 | Spring AI 2.0 — 개념부터 에이전트까지 | 완료 | [docs/phase1](./docs/phase1) |
-| 2 | 로컬 LLM 연동 | 진행 중 | [docs/phase2](./docs/phase2) |
-| 3 | MCP 상호운용 (외부 에이전트 결합) | 예정 | — |
+| Phase | 주제 | 상태 | 문서 | 데모 |
+| --- | --- | --- | --- | --- |
+| 1 | Spring AI 2.0 — 개념부터 에이전트까지 | 완료 | [docs/phase1](./docs/phase1) | [demo-phase1](./demo-phase1) |
+| 2 | 로컬 LLM 연동 | 진행 중 | [docs/phase2](./docs/phase2) | [demo-phase2](./demo-phase2) |
+| 3 | MCP 상호운용 (외부 에이전트 결합) | 예정 | — | — |
 
 ### Phase 1 — Spring AI 2.0 개념부터 에이전트까지
 
@@ -31,7 +31,16 @@ phase1이 설명만 하고 검증하지 않은 **이식성**을 실물로 시험
 
 ## 데모
 
-`demo/` — Spring Boot 4 + Spring AI 2.0 기반. 실행 방법은 [demo/README.md](./demo/README.md).
+phase마다 **독립된 Gradle 프로젝트**다. 서로 의존하지 않으므로 각각 따로 열고 따로 실행한다.
+
+| 프로젝트 | 벤더 | 실행 조건 |
+| --- | --- | --- |
+| [demo-phase1](./demo-phase1) | Anthropic (claude-sonnet-4-5) | `ANTHROPIC_API_KEY` 필요 |
+| [demo-phase2](./demo-phase2) | 로컬 Ollama | **API 키 불필요.** Ollama와 모델만 있으면 된다 |
+
+```bash
+cd demo-phase2 && ./gradlew bootRun    # 둘 다 8080 포트라 동시에 띄우지 않는다
+```
 
 ## 관통하는 두 테마
 
