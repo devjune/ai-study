@@ -1,0 +1,22 @@
+[versions]
+# 스프링 부트 BOM의 kotlin.version과 일치. 최신(2.4.x)으로 올리면 stdlib이 어긋난다.
+kotlin = "2.2.21"
+springBoot = "4.0.0"
+springDependencyManagement = "1.1.7"
+springAi = "2.0.0"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+
+[libraries]
+# 버전은 spring-ai-bom / 플러그인이 관리하므로 좌표(module)만 선언한다.
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "springAi" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-starter-model-ollama" }
+spring-ai-vector-store = { module = "org.springframework.ai:spring-ai-vector-store" }
+spring-ai-vector-store-advisor = { module = "org.springframework.ai:spring-ai-vector-store-advisor" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
