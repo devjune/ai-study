@@ -21,6 +21,24 @@ done
 
 **`registry.ollama.ai`가 열려 있으면 이 문서는 필요 없다.** `ollama pull`로 끝난다.
 
+## 반입 목록
+
+데모가 쓰는 모델이다. 아래 둘만 있으면 21개 패턴이 전부 돈다.
+
+| 모델 | 크기 | 쓰는 곳 |
+| --- | --- | --- |
+| `qwen3:4b-instruct` | 2.5 GB | 기본. 17개 장이 이걸로 돈다 |
+| `bge-m3` | 1.2 GB | 임베딩 (9·14장) |
+
+나머지는 **모델을 바꿔 끼워 보는 용도**다. 반입 용량이 빠듯하면 빼도 된다.
+
+| 모델 | 크기 | 왜 |
+| --- | --- | --- |
+| `granite4:micro` | 2.1 GB | 8·12·18·19장 기본. 결과가 같은데 더 빠르다 |
+| `qwen3:1.7b` | 1.4 GB | 16장이 `작은 모델` 로 쓴다 |
+| `qwen3:0.6b` | 522 MB | 작은 모델이 어디서 깨지는지 보여 준다 |
+| `glm4:9b` | 5.5 GB | 도구를 부르지 않는 대조군 |
+
 ## 1. 설치 (사내 노트북)
 
 brew 채널만 사용한다.
@@ -40,7 +58,7 @@ GGUF를 확보해 공개 GHCR 패키지로 올린다.
 ```bash
 # 예: 이미 ollama가 있는 머신이라면 blobs에서 모델 레이어를 꺼낸다
 #     (매니페스트의 application/vnd.ollama.image.model 레이어)
-oras push ghcr.io/<계정>/spring-ai-models:qwen3-8b ./qwen3-8b.gguf
+oras push ghcr.io/<계정>/spring-ai-models:qwen3-4b-instruct ./qwen3-4b-instruct.gguf
 ```
 
 패키지를 **public**으로 바꾼다. 그래야 사내에서 인증 없이 받을 수 있다.
@@ -48,13 +66,13 @@ oras push ghcr.io/<계정>/spring-ai-models:qwen3-8b ./qwen3-8b.gguf
 **사내 노트북에서**
 
 ```bash
-oras pull ghcr.io/<계정>/spring-ai-models:qwen3-8b
+oras pull ghcr.io/<계정>/spring-ai-models:qwen3-4b-instruct
 
 cat > Modelfile <<'EOF'
-FROM ./qwen3-8b.gguf
+FROM ./qwen3-4b-instruct.gguf
 EOF
 
-ollama create qwen3-8b -f Modelfile
+ollama create qwen3-4b-instruct -f Modelfile
 ollama list
 ```
 
@@ -101,11 +119,11 @@ phase1 은 로컬 ONNX(`all-MiniLM-L6-v2`)를 썼는데 기본 URI 가 githubuse
 ```bash
 # Wi-Fi를 끄고
 ollama list                      # 모델이 다 보이는가
-ollama run qwen3-8b "안녕"        # 응답이 오는가
+ollama run qwen3-4b-instruct "안녕"   # 응답이 오는가
 cd demo-phase2 && ./gradlew bootRun  # 기동되는가 (Gradle 의존성도 미리 받아둘 것)
 ```
 
-브라우저에서 상담 봇으로 한 바퀴 돌려 본다(조회 → 규정 → 취소 → 승인). **규정 질문이 특히 중요하다** — 임베딩 초기화는 첫 요청에 일어나므로 기동 성공만으로는 검증되지 않는다.
+브라우저에서 **5장 → 14장 → 13장** 순으로 눌러 본다. 도구 호출 · 검색 · 승인이 한 바퀴 도는 최소 조합이다. **14장이 특히 중요하다** — 임베딩 초기화는 첫 검색에 일어나므로 기동 성공만으로는 검증되지 않는다.
 
 ### Gradle 의존성도 반입 대상이다
 
