@@ -12,15 +12,24 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class OrderService {
 
-    private val orders = ConcurrentHashMap(
-        listOf(
+    private val orders = ConcurrentHashMap(SEED.associateBy { it.id })
+
+    private companion object {
+        val SEED = listOf(
             Order("A-1024", "무선 키보드", "배송중", "2026-09-02 발송 · 09-05 도착 예정"),
             Order("A-2048", "모니터 암", "결제완료", "09-05 발송 예정"),
             Order("A-3072", "USB-C 허브", "배송완료", "08-28 수령"),
-        ).associateBy { it.id },
-    )
+        )
+    }
 
     fun all(): List<Order> = orders.values.sortedBy { it.id }
+
+    /** 시연을 반복하려면 상태를 되돌려야 한다. */
+    fun reset(): List<Order> {
+        orders.clear()
+        orders.putAll(SEED.associateBy { it.id })
+        return all()
+    }
 
     fun find(orderId: String): Order? = orders[orderId.trim().uppercase()]
 

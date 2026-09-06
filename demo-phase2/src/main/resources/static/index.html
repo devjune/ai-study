@@ -3,361 +3,237 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>주문 상담 봇 — Spring AI 2.0</title>
+<title>Spring AI로 구현하는 에이전틱 패턴</title>
 <link rel="icon" href="/favicon.ico">
-
 <style>
-  :root { --line:#000; --dim:#666; --soft:#fafafa; --hi:#ffe; }
-  * { box-sizing: border-box; }
-  html { font-size: 112.5%; }
-  body {
-    margin:0; padding:2rem 1.25rem 4rem;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color:#000; background:#fff; line-height:1.6;
-  }
-  main { max-width:1180px; margin:0 auto; }
-  h1 { font-size:1.4rem; border-bottom:2px solid var(--line); padding-bottom:.45rem; margin-bottom:.6rem; }
-  h1 small { display:block; font-size:.78rem; font-weight:normal; margin-top:.25rem; color:var(--dim); }
+  :root { --line:#000; --dim:#777; --soft:#fafafa; --hi:#ffe; --bar:#000; }
+  * { box-sizing:border-box; }
+  html { font-size:112.5%; }
+  body { margin:0; padding:1.5rem 1.25rem 3rem; color:#000; background:#fff; line-height:1.6;
+         font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  main { max-width:1240px; margin:0 auto; }
 
-  .tabs { display:flex; margin:1.2rem 0 1.4rem; }
-  .tabs button {
-    margin:0 -1px 0 0; padding:.5rem 1.1rem; font:inherit; font-size:.9rem;
-    border:1px solid var(--line); background:#fff; cursor:pointer;
-  }
-  .tabs button[aria-pressed="true"] { background:#000; color:#fff; }
-  .panel[hidden] { display:none; }
+  h1 { font-size:1.35rem; border-bottom:2px solid var(--line); padding-bottom:.4rem; margin:0 0 .3rem; }
+  .sub { font-size:.8rem; color:var(--dim); margin-bottom:1rem; }
+  .bar { display:flex; align-items:center; gap:.5rem; font-size:.85rem; margin-bottom:1rem; flex-wrap:wrap; }
+  select, button { font:inherit; }
+  select { font-size:.85rem; padding:.25rem .4rem; border:1px solid var(--line); background:#fff; }
+  button { border:1px solid var(--line); background:#fff; cursor:pointer; padding:.3rem .8rem; font-size:.85rem; }
+  button.go { background:#000; color:#fff; font-weight:600; }
+  button:disabled { opacity:.4; cursor:default; }
 
-  .modelbar { display:flex; align-items:center; gap:.5rem; font-size:.85rem; margin-bottom:1rem; }
-  select { font:inherit; font-size:.85rem; padding:.3rem .4rem; border:1px solid var(--line); background:#fff; }
-  .modelbar .why { color:var(--dim); font-size:.8rem; }
+  .layout { display:grid; grid-template-columns:230px 1fr; gap:1rem; align-items:start; }
+  @media (max-width:920px) { .layout { grid-template-columns:1fr; } }
 
-  .layout { display:grid; grid-template-columns:1fr 340px; gap:1rem; align-items:start; }
-  @media (max-width:900px) { .layout { grid-template-columns:1fr; } }
+  /* 왼쪽 패턴 목록 */
+  .list { border:1px solid var(--line); max-height:76vh; overflow-y:auto; }
+  .list button { display:block; width:100%; text-align:left; border:0; border-bottom:1px solid #eee;
+                 padding:.4rem .6rem; font-size:.82rem; background:#fff; }
+  .list button:hover { background:var(--soft); }
+  .list button[aria-current="true"] { background:#000; color:#fff; font-weight:600; }
+  .list .ch { display:inline-block; width:1.6rem; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .list button[aria-current="true"] .ch { color:#bbb; }
+  .list .demo { float:right; font-size:.62rem; border:1px solid currentColor; padding:0 .2rem; opacity:.65; }
 
-  .box { border:1px solid var(--line); }
-  .box > h2 {
-    margin:0; padding:.45rem .7rem; font-size:.85rem; background:var(--soft);
-    border-bottom:1px solid var(--line);
-  }
-  .box > .inner { padding:.7rem; }
+  /* 오른쪽 상세 */
+  .panel { border:1px solid var(--line); }
+  .panel > h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft);
+                border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:.5rem; }
+  .panel > .inner { padding:.7rem; }
+  .parts { font-size:.78rem; background:var(--hi); border:1px solid var(--line); padding:.3rem .5rem; margin-bottom:.6rem; }
+  .summary { font-size:.88rem; margin:0 0 .7rem; }
+  .why { font-size:.74rem; color:var(--dim); border-left:1px solid var(--line); padding-left:.5rem; }
+  .why b { color:#000; font-weight:600; }
+  pre { margin:0 0 .7rem; padding:.6rem; background:var(--soft); border-left:3px solid var(--line);
+        font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
+        white-space:pre-wrap; word-break:break-word; overflow-x:auto; }
+  .run { display:flex; gap:.4rem; }
+  .run input { flex:1; padding:.45rem; border:1px solid var(--line); font:inherit; font-size:.85rem; }
 
-  #log { height:22rem; overflow-y:auto; padding:.7rem; }
-  .msg { margin-bottom:.8rem; font-size:.9rem; }
-  .msg .who { font-size:.72rem; color:var(--dim); margin-bottom:.15rem; }
-  .msg .bubble { border:1px solid var(--line); padding:.45rem .6rem; white-space:pre-wrap; }
-  .msg.me .bubble { background:#000; color:#fff; }
-  .msg.sys .bubble { background:var(--hi); border-style:dashed; }
-  .msg .meta { font-size:.72rem; color:var(--dim); margin-top:.2rem; }
+  /* 타임라인 */
+  .tl { margin-top:.9rem; }
+  .tl h3 { font-size:.82rem; margin:0 0 .4rem; padding-bottom:.2rem; border-bottom:1px solid #ddd; }
+  .call { display:grid; grid-template-columns:1.6rem 1fr auto; gap:.4rem; align-items:baseline;
+          font-size:.8rem; padding:.25rem 0; border-bottom:1px dotted #ddd; }
+  .call .n { color:var(--dim); font-variant-numeric:tabular-nums; }
+  .call .ms { color:var(--dim); font-size:.72rem; white-space:nowrap; }
+  .call details summary { cursor:pointer; }
+  .notes { margin:.6rem 0 0; padding:0; list-style:none; font-size:.78rem; color:#333; }
+  .notes li { padding:.15rem 0 .15rem .7rem; border-left:2px solid #ddd; margin-bottom:.15rem; }
+  .answer { margin-top:.7rem; padding:.6rem; border:1px solid var(--line); white-space:pre-wrap;
+            font-size:.85rem; max-height:16rem; overflow-y:auto; }
+  .fail { background:#000; color:#fff; }
 
-  .approve { margin-top:.4rem; display:flex; gap:.4rem; }
-  .approve button { padding:.3rem .8rem; font:inherit; font-size:.8rem; border:1px solid var(--line); cursor:pointer; }
-  .approve .yes { background:#000; color:#fff; }
-  .approve .no { background:#fff; }
+  /* 누적 비교 */
+  .compare { margin-top:1.2rem; border:1px solid var(--line); }
+  .compare h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft); border-bottom:1px solid var(--line); }
+  .compare .inner { padding:.6rem .7rem; }
+  .row { display:grid; grid-template-columns:11rem 1fr 4.5rem; gap:.5rem; align-items:center;
+         font-size:.8rem; padding:.18rem 0; }
+  .row .g { background:#eee; height:.9rem; position:relative; }
+  .row .g i { display:block; height:100%; background:var(--bar); }
+  .row .t { color:var(--dim); font-size:.72rem; text-align:right; font-variant-numeric:tabular-nums; }
+  .empty { color:var(--dim); font-size:.8rem; }
 
-  .composer { display:flex; gap:.4rem; margin-top:.6rem; }
-  .composer input { flex:1; padding:.5rem; border:1px solid var(--line); font:inherit; }
-  .composer button { padding:.5rem 1.1rem; border:1px solid var(--line); background:#000; color:#fff; font:inherit; cursor:pointer; }
-  .composer button:disabled { opacity:.45; cursor:default; }
-
-  .chips { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.5rem; }
-  .chips button {
-    padding:.25rem .6rem; font:inherit; font-size:.78rem;
-    border:1px dashed var(--line); background:#fff; cursor:pointer;
-  }
-  .chips button:hover { background:#000; color:#fff; }
-
-  table.orders { width:100%; border-collapse:collapse; font-size:.82rem; }
-  table.orders td { padding:.3rem .2rem; border-bottom:1px solid #ddd; vertical-align:top; }
-  table.orders .id { font-family:ui-monospace, Menlo, monospace; white-space:nowrap; }
-  .status { font-size:.72rem; border:1px solid var(--line); padding:0 .3rem; white-space:nowrap; }
+  /* 주문 (13장) */
+  table.orders { width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.7rem; }
+  table.orders td { padding:.25rem .2rem; border-bottom:1px solid #eee; }
+  .status { font-size:.7rem; border:1px solid var(--line); padding:0 .3rem; }
   .status.cancelled { background:#000; color:#fff; }
-
-  details.trace { border-top:1px solid #ddd; }
-  details.trace:first-of-type { border-top:0; }
-  details.trace > summary { cursor:pointer; padding:.4rem .1rem; font-size:.8rem; }
-  details.trace pre {
-    margin:.2rem 0 .6rem; padding:.5rem; background:var(--soft); border-left:3px solid var(--line);
-    font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem;
-    white-space:pre-wrap; word-break:break-word; max-height:20rem; overflow-y:auto;
-  }
-  .step { font-size:.78rem; padding:.25rem 0; border-bottom:1px dotted #ccc; }
-  .step b { font-family:ui-monospace, Menlo, monospace; }
-  .empty { font-size:.8rem; color:var(--dim); }
-
-  /* 모델 비교 탭 */
-  .axes { display:flex; flex-wrap:wrap; margin-bottom:.9rem; }
-  .axes button { margin:0 -1px -1px 0; padding:.4rem .85rem; font:inherit; font-size:.83rem; border:1px solid var(--line); background:#fff; cursor:pointer; }
-  .axes button[aria-pressed="true"] { background:#000; color:#fff; }
-  .hint { border-left:3px solid var(--line); background:var(--soft); padding:.5rem .65rem; margin:0 0 .8rem; font-size:.82rem; }
-  textarea { width:100%; padding:.5rem; border:1px solid var(--line); font:inherit; min-height:3rem; }
-  .models { display:flex; flex-wrap:wrap; gap:.35rem .9rem; margin:.5rem 0; font-size:.84rem; }
-  .models label { display:inline-flex; align-items:center; gap:.3rem; }
-  button.run { margin-top:.6rem; padding:.45rem 1.1rem; border:1px solid var(--line); background:#000; color:#fff; font:inherit; cursor:pointer; }
-  button.run:disabled { opacity:.45; cursor:default; }
-  .grid { display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit, minmax(290px,1fr)); margin-top:1rem; }
-  .card { border:1px solid var(--line); display:flex; flex-direction:column; }
-  .card header { display:flex; justify-content:space-between; gap:.4rem; padding:.4rem .6rem; background:var(--soft); border-bottom:1px solid var(--line); }
-  .card .name { font-weight:600; font-size:.85rem; font-family:ui-monospace, Menlo, monospace; }
-  .card .ms { font-size:.75rem; color:var(--dim); white-space:nowrap; }
-  .badge { font-size:.68rem; border:1px solid var(--line); padding:0 .3rem; }
-  .badge.fail { background:#000; color:#fff; }
-  .card .body { padding:.5rem .6rem; white-space:pre-wrap; word-break:break-word; font-size:.82rem; min-height:3rem; flex:1; font-family:ui-monospace, Menlo, monospace; }
-  .card .note { padding:.4rem .6rem; border-top:1px dashed var(--line); font-size:.75rem; color:var(--dim); }
-  .card .note.warn { color:#000; background:var(--hi); }
-
-  .spinner { display:inline-block; width:.8em; height:.8em; vertical-align:-.1em; border:2px solid var(--line); border-right-color:transparent; border-radius:50%; animation:spin .7s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .spinner { animation:blink 1s steps(2,start) infinite; } @keyframes blink { 50% { opacity:.3; } } }
+  .spin { display:inline-block; width:.75em; height:.75em; border:2px solid var(--line);
+          border-right-color:transparent; border-radius:50%; animation:s .7s linear infinite; }
+  @keyframes s { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 <main>
-  <h1>주문 상담 봇
-    <small>Spring Boot 4 · Spring AI 2.0 · 로컬 Ollama — API 키 없음</small>
-  </h1>
+  <h1>Spring AI로 구현하는 에이전틱 패턴</h1>
+  <p class="sub">패턴마다 <b>모델을 몇 번, 어떤 순서로 부르는지</b>가 다릅니다. 실행하면 그 호출이 타임라인으로 남습니다.</p>
 
-  <div class="tabs">
-    <button data-tab="chat" aria-pressed="true">상담 봇</button>
-    <button data-tab="compare" aria-pressed="false">모델 비교</button>
+  <div class="bar">
+    <label for="model">모델</label>
+    <select id="model"></select>
+    <span style="color:var(--dim)">같은 코드에 모델만 바꿔 끼웁니다</span>
+    <span id="why" class="why"></span>
+    <button id="reset" style="margin-left:auto">주문 상태 초기화</button>
   </div>
 
-  <!-- ─────────────── 상담 봇 ─────────────── -->
-  <section class="panel" id="tab-chat">
-    <div class="modelbar">
-      <label for="chat-model">모델</label>
-      <select id="chat-model"></select>
-      <span class="why">같은 코드에 모델만 바꿔 끼웁니다 — 재시작 없음</span>
-    </div>
+  <div class="layout">
+    <div class="list" id="list"></div>
 
-    <div class="layout">
-      <div>
-        <div class="box">
-          <h2>대화</h2>
-          <div id="log"></div>
+    <div>
+      <div class="panel">
+        <h2><span id="title">패턴을 고르세요</span><span id="badge"></span></h2>
+        <div class="inner">
+          <div class="parts" id="parts"></div>
+          <p class="summary" id="summary"></p>
+          <pre id="code"></pre>
+          <div class="run">
+            <input id="input" placeholder="입력">
+            <button class="go" id="go">실행</button>
+          </div>
+
+          <div class="tl" id="tl"></div>
         </div>
-        <div class="composer">
-          <input id="input" placeholder="예: A-1024 지금 어디쯤 왔어?" autocomplete="off">
-          <button id="send">전송</button>
-        </div>
-        <div class="chips" id="chips"></div>
       </div>
 
-      <div>
-        <div class="box" style="margin-bottom:1rem">
-          <h2>주문 (실제 데이터)</h2>
-          <div class="inner"><table class="orders"><tbody id="orders"></tbody></table></div>
-        </div>
-        <div class="box">
-          <h2>실행 추적 — 마지막 턴</h2>
-          <div class="inner" id="trace"><span class="empty">대화를 시작하면 여기에 표시됩니다.</span></div>
-        </div>
+      <div class="compare">
+        <h2>실행한 패턴 — 모델 호출 횟수</h2>
+        <div class="inner" id="compare"><span class="empty">패턴을 실행하면 여기에 쌓입니다.</span></div>
       </div>
     </div>
-  </section>
-
-  <!-- ─────────────── 모델 비교 ─────────────── -->
-  <section class="panel" id="tab-compare" hidden>
-    <div class="axes" id="axes"></div>
-    <div class="hint" id="hint"></div>
-    <textarea id="prompt" rows="2"></textarea>
-    <div class="models" id="cmp-models"></div>
-    <button class="run" id="run">실행</button>
-    <div class="grid" id="grid"></div>
-  </section>
+  </div>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
-let MODELS = [];
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let PATTERNS = [], current = null, history = [];
 
-/* ── 탭 ───────────────────────────────── */
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.tabs button').forEach(x =>
-    x.setAttribute('aria-pressed', x === b));
-  $('tab-chat').hidden = b.dataset.tab !== 'chat';
-  $('tab-compare').hidden = b.dataset.tab !== 'compare';
-});
-
-/* ── 상담 봇 ──────────────────────────── */
-const CHIPS = [
-  'A-1024 지금 어디쯤 왔어?',
-  '단순 변심으로 환불하면 배송비 얼마 내야 해?',
-  '그 주문 취소해줘',
-  '사내 장비 대여는 최대 몇 개월이야?',
-];
-
-function bubble(who, text, cls = '') {
-  const el = document.createElement('div');
-  el.className = 'msg ' + cls;
-  el.innerHTML = `<div class="who">${who}</div><div class="bubble"></div>`;
-  el.querySelector('.bubble').textContent = text;
-  $('log').appendChild(el);
-  $('log').scrollTop = $('log').scrollHeight;
-  return el;
+/* ── 목록 ── */
+function renderList() {
+  $('list').innerHTML = PATTERNS.map(p => `
+    <button data-ch="${p.chapter}" aria-current="${current?.chapter === p.chapter}">
+      <span class="ch">${p.chapter}</span>${p.name}
+      ${p.fromDemo ? '<span class="demo">실행</span>' : ''}
+    </button>`).join('');
+  $('list').querySelectorAll('button').forEach(b =>
+    b.onclick = () => select(PATTERNS.find(p => p.chapter === +b.dataset.ch)));
 }
 
-async function loadOrders(list) {
-  const orders = list || await (await fetch('/api/support/orders')).json();
-  $('orders').innerHTML = orders.map(o => `
-    <tr>
-      <td class="id">${o.id}</td>
-      <td>${o.product}<div style="color:#666;font-size:.74rem">${o.detail}</div></td>
-      <td><span class="status ${o.status === '취소됨' ? 'cancelled' : ''}">${o.status}</span></td>
-    </tr>`).join('');
+function select(p) {
+  current = p;
+  $('title').textContent = `${p.chapter}장 ${p.name} (${p.english})`;
+  $('badge').innerHTML = p.fromDemo
+    ? '<span style="font-size:.7rem;border:1px solid #000;padding:0 .3rem">예제에서 실제로 도는 코드</span>' : '';
+  $('parts').innerHTML = '<b>부품</b> ' + p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
+  $('summary').textContent = p.summary;
+  $('code').textContent = p.code;
+  $('input').value = p.defaultInput;
+  if ([...$('model').options].some(o => o.value === p.model)) $('model').value = p.model;
+  $('why').innerHTML = p.modelWhy ? `<b>${esc(p.model)}</b> — ${esc(p.modelWhy)}` : '';
+  $('tl').innerHTML = '';
+  renderList();
 }
 
-function renderTrace(r) {
-  const box = $('trace');
-  const steps = [];
-  steps.push(`<div class="step">1 · 사용자 입력</div>`);
-  if (r.retrieved?.length) {
-    steps.push(`<div class="step">2 · RAG 가 <b>${r.retrieved.length}건</b> 검색해 프롬프트에 주입</div>`);
-  }
-  if (r.toolCalls?.length) {
-    steps.push(`<div class="step">3 · 모델이 도구 호출 <b>${r.toolCalls.length}회</b><br>
-      ${r.toolCalls.map(c => `<b>${c}</b>`).join('<br>')}</div>`);
-  } else {
-    steps.push(`<div class="step">3 · 도구 미호출</div>`);
-  }
-  steps.push(`<div class="step">4 · 응답 (${(r.elapsedMs / 1000).toFixed(1)}s)</div>`);
-
-  let html = steps.join('');
-  if (r.promptSent) {
-    html += `<details class="trace" open><summary>모델이 실제로 받은 프롬프트 전문</summary>
-      <pre>${escapeHtml(r.promptSent)}</pre></details>`;
-  }
-  if (r.retrieved?.length) {
-    html += `<details class="trace"><summary>검색된 문서 ${r.retrieved.length}건</summary>
-      <pre>${escapeHtml(r.retrieved.map((d, i) => `${i + 1}) ${d}`).join('\n\n'))}</pre></details>`;
-  }
-  box.innerHTML = html;
-}
-
-const escapeHtml = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-
-async function send(text) {
-  if (!text.trim()) return;
-  $('input').value = '';
-  $('send').disabled = true;
-  bubble('나', text, 'me');
-  const pending = bubble('상담 봇', '생각 중…');
-
+/* ── 실행 ── */
+async function run() {
+  if (!current) return;
+  $('go').disabled = true;
+  $('tl').innerHTML = '<h3><span class="spin"></span> 실행 중…</h3>';
   try {
-    const r = await (await fetch('/api/support/chat', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, model: $('chat-model').value })
+    const r = await (await fetch(`/api/patterns/${current.chapter}/run`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ input: $('input').value, model: $('model').value })
     })).json();
-
-    pending.querySelector('.bubble').textContent = r.text;
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    meta.textContent = `${(r.elapsedMs / 1000).toFixed(1)}s · 도구 ${r.toolCalls.length}회`;
-    pending.appendChild(meta);
-
-    if (r.pendingCancel) askApproval(pending, r.pendingCancel);
-    renderTrace(r);
+    renderResult(r);
+    history = history.filter(h => h.chapter !== current.chapter);
+    history.push({ chapter: current.chapter, name: current.name, calls: r.calls.length, ms: r.elapsedMs });
+    renderCompare();
+    if (current.chapter === 13) loadOrders();
   } catch (e) {
-    pending.querySelector('.bubble').textContent = '요청 실패: ' + e.message;
-  } finally {
-    $('send').disabled = false;
-    $('input').focus();
-  }
+    $('tl').innerHTML = `<h3>요청 실패</h3><div class="answer fail">${esc(e.message)}</div>`;
+  } finally { $('go').disabled = false; }
 }
 
-function askApproval(el, orderId) {
-  const box = document.createElement('div');
-  box.className = 'approve';
-  box.innerHTML = `<button class="yes">승인 — ${orderId} 취소</button><button class="no">거부</button>`;
-  el.appendChild(box);
+function renderResult(r) {
+  const n = r.calls.length;
+  let h = `<h3>모델 호출 <b>${n}회</b> · ${(r.elapsedMs/1000).toFixed(1)}초${n === 0 ? ' — 이 패턴은 모델을 부르지 않습니다' : ''}</h3>`;
+  h += r.calls.map(c => `
+    <div class="call">
+      <span class="n">${c.seq}</span>
+      <details><summary>${esc(c.step)}</summary><pre>${esc(c.prompt)}</pre></details>
+      <span class="ms">${c.elapsedMs ? c.elapsedMs + 'ms' : ''}</span>
+    </div>`).join('');
+  if (r.notes?.length)
+    h += `<ul class="notes">` + r.notes.map(x => `<li>${esc(x)}</li>`).join('') + `</ul>`;
+  h += `<div class="answer ${r.ok ? '' : 'fail'}">${esc(r.output)}</div>`;
+  if (current.chapter === 13) h += `<div id="orders"></div>`;
+  $('tl').innerHTML = h;
+}
 
-  box.querySelector('.no').onclick = () => {
-    box.remove();
-    bubble('시스템', '취소를 진행하지 않았습니다.', 'sys');
-  };
-  box.querySelector('.yes').onclick = async () => {
-    box.remove();
-    const r = await (await fetch('/api/support/approve', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId })
+/* ── 누적 비교 ── */
+function renderCompare() {
+  if (!history.length) return;
+  const max = Math.max(...history.map(h => h.calls), 1);
+  $('compare').innerHTML = history.slice().sort((a,b) => a.chapter - b.chapter).map(h => `
+    <div class="row">
+      <span>${h.chapter}장 ${h.name}</span>
+      <span class="g"><i style="width:${Math.max(h.calls / max * 100, 3)}%"></i></span>
+      <span class="t">${h.calls}회 · ${(h.ms/1000).toFixed(1)}s</span>
+    </div>`).join('');
+}
+
+/* ── 주문 (13장 승인) ── */
+async function loadOrders(list) {
+  const box = $('orders'); if (!box) return;
+  const orders = list || await (await fetch('/api/orders')).json();
+  const pending = orders.find(o => o.status !== '취소됨' && o.status !== '배송완료');
+  box.innerHTML = `<table class="orders"><tbody>` + orders.map(o => `
+      <tr><td>${o.id}</td><td>${o.product}</td>
+      <td><span class="status ${o.status === '취소됨' ? 'cancelled' : ''}">${o.status}</span></td></tr>`).join('')
+    + `</tbody></table>`
+    + (pending ? `<button id="approve" style="margin-top:.5rem">승인 — ${pending.id} 취소 (LLM 없이 실행)</button>` : '');
+  const btn = $('approve');
+  if (btn) btn.onclick = async () => {
+    const r = await (await fetch('/api/approve', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ orderId: pending.id })
     })).json();
-    bubble('시스템', r.message + '  (LLM 이 아니라 승인 버튼이 실행했습니다)', 'sys');
     loadOrders(r.orders);
   };
 }
 
-$('send').onclick = () => send($('input').value);
-$('input').onkeydown = e => { if (e.key === 'Enter') send($('input').value); };
-$('chips').innerHTML = CHIPS.map(c => `<button>${c}</button>`).join('');
-$('chips').querySelectorAll('button').forEach(b => b.onclick = () => send(b.textContent));
+$('go').onclick = run;
+$('input').onkeydown = e => { if (e.key === 'Enter') run(); };
+$('reset').onclick = async () => { await fetch('/api/reset', { method:'POST' }); loadOrders(); };
 
-/* ── 모델 비교 ────────────────────────── */
-const AXES = {
-  chat: { label: '기본 대화', prompt: '타입스크립트가 뭐야? 두 문장으로 설명해줘.',
-    hint: '<b>볼 것</b> — 응답 품질과 속도. 대부분의 모델이 통과합니다.' },
-  structured: { label: '구조화 출력', prompt: '영화 인터스텔라의 정보를 알려줘.',
-    hint: '<b>볼 것</b> — <code>Movie</code> 타입으로 역직렬화되는가. 스키마를 벗어나면 예외로 터집니다.' },
-  tool: { label: '도구 호출', prompt: '주문 A-1024 지금 어디쯤 왔어?',
-    hint: '<b>볼 것</b> — <b>도구 호출 횟수</b>. 0회면 답의 근거가 도구가 아닙니다.' },
-  rag: { label: 'RAG', prompt: '단순 변심으로 환불하면 배송비 얼마 내야 해?',
-    hint: '<b>볼 것</b> — <b>검색 순위</b>. 정답 문서가 하위권이면 topK 덕에 딸려 온 것입니다.' },
-  routing: { label: '라우팅', prompt: '주문 A-1024 지금 어디쯤 왔어?',
-    hint: '<b>볼 것</b> — <b>라우터 판단</b>. 분류가 맞는지, 그리고 분류 비용이 절감액보다 싼지.' },
-};
-let axis = 'chat', edited = false;
-$('prompt').addEventListener('input', () => { edited = true; });
-
-function renderAxes() {
-  $('axes').innerHTML = Object.entries(AXES).map(([k, v]) =>
-    `<button data-axis="${k}" aria-pressed="${k === axis}">${v.label}</button>`).join('');
-  $('axes').querySelectorAll('button').forEach(b =>
-    b.onclick = () => { axis = b.dataset.axis; edited = false; renderAxes(); });
-  $('hint').innerHTML = AXES[axis].hint;
-  if (!edited) $('prompt').value = AXES[axis].prompt;
-}
-
-function fill(el, r) {
-  el.querySelector('header').innerHTML =
-    `<span class="name">${r.model}</span>
-     <span class="ms"><span class="badge ${r.ok ? '' : 'fail'}">${r.ok ? '성공' : '실패'}</span>
-       ${(r.elapsedMs / 1000).toFixed(1)}s</span>`;
-  el.querySelector('.body').textContent = r.text || '(빈 응답)';
-  if (r.note) {
-    const n = document.createElement('div');
-    n.className = 'note' + (r.note.includes('도구 미호출') ? ' warn' : '');
-    n.textContent = r.note;
-    el.appendChild(n);
-  }
-}
-
-$('run').onclick = () => {
-  const picked = [...$('cmp-models').querySelectorAll('input:checked')].map(i => i.value);
-  if (!picked.length) return;
-  $('grid').innerHTML = '';
-  $('run').disabled = true;
-  const jobs = picked.map(m => {
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `<header><span class="name">${m}</span>
-      <span class="ms"><span class="spinner"></span> 실행 중</span></header><div class="body"></div>`;
-    $('grid').appendChild(el);
-    return fetch('/api/run', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ axis, model: m, prompt: $('prompt').value })
-    }).then(r => r.json()).then(r => fill(el, r))
-      .catch(e => fill(el, { model: m, ok: false, elapsedMs: 0, text: '요청 실패: ' + e.message }));
-  });
-  Promise.allSettled(jobs).then(() => { $('run').disabled = false; });
-};
-
-/* ── 시작 ─────────────────────────────── */
 (async () => {
-  MODELS = await (await fetch('/api/models')).json();
-  $('chat-model').innerHTML = MODELS.map(m => `<option>${m}</option>`).join('');
-  $('cmp-models').innerHTML = MODELS.map(m =>
-    `<label><input type="checkbox" value="${m}" checked><span>${m}</span></label>`).join('');
-  renderAxes();
-  await loadOrders();
-  bubble('상담 봇', '주문 조회·환불 규정 안내·주문 취소를 도와드립니다. 아래 예시를 눌러 보세요.');
+  const models = await (await fetch('/api/models')).json();
+  $('model').innerHTML = models.map(m => `<option>${m}</option>`).join('');
+  PATTERNS = await (await fetch('/api/patterns')).json();
+  renderList();
+  select(PATTERNS.find(p => p.chapter === 5) || PATTERNS[0]);
 })();
 </script>
 </body>

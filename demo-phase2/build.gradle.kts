@@ -34,5 +34,7 @@ dependencies {
     // SimpleVectorStore(인메모리) + QuestionAnswerAdvisor — RAG 시험 축
     implementation(libs.spring.ai.vector.store)
     implementation(libs.spring.ai.vector.store.advisor)
+    implementation(libs.spring.ai.starter.mcp.server.webmvc)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlin.reflect)
 }

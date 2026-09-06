@@ -1,4 +1,4 @@
-package com.example.demo.chat
+package com.example.demo.pattern
 
 import com.example.demo.support.OrderService
 import org.springframework.ai.tool.annotation.Tool

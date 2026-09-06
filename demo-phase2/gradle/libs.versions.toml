@@ -19,4 +19,8 @@ spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-
 spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-starter-model-ollama" }
 spring-ai-vector-store = { module = "org.springframework.ai:spring-ai-vector-store" }
 spring-ai-vector-store-advisor = { module = "org.springframework.ai:spring-ai-vector-store-advisor" }
+# 10·15장 — 앱 자체를 MCP 서버로 띄워 tools/list 를 실물로 보여준다
+spring-ai-starter-mcp-server-webmvc = { module = "org.springframework.ai:spring-ai-starter-mcp-server-webmvc" }
+# 3·21장 병렬 호출. 버전은 Spring Boot BOM 이 관리한다
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
