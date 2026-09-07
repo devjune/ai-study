@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class MemoryManagement : PatternRunner {
     override val spec = PatternSpec(
-        8, "메모리 관리", "Memory Management",
+        8, "대화 기억", "Memory Management",
         summary = "LLM은 호출마다 아무것도 기억하지 못합니다. 맥락을 유지하려면 지난 메시지를 다시 넣어 줘야 합니다.",
         code = """
             // 무엇을 기억할지 정하는 정책 — 최근 20개 메시지만 유지한다
@@ -63,7 +63,7 @@ class MemoryManagement : PatternRunner {
 @Component
 class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
-        9, "학습과 적응", "Learning and Adaptation",
+        9, "사례로 배우기", "Learning and Adaptation",
         summary = "설계 때 예상 못 한 상황에서는 짜 둔 로직이 안 통합니다. 실제 사용에서 얻은 피드백을 반영합니다.",
         code = """
             // 사람이 고쳐 준 좋은 답을 저장해 두고

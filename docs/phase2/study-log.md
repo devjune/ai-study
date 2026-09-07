@@ -285,7 +285,7 @@ Boot 4 / Spring AI 2.0 이 Jackson 3 로 올라가면서 databind 가 `com.faste
 
 | 장 | qwen3:4b-instruct | granite4:micro |
 | --- | --- | --- |
-| 8장 메모리 관리 | 7.7s | 8.0s |
+| 8장 대화 기억 | 7.7s | 8.0s |
 | 12장 예외 처리 | 16.0s | 14.7s |
 | 18장 가드레일 | 15.3s | **8.1s** |
 | 19장 평가 | 29.8s | **11.7s** |

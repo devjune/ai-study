@@ -28,8 +28,8 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 | **5**  | **[도구 사용 (Tool Use)](#5장-도구-사용-tool-use)**                                                    | **`@Tool`**                          |
 | 6      | [계획 수립 (Planning)](#6장-계획-수립-planning)                                                        | `.entity()` + 순회                     |
 | 7      | [멀티 에이전트 (Multi-Agent)](#7장-멀티-에이전트-multi-agent)                                              | `defaultSystem` 이 다른 `ChatClient` 여럿 |
-| **8**  | **[메모리 관리 (Memory Management)](#8장-메모리-관리-memory-management)**                                | **`ChatMemory`** + 저장소 6종            |
-| 9      | [학습과 적응 (Learning and Adaptation)](#9장-학습과-적응-learning-and-adaptation)                        | `VectorStore` 에 축적                   |
+| **8**  | **[대화 기억 (Memory Management)](#8장-대화-기억-memory-management)**                                | **`ChatMemory`** + 저장소 6종            |
+| 9      | [사례로 배우기 (Learning and Adaptation)](#9장-사례로-배우기-learning-and-adaptation)                        | `VectorStore` 에 축적                   |
 | **10** | **[MCP (Model Context Protocol)](#10장-mcp-model-context-protocol)**                           | **`@McpTool`**                       |
 | 11     | [목표 설정과 모니터링 (Goal Setting and Monitoring)](#11장-목표-설정과-모니터링-goal-setting-and-monitoring)     | `.entity()` + `Evaluator`            |
 | 12     | [예외 처리와 복구 (Exception Handling and Recovery)](#12장-예외-처리와-복구-exception-handling-and-recovery) | `spring.ai.retry` + 폴백               |
@@ -385,7 +385,7 @@ Bean을 역할 수만큼 두는 것까지가 프레임워크의 몫입니다. **
 
 4장 자기 검토도 쓰는 쪽과 검토하는 쪽을 나눴습니다. 다른 점은 루프입니다 — 자기 검토는 **같은 답 하나**를 통과할 때까지 돌리고, 여기는 한 번씩 거쳐 갑니다. 분담의 값어치는 역할마다 다른 것을 붙일 수 있다는 데서 나옵니다 — 검토자에게만 규정 문서 검색을 달거나 작성자만 큰 모델로 돌리는 식인데, 각각 뒤에 나올 14장과 16장에서 다룹니다.
 
-## 8장 메모리 관리 (Memory Management)
+## 8장 대화 기억 (Memory Management)
 
 ```mermaid
 flowchart LR
@@ -428,7 +428,7 @@ implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repos
 spring.ai.chat.memory.repository.jdbc.initialize-schema=always
 ```
 
-## 9장 학습과 적응 (Learning and Adaptation)
+## 9장 사례로 배우기 (Learning and Adaptation)
 
 ```mermaid
 flowchart LR
@@ -632,7 +632,7 @@ flowchart LR
 
 **학습에 없던 최신·사내 정보로 답해야 할 때** 씁니다 — 사내 문서 Q&A, 고객 지원 봇, 출처가 필요한 답.
 
-Advisor 하나가 문서 검색과 프롬프트 주입을 모두 처리합니다.
+Advisor 하나가 문서 검색과 프롬프트 주입을 모두 처리합니다. 5장의 `@Tool` 과 같은 모양입니다 — 내가 검색을 호출하는 게 아니라 `QuestionAnswerAdvisor` 를 **등록**해 두면, 프레임워크가 호출 직전에 끼어들어 검색하고 프롬프트를 고칩니다. 제어의 역전입니다.
 
 ```kotlin
 .advisors(
@@ -825,7 +825,7 @@ flowchart LR
 
 원서는 가드레일의 목적이 **능력을 묶는 것이 아니라 믿고 맡길 수 있게 하는 것**이라고 못 박습니다. 검사가 있어야 더 많은 일을 맡길 수 있다는 뜻입니다.
 
-`Advisor` 가 그 자리입니다.
+`Advisor` 가 그 자리입니다. 5장·14장과 같은 제어의 역전입니다 — 검사 코드를 호출 앞뒤에 직접 끼워 넣는 게 아니라 등록해 두면, 프레임워크가 모든 호출에 대해 대신 부릅니다. 서블릿 필터를 등록해 두면 모든 요청이 거쳐 가는 것과 같습니다.
 
 ```kotlin
 // BaseAdvisor — before / after / getOrder 셋만 구현하면 된다

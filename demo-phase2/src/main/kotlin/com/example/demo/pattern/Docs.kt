@@ -20,7 +20,7 @@ class Docs(private val embeddingModel: EmbeddingModel) {
         SimpleVectorStore.builder(embeddingModel).build().apply { add(POLICIES) }
     }
 
-    /** 9장 학습과 적응 — 사람이 고쳐 준 답을 쌓아 두는 자리 */
+    /** 9장 사례로 배우기 — 사람이 고쳐 준 답을 쌓아 두는 자리 */
     val lessons: VectorStore by lazy { SimpleVectorStore.builder(embeddingModel).build() }
 
     companion object {
