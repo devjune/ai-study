@@ -33,6 +33,12 @@ class ModelContextProtocol : PatternRunner {
                 ): String = orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
             }
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                C[다른 언어로 짠 에이전트] -.tools/list.-> S["내 앱 · @McpTool"]
+                C -.tools/call.-> S
+                S --> R[함수 실행]
+        """.trimIndent(),
         defaultInput = "A-1024",
         model = "qwen3:4b-instruct",
     )
@@ -58,6 +64,13 @@ class InterAgentCommunication : PatternRunner {
 
             // 클라이언트 — 남이 만든 MCP 서버를 내 에이전트의 도구로 가져온다
             implementation("org.springframework.ai:spring-ai-starter-mcp-client")
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                P[파이썬 에이전트] -.tools/call.-> S[내 앱 · MCP 서버]
+                S --> T[내 도구 실행]
+                S2[내 앱 · MCP 클라이언트] -.tools/call.-> O[남의 MCP 서버]
+                O --> T2[남의 도구 실행]
         """.trimIndent(),
         defaultInput = "A-1024",
         model = "qwen3:4b-instruct",

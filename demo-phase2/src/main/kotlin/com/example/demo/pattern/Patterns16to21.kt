@@ -31,6 +31,14 @@ class ResourceAware : PatternRunner {
                 .options(ChatOptions.builder().model(model))
                 .call().content()
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                W[들어온 일] --> D{난이도}
+                D -->|쉬움| S((작은 모델))
+                D -->|어려움| B((큰 모델))
+                S --> M[토큰 지표]
+                B --> M
+        """.trimIndent(),
         defaultInput = "이 문장이 긍정인지 부정인지 한 단어로만 답해라: 배송이 너무 늦었어요",
         model = "qwen3:4b-instruct",
     )
@@ -67,6 +75,14 @@ class ReasoningTechniques : PatternRunner {
 
             OllamaChatOptions.builder().disableThinking()   // 공통 ChatOptions 에는 없다
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((모델))
+                M1 --> A1[바로 답]
+                Q --> P[단계를 밟으라는<br/>시스템 프롬프트]
+                P --> M2((모델))
+                M2 --> A2[근거 → 결론]
+        """.trimIndent(),
         defaultInput = "사과 3개를 5,000원에 사서 2개를 3,000원에 팔았다. 남은 1개를 얼마에 팔아야 본전인가?",
         model = "qwen3:4b-instruct",
     )
@@ -101,6 +117,13 @@ class Guardrails : PatternRunner {
                 // 작을수록 먼저 실행된다. ToolCallingAdvisor 는 Integer.MIN_VALUE + 300
                 override fun getOrder(): Int = 1000
             }
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[프롬프트] --> B[before<br/>카드번호 마스킹]
+                B --> M((모델))
+                M --> A[after<br/>금칙어 검사]
+                A --> R[응답]
         """.trimIndent(),
         defaultInput = "내 카드번호는 1234-5678-9012-3456 인데 환불해줘",
         model = "granite4:micro",
@@ -155,6 +178,13 @@ class Evaluation : PatternRunner {
             response.getScore()    // 점수 (float)
             response.getFeedback() // 왜 그렇게 판정했는지 (채점기에 따라 비어 있다)
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((모델<br/>답))
+                M1 --> M2((모델<br/>채점))
+                D[(근거 문서)] --> M2
+                M2 --> R[통과 여부 · 점수 · 근거]
+        """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "granite4:micro",
     )
@@ -193,6 +223,13 @@ class Prioritization : PatternRunner {
 
             tasks.sortedByDescending { it.priority }.forEach { 처리(it) }
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                T[할 일 목록] --> M((모델))
+                M --> L[Task 목록<br/>priority 가 붙어 온다]
+                L --> S[코드가 정렬]
+                S --> P[순서대로 처리]
+        """.trimIndent(),
         defaultInput = "배송 지연 항의, 신규 가입 문의, 결제 실패 신고, 단순 가격 문의",
         model = "qwen3:4b-instruct",
         maxTokens = 500,
@@ -230,6 +267,16 @@ class Exploration : PatternRunner {
             val 최선 = 후보들.maxByOrNull {
                 evaluator.evaluate(EvaluationRequest(질문, it)).score      // 점수로 고른다
             }
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((후보 1))
+                Q --> M2((후보 2))
+                Q --> M3((후보 3))
+                M1 --> E((채점 ×3))
+                M2 --> E
+                M3 --> E
+                E --> B[점수가 가장 높은 답]
         """.trimIndent(),
         defaultInput = "환불 안내 문구를 한 문장으로 써줘",
         model = "qwen3:4b-instruct",

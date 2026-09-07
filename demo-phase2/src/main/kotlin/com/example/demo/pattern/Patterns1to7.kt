@@ -147,6 +147,13 @@ class Parallelization : PatternRunner {
                 a.await() to b.await()
             }
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                G[글] --> M1((모델<br/>요약))
+                G --> M2((모델<br/>감정))
+                M1 --> R[합침]
+                M2 --> R
+        """.trimIndent(),
         defaultInput = "배송이 사흘이나 늦었는데 안내 문자도 없었습니다. 그래도 제품은 마음에 듭니다.",
         model = "qwen3:4b-instruct",
     )
@@ -186,6 +193,14 @@ class Reflection : PatternRunner {
                     .user("${'$'}질문\n\n앞선 답은 이런 점이 부족했다: ${'$'}{verdict.feedback}")
                     .call().content()
             }
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((모델<br/>첫 답))
+                M1 --> M2((모델<br/>채점))
+                M2 -->|통과| OK[끝]
+                M2 -->|미달| M3((모델<br/>고쳐 쓰기))
+                M3 --> M2
         """.trimIndent(),
         defaultInput = "환불 정책을 한 문장으로 알려줘",
         model = "qwen3:4b-instruct",
@@ -230,6 +245,13 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
                 .call()                           // 동기 호출 (토큰을 흘리려면 .stream())
                 .content()                        // 응답을 문자열로. 타입으로 받으려면 .entity()
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((모델))
+                M1 -->|이 함수를 불러 달라| F["@Tool 실행"]
+                F -->|결과| M2((모델))
+                M2 --> A[최종 답]
+        """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
         model = "qwen3:4b-instruct",
     )
@@ -269,6 +291,14 @@ class Planning : PatternRunner {
                 chatClient.prompt().user(step.instruction).call().content()
             }
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                G[목표] --> M1((모델<br/>계획))
+                M1 --> P[Plan.steps]
+                P --> L[for 문]
+                L --> M2((모델<br/>단계 실행))
+                M2 --> L
+        """.trimIndent(),
         defaultInput = "신입 개발자 첫 주 온보딩",
         model = "qwen3:4b-instruct",
     )
@@ -301,6 +331,13 @@ class MultiAgent : PatternRunner {
             // 누가 먼저 말하고 몇 번 주고받을지는 직접 짠다
             val draft  = 작성자.prompt().user(주제).call().content()
             val review = 검토자.prompt().user(draft).call().content()
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                T[주제] --> M1((작성자))
+                M1 --> D[초안]
+                D --> M2((검토자))
+                M2 --> R[고칠 점]
         """.trimIndent(),
         defaultInput = "환불 안내 문구",
         model = "qwen3:4b-instruct",

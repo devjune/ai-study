@@ -31,6 +31,13 @@ class MemoryManagement : PatternRunner {
                 .advisors { it.param(ChatMemory.CONVERSATION_ID, "user-42") }
                 .call().content()
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                U1[1턴] --> M1((모델))
+                M1 --> S[(ChatMemory)]
+                U2[2턴] --> S
+                S -->|지난 대화를 얹어| M2((모델))
+        """.trimIndent(),
         defaultInput = "내 이름은 준이야",
         model = "granite4:micro",
     )
@@ -66,6 +73,13 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
             chatClient.prompt().user(새질문)
                 .advisors(QuestionAnswerAdvisor.builder(vectorStore).build())
                 .call().content()
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                A[사람이 고쳐 준 답] --> S[(VectorStore)]
+                Q[다음 질문] --> S
+                Q --> M((모델))
+                S -->|비슷한 사례를 예시로| M
         """.trimIndent(),
         defaultInput = "환불 배송비 얼마야?",
         model = "qwen3:4b-instruct",
@@ -110,6 +124,14 @@ class GoalSetting : PatternRunner {
                 .evaluate(EvaluationRequest(goal.successCriteria, 작업결과))
                 .isPass
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                R[요청] --> M1((모델<br/>목표 정의))
+                M1 --> G[successCriteria]
+                G --> M2((모델<br/>작업))
+                M2 --> M3((모델<br/>달성 판정))
+                M3 --> D{isPass}
+        """.trimIndent(),
         defaultInput = "고객에게 환불 절차를 안내한다",
         model = "qwen3:4b-instruct",
     )
@@ -147,6 +169,13 @@ class ExceptionHandling : PatternRunner {
             }.getOrElse {
                 "지금 답변이 어렵습니다. 상담원에게 연결해 드릴까요?"   // 폴백
             }
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[요청] --> M1((모델))
+                M1 -->|성공| A[답]
+                M1 -->|실패| C[runCatching]
+                C --> F[폴백 문구]
         """.trimIndent(),
         defaultInput = "환불 규정 알려줘",
         model = "granite4:micro",
@@ -194,6 +223,18 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
                 return ApproveReply(true, "취소되었습니다", orders.all())
             }
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                U[고객] --> M1((모델))
+                M1 -->|취소를 요청하라| T[requestCancellation<br/>요청만 기록]
+                T -->|취소 가능하다| M2((모델))
+                M2 --> W[승인 대기]
+                subgraph H [사람이 결정하는 구간 — 모델이 없다]
+                    W -.버튼을 누른다.-> A[POST /approve]
+                    A --> D[(주문 취소됨)]
+                end
+                style H fill:#8884,stroke:#888,stroke-dasharray:4 3
+        """.trimIndent(),
         defaultInput = "A-1024 취소해줘",
         model = "qwen3:4b-instruct",
     )
@@ -228,6 +269,13 @@ class KnowledgeRetrieval(private val docs: Docs) : PatternRunner {
                 .topK(3)                   // ① 점수 높은 순으로 3건을 뽑고
                 .similarityThreshold(0.5)  // ② 그중 0.5 미만은 버린다 (전부 미달이면 주입 없음)
                 .build()
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> S[(VectorStore)]
+                S -->|임계값을 넘은 문서만| P[프롬프트에 주입]
+                Q --> P
+                P --> M((모델))
         """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "qwen3:4b-instruct",
