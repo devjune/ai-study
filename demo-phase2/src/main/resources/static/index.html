@@ -38,6 +38,12 @@
   .panel > h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft);
                 border-bottom:1px solid var(--line); }
   .panel > .inner { padding:.7rem; }
+  /* 패턴의 모양. 문서와 같은 mermaid 원본을 그린다 */
+  .shape { margin:0 0 .7rem; overflow-x:auto; }
+  .shape:empty { display:none; }
+  /* mermaid 는 svg 를 width:100% 로 내놓아 내용이 가운데로 몰린다.
+     높이만 묶고 폭은 내용에 맞춰 코드 블록과 같은 왼쪽 기준에 세운다. */
+  .shape svg { display:block; margin:0; width:auto; max-width:100%; max-height:10rem; }
   .summary { font-size:.88rem; margin:0 0 .7rem; }
   pre { margin:0 0 .7rem; padding:.6rem; background:var(--soft); border-left:3px solid var(--line);
         font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
@@ -106,6 +112,7 @@
       <div class="panel">
         <h2><span id="title">패턴을 고르세요</span></h2>
         <div class="inner">
+          <div class="shape" id="shape"></div>
           <p class="summary" id="summary"></p>
           <pre id="code" class="kt"></pre>
           <div class="run">
@@ -125,7 +132,11 @@
   </div>
 </main>
 
+<!-- 사내망에서 그대로 띄우므로 라이브러리도 저장소에 담아 둔다 -->
+<script src="/vendor/mermaid.min.js"></script>
 <script>
+mermaid.initialize({ startOnLoad:false, theme:'neutral', securityLevel:'strict' });
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let PATTERNS = [], current = null, history = [];
@@ -165,12 +176,23 @@ function renderList() {
 function select(p) {
   current = p;
   $('title').textContent = `${p.chapter}장 ${p.name} (${p.english})`;
+  drawShape(p);
   $('summary').textContent = p.summary;
   $('code').innerHTML = highlight(p.code);
   $('input').value = p.defaultInput;
   if ([...$('model').options].some(o => o.value === p.model)) $('model').value = p.model;
   $('tl').innerHTML = '';
   renderList();
+}
+
+/* 그림은 장마다 다시 그린다. id 가 겹치면 mermaid 가 캐시를 물고 오므로 매번 새로 준다 */
+let shapeSeq = 0;
+async function drawShape(p) {
+  const box = $('shape');
+  if (!p.diagram) { box.innerHTML = ''; return; }
+  const { svg } = await mermaid.render(`shape-${++shapeSeq}`, p.diagram);
+  box.innerHTML = svg;
+  box.querySelector('svg')?.setAttribute('preserveAspectRatio', 'xMinYMid meet');
 }
 
 /* ── 실행 ── */

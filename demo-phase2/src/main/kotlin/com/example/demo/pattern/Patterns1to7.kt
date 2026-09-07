@@ -29,6 +29,13 @@ class PromptChaining : PatternRunner {
                 .call()
                 .content()
         """.trimIndent(),
+        diagram = """
+            flowchart LR
+                A[주제] --> M1((모델))
+                M1 --> O[Outline 객체]
+                O --> M2((모델))
+                M2 --> R[초안]
+        """.trimIndent(),
         defaultInput = "사내 개발자 대상 Spring AI 스터디",
         model = "qwen3:4b-instruct",
     )
@@ -79,6 +86,17 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
                 Route.POLICY  -> request.advisors(qaAdvisor).call().content()
                 Route.GENERAL -> request.call().content()
             }
+        """.trimIndent(),
+        diagram = """
+            flowchart LR
+                Q[질문] --> M1((모델<br/>분류))
+                M1 --> R{route}
+                R -->|order| T[도구]
+                R -->|policy| V[(규정 문서)]
+                R -->|general| G[아무것도 안 붙임]
+                T --> M2((모델))
+                V --> M2
+                G --> M2
         """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
         model = "qwen3:4b-instruct",

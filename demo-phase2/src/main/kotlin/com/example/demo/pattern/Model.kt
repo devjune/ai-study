@@ -39,6 +39,8 @@ data class PatternSpec(
     val summary: String,
     /** 화면에 보여줄 코드. 추적용 래퍼는 뺀 알맹이 */
     val code: String,
+    /** 패턴의 모양. 문서와 같은 mermaid 원본을 화면에서 그린다 */
+    val diagram: String = "",
     val defaultInput: String,
     /**
      * 이 장을 시연할 때 미리 골라 둘 모델.
