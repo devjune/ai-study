@@ -36,9 +36,7 @@ class ModelContextProtocol : PatternRunner {
             }
         """.trimIndent(),
         defaultInput = "A-1024",
-        fromDemo = true,
         model = "qwen3:4b-instruct",
-        modelWhy = "모델을 부르지 않습니다 — 무엇을 골라도 결과가 같습니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -66,7 +64,6 @@ class InterAgentCommunication : PatternRunner {
         """.trimIndent(),
         defaultInput = "A-1024",
         model = "qwen3:4b-instruct",
-        modelWhy = "모델을 부르지 않습니다 — 무엇을 골라도 결과가 같습니다",
     )
 
     override fun run(ctx: RunContext): RunResult {

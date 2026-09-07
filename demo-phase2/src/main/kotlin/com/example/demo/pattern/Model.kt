@@ -42,8 +42,6 @@ data class PatternSpec(
     /** 화면에 보여줄 코드. 추적용 래퍼는 뺀 알맹이 */
     val code: String,
     val defaultInput: String,
-    /** 예제 애플리케이션에서 실제로 도는 코드인가 */
-    val fromDemo: Boolean = false,
     /**
      * 이 장을 시연할 때 미리 골라 둘 모델.
      *
@@ -51,8 +49,6 @@ data class PatternSpec(
      * **어떤 장은 작은 모델로도 충분하고 어떤 장은 그렇지 않다**는 것 자체가 볼거리다.
      */
     val model: String = DEFAULT_MODEL,
-    /** 왜 그 모델인가. 화면의 드롭다운 옆에 한 줄로 뜬다 */
-    val modelWhy: String = "",
     /** 이 장에 걸 토큰 상한. 긴 JSON 을 받는 장만 올린다 */
     val maxTokens: Int = RunContext.MAX_TOKENS,
 ) {

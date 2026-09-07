@@ -28,9 +28,7 @@ class MemoryManagement : PatternRunner {
                 .call().content()
         """.trimIndent(),
         defaultInput = "내 이름은 준이야",
-        fromDemo = true,
         model = "granite4:micro",
-        modelWhy = "대화 이력을 다시 실어 보내기만 하면 되는 장이라 작은 쪽이 낫습니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -68,7 +66,6 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
         """.trimIndent(),
         defaultInput = "환불 배송비 얼마야?",
         model = "qwen3:4b-instruct",
-        modelWhy = "사례 전후 차이가 또렷하게 갈립니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -107,7 +104,6 @@ class GoalSetting : PatternRunner {
         """.trimIndent(),
         defaultInput = "고객에게 환불 절차를 안내한다",
         model = "qwen3:4b-instruct",
-        modelWhy = "granite4:micro 는 자기가 세운 기준을 자기가 미달로 판정했습니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -147,7 +143,6 @@ class ExceptionHandling : PatternRunner {
         """.trimIndent(),
         defaultInput = "환불 규정 알려줘",
         model = "granite4:micro",
-        modelWhy = "1차 실패 → 폴백이 도는 것만 보면 되는 장입니다. 답은 짧을수록 좋습니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -187,9 +182,7 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
             fun approve(@RequestBody req: ApproveRequest) = orders.cancel(req.orderId)
         """.trimIndent(),
         defaultInput = "A-1024 취소해줘",
-        fromDemo = true,
         model = "qwen3:4b-instruct",
-        modelWhy = "취소 요청 도구를 정확히 한 번만 부릅니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -223,9 +216,7 @@ class KnowledgeRetrieval(private val docs: Docs) : PatternRunner {
             )
         """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
-        fromDemo = true,
         model = "qwen3:4b-instruct",
-        modelWhy = "검색해 온 규정을 그대로 인용해야 합니다",
     )
 
     override fun run(ctx: RunContext): RunResult {

@@ -14,7 +14,6 @@
   main { max-width:1240px; margin:0 auto; }
 
   h1 { font-size:1.35rem; border-bottom:2px solid var(--line); padding-bottom:.4rem; margin:0 0 .3rem; }
-  .sub { font-size:.8rem; color:var(--dim); margin-bottom:1rem; }
   .bar { display:flex; align-items:center; gap:.5rem; font-size:.85rem; margin-bottom:1rem; flex-wrap:wrap; }
   select, button { font:inherit; }
   select { font-size:.85rem; padding:.25rem .4rem; border:1px solid var(--line); background:#fff; }
@@ -33,17 +32,14 @@
   .list button[aria-current="true"] { background:#000; color:#fff; font-weight:600; }
   .list .ch { display:inline-block; width:1.6rem; color:var(--dim); font-variant-numeric:tabular-nums; }
   .list button[aria-current="true"] .ch { color:#bbb; }
-  .list .demo { float:right; font-size:.62rem; border:1px solid currentColor; padding:0 .2rem; opacity:.65; }
 
   /* 오른쪽 상세 */
   .panel { border:1px solid var(--line); }
   .panel > h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft);
-                border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:.5rem; }
+                border-bottom:1px solid var(--line); }
   .panel > .inner { padding:.7rem; }
   .parts { font-size:.78rem; background:var(--hi); border:1px solid var(--line); padding:.3rem .5rem; margin-bottom:.6rem; }
   .summary { font-size:.88rem; margin:0 0 .7rem; }
-  .why { font-size:.74rem; color:var(--dim); border-left:1px solid var(--line); padding-left:.5rem; }
-  .why b { color:#000; font-weight:600; }
   pre { margin:0 0 .7rem; padding:.6rem; background:var(--soft); border-left:3px solid var(--line);
         font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
         white-space:pre-wrap; word-break:break-word; overflow-x:auto; }
@@ -83,7 +79,6 @@
   .row .g { background:#eee; height:.9rem; position:relative; }
   .row .g i { display:block; height:100%; background:var(--bar); }
   .row .t { color:var(--dim); font-size:.72rem; text-align:right; font-variant-numeric:tabular-nums; }
-  .empty { color:var(--dim); font-size:.8rem; }
 
   /* 주문 (13장) */
   table.orders { width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.7rem; }
@@ -98,13 +93,9 @@
 <body>
 <main>
   <h1>Spring AI로 구현하는 에이전틱 패턴</h1>
-  <p class="sub">패턴마다 <b>모델을 몇 번, 어떤 순서로 부르는지</b>가 다릅니다. 실행하면 그 호출이 타임라인으로 남습니다.</p>
-
   <div class="bar">
     <label for="model">모델</label>
     <select id="model"></select>
-    <span style="color:var(--dim)">같은 코드에 모델만 바꿔 끼웁니다</span>
-    <span id="why" class="why"></span>
     <button id="reset" style="margin-left:auto">주문 상태 초기화</button>
   </div>
 
@@ -113,7 +104,7 @@
 
     <div>
       <div class="panel">
-        <h2><span id="title">패턴을 고르세요</span><span id="badge"></span></h2>
+        <h2><span id="title">패턴을 고르세요</span></h2>
         <div class="inner">
           <div class="parts" id="parts"></div>
           <p class="summary" id="summary"></p>
@@ -129,7 +120,7 @@
 
       <div class="compare">
         <h2>실행한 패턴 — 모델 호출 횟수</h2>
-        <div class="inner" id="compare"><span class="empty">패턴을 실행하면 여기에 쌓입니다.</span></div>
+        <div class="inner" id="compare"></div>
       </div>
     </div>
   </div>
@@ -164,7 +155,6 @@ function renderList() {
   $('list').innerHTML = PATTERNS.map(p => `
     <button data-ch="${p.chapter}" aria-current="${current?.chapter === p.chapter}">
       <span class="ch">${p.chapter}</span>${p.name}
-      ${p.fromDemo ? '<span class="demo">실행</span>' : ''}
     </button>`).join('');
   $('list').querySelectorAll('button').forEach(b =>
     b.onclick = () => select(PATTERNS.find(p => p.chapter === +b.dataset.ch)));
@@ -173,14 +163,11 @@ function renderList() {
 function select(p) {
   current = p;
   $('title').textContent = `${p.chapter}장 ${p.name} (${p.english})`;
-  $('badge').innerHTML = p.fromDemo
-    ? '<span style="font-size:.7rem;border:1px solid #000;padding:0 .3rem">예제에서 실제로 도는 코드</span>' : '';
   $('parts').innerHTML = '<b>부품</b> ' + p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
   $('summary').textContent = p.summary;
   $('code').innerHTML = highlight(p.code);
   $('input').value = p.defaultInput;
   if ([...$('model').options].some(o => o.value === p.model)) $('model').value = p.model;
-  $('why').innerHTML = p.modelWhy ? `<b>${esc(p.model)}</b> — ${esc(p.modelWhy)}` : '';
   $('tl').innerHTML = '';
   renderList();
 }
@@ -263,7 +250,7 @@ $('reset').onclick = async () => { await fetch('/api/reset', { method:'POST' });
   $('model').innerHTML = models.map(m => `<option>${m}</option>`).join('');
   PATTERNS = await (await fetch('/api/patterns')).json();
   renderList();
-  select(PATTERNS.find(p => p.chapter === 5) || PATTERNS[0]);
+  select(PATTERNS[0]);
 })();
 </script>
 </body>

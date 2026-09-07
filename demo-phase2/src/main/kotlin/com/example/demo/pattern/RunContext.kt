@@ -29,7 +29,7 @@ const val TRACE_ORDER = 2000
  * 패턴이 다는 Advisor 보다도 뒤에 서야 한다. 18장 가드레일처럼 프롬프트를 고치는 Advisor 가
  * 있으면, 트레이서가 먼저 서는 순간 **고쳐지기 전** 프롬프트를 잡아 화면이 거짓말을 한다.
  */
-class TraceAdvisor(private val order: Int = TRACE_ORDER) : BaseAdvisor {
+class TraceAdvisor : BaseAdvisor {
 
     private val captured = mutableListOf<String>()
     val rounds: List<String> get() = captured
@@ -41,7 +41,7 @@ class TraceAdvisor(private val order: Int = TRACE_ORDER) : BaseAdvisor {
 
     override fun after(response: ChatClientResponse, chain: AdvisorChain) = response
 
-    override fun getOrder(): Int = order
+    override fun getOrder(): Int = TRACE_ORDER
 
     private fun render(message: Message): String = buildString {
         append("[${message.messageType}]")

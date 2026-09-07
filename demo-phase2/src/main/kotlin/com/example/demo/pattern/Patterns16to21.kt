@@ -28,7 +28,6 @@ class ResourceAware : PatternRunner {
         """.trimIndent(),
         defaultInput = "이 문장이 긍정인지 부정인지 한 단어로만 답해라: 배송이 너무 늦었어요",
         model = "qwen3:4b-instruct",
-        modelWhy = "여기서 고른 모델이 `기본 모델` 쪽입니다. qwen3:1.7b 와 나란히 돕니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -64,7 +63,6 @@ class ReasoningTechniques : PatternRunner {
         """.trimIndent(),
         defaultInput = "사과 3개를 5,000원에 사서 2개를 3,000원에 팔았다. 남은 1개를 얼마에 팔아야 본전인가?",
         model = "qwen3:4b-instruct",
-        modelWhy = "추론 품질을 눈으로 비교하는 장이라 가장 잘하는 쪽을 씁니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -97,7 +95,6 @@ class Guardrails : PatternRunner {
         """.trimIndent(),
         defaultInput = "내 카드번호는 1234-5678-9012-3456 인데 환불해줘",
         model = "granite4:micro",
-        modelWhy = "마스킹은 Advisor 가 합니다. 모델은 거절만 하면 되므로 빠른 쪽으로",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -111,7 +108,7 @@ class Guardrails : PatternRunner {
 }
 
 /** 18장 가드레일 — 나가는 프롬프트를 가로채 마스킹한다. */
-class MaskingAdvisor(private val order: Int = GUARDRAIL_ORDER) : BaseAdvisor {
+class MaskingAdvisor : BaseAdvisor {
     var original: String? = null
         private set
     var masked: String? = null
@@ -129,7 +126,7 @@ class MaskingAdvisor(private val order: Int = GUARDRAIL_ORDER) : BaseAdvisor {
     }
 
     override fun after(response: ChatClientResponse, chain: AdvisorChain) = response
-    override fun getOrder(): Int = order
+    override fun getOrder(): Int = GUARDRAIL_ORDER
 
     private companion object {
         val CARD = Regex("""\d{4}-\d{4}-\d{4}-\d{4}""")
@@ -152,7 +149,6 @@ class Evaluation : PatternRunner {
         """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "granite4:micro",
-        modelWhy = "정상 답 1.00 / 엉뚱한 답 0.00 판정이 같은데 2배 이상 빠릅니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -190,7 +186,6 @@ class Prioritization : PatternRunner {
         """.trimIndent(),
         defaultInput = "배송 지연 항의, 신규 가입 문의, 결제 실패 신고, 단순 가격 문의",
         model = "qwen3:4b-instruct",
-        modelWhy = "네 건의 근거를 JSON 으로 받느라 답이 깁니다. 상한을 500 으로 올려 둡니다",
         maxTokens = 500,
     )
 
@@ -224,7 +219,6 @@ class Exploration : PatternRunner {
         """.trimIndent(),
         defaultInput = "환불 안내 문구를 한 문장으로 써줘",
         model = "qwen3:4b-instruct",
-        modelWhy = "후보 세 개를 만들고 세 개를 채점합니다. 흔들리면 비교가 안 됩니다",
     )
 
     override fun run(ctx: RunContext): RunResult = runBlocking {

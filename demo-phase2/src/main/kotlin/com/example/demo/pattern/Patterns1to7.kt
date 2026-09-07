@@ -25,7 +25,6 @@ class PromptChaining : PatternRunner {
         """.trimIndent(),
         defaultInput = "사내 개발자 대상 Spring AI 스터디",
         model = "qwen3:4b-instruct",
-        modelWhy = "`.entity()` 로 목차를 받습니다. 작은 모델은 JSON 을 끝까지 못 씁니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -61,9 +60,7 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
             }
         """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
-        fromDemo = true,
         model = "qwen3:4b-instruct",
-        modelWhy = "분류도 하고 도구도 불러야 합니다. 라우터가 고른 이유까지 한국어로 나옵니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -114,7 +111,6 @@ class Parallelization : PatternRunner {
         """.trimIndent(),
         defaultInput = "배송이 사흘이나 늦었는데 안내 문자도 없었습니다. 그래도 제품은 마음에 듭니다.",
         model = "qwen3:4b-instruct",
-        modelWhy = "granite4:micro 는 이 문장을 `중립` 으로 봤습니다. 감정 분류는 이쪽이 정확합니다",
     )
 
     override fun run(ctx: RunContext): RunResult = runBlocking {
@@ -151,7 +147,6 @@ class Reflection : PatternRunner {
         """.trimIndent(),
         defaultInput = "환불 정책을 한 문장으로 알려줘",
         model = "qwen3:4b-instruct",
-        modelWhy = "채점기가 붙는 장입니다. 판정이 흔들리지 않는 쪽을 씁니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -186,9 +181,7 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
                 .call().content()
         """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
-        fromDemo = true,
         model = "qwen3:4b-instruct",
-        modelWhy = "도구를 부르는 장입니다. qwen3:0.6b 로 바꿔 보면 도구를 아예 안 부릅니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -220,7 +213,6 @@ class Planning : PatternRunner {
         """.trimIndent(),
         defaultInput = "신입 개발자 첫 주 온보딩",
         model = "qwen3:4b-instruct",
-        modelWhy = "granite4:micro 는 계획 단계를 영어로 씁니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
@@ -254,7 +246,6 @@ class MultiAgent : PatternRunner {
         """.trimIndent(),
         defaultInput = "환불 안내 문구",
         model = "qwen3:4b-instruct",
-        modelWhy = "검토자가 초안을 제대로 물고 늘어져야 합니다",
     )
 
     override fun run(ctx: RunContext): RunResult {
