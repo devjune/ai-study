@@ -74,7 +74,7 @@
   .compare { margin-top:1.2rem; border:1px solid var(--line); }
   .compare h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft); border-bottom:1px solid var(--line); }
   .compare .inner { padding:.6rem .7rem; }
-  .row { display:grid; grid-template-columns:11rem 1fr 4.5rem; gap:.5rem; align-items:center;
+  .row { display:grid; grid-template-columns:11rem 1fr 2.4rem; gap:.5rem; align-items:center;
          font-size:.8rem; padding:.18rem 0; }
   .row .g { background:#eee; height:.9rem; position:relative; }
   .row .g i { display:block; height:100%; background:var(--bar); }
@@ -185,7 +185,7 @@ async function run() {
     })).json();
     renderResult(r);
     history = history.filter(h => h.chapter !== current.chapter);
-    history.push({ chapter: current.chapter, name: current.name, calls: r.calls.length, ms: r.elapsedMs });
+    history.push({ chapter: current.chapter, name: current.name, calls: r.calls.length });
     renderCompare();
     if (current.chapter === 13) loadOrders(null, r.pendingCancel);
   } catch (e) {
@@ -216,8 +216,8 @@ function renderCompare() {
   $('compare').innerHTML = history.slice().sort((a,b) => a.chapter - b.chapter).map(h => `
     <div class="row">
       <span>${h.chapter}장 ${h.name}</span>
-      <span class="g"><i style="width:${Math.max(h.calls / max * 100, 3)}%"></i></span>
-      <span class="t">${h.calls}회 · ${(h.ms/1000).toFixed(1)}s</span>
+      <span class="g"><i style="width:${h.calls ? Math.max(h.calls / max * 100, 3) : 0}%"></i></span>
+      <span class="t">${h.calls}회</span>
     </div>`).join('');
 }
 
