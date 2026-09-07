@@ -68,3 +68,18 @@ Spring AI 2.0을 기준으로 **처음부터 제대로 가르치는 학습 문�
 - 2.0 업그레이드 노트: https://docs.spring.io/spring-ai/reference/upgrade-notes.html#upgrading-to-2-0-0
 - 1.0 GA 블로그: https://spring.io/blog/2025/05/20/spring-ai-1-0-GA-released/
 - 1.1 GA 블로그: https://spring.io/blog/2025/11/12/spring-ai-1-1-GA-released/
+
+## 기준 버전 갱신 — 2.0.0 → 2.0.1 (2026-09-07)
+
+위 표의 "기준 버전" 행은 작성 시점 기록이라 그대로 두고, 여기에 갱신분을 덧붙인다.
+
+**Spring AI 2.0.1 (2026-08-21 릴리스)** 로 올렸다. 패치 릴리스지만 학습 자료의 서술을 두 곳 바꾼다.
+
+- **도구 호출 상한이 새로 들어왔다.** `spring.ai.tools.limits.*` — 도구당 40, 전체 150, 초과 시 `ToolCallLimitExceededException`. 설정하지 않아도 켜져 있다. §4의 제어의 역전(IoC) 서술이 "위임한다"에서 "위임하되 끝은 코드가 지킨다"로 한 겹 정확해졌다. 기본값 40·150 은 `spring-ai-autoconfigure-model-tool-2.0.1.jar` 의 `ToolCallingProperties$Limits` 바이트코드에서 확인했다(문서 사이트가 아니라 아티팩트 기준).
+- **ToolSearch 자동 구성의 제약이 절반 풀렸다.** BOM 아티팩트가 164 → 169 개로 늘면서 `spring-ai-starter-tool-search-advisor` 와 `spring-ai-autoconfigure-tool-search-advisor` 가 편입됐다. "starter 가 BOM 에 없다"는 서술은 폐기. 다만 **적용 범위가 전역이라는 지적은 유효하다** — 자동 구성이 내놓는 것이 공유 `ToolCallingAdvisor.Builder` 빈이라, 켜면 그 빈을 쓰는 `ChatClient` 가 전부 영향을 받는다.
+
+- **도구 호출의 토큰 집계가 고쳐졌다.** 2.0.1 에 `org.springframework.ai.chat.client.advisor.UsageAccumulator` 가 새로 생겼고, `ToolCallingAdvisor` 의 스트리밍 메서드 셋(`internalStream`·`streamWithToolCallResponses`·`handleToolCallRecursion`)이 이 타입을 파라미터로 받도록 시그니처가 바뀌었다. 블로킹도 해당된다 — `adviseCall` 은 직접 참조하지 않지만 `doFinalizeLoop` 이 12 곳에서 쓰고, 블로킹 경로가 그 메서드를 거친다. **2.0.0 jar 에는 이 클래스가 아예 없다.** 도구를 쓰는 요청에서 `chatResponse().metadata.usage` 를 과금 집계에 쓰고 있었다면 2.0.0 까지는 적게 잡혔다는 뜻이라, §9 에 경고로 넣었다.
+
+**우리에게 해당 없는 breaking change** — Mistral 상수 제거, Redis 아티팩트명 변경, OpenAI strict 기본값, `Media` 빌더, `DeepSeekApi` 개정, Couchbase 클라이언트. phase1 은 Anthropic 만 쓴다.
+
+**검증 범위** — 컴파일과 의존성 해석(`spring-ai-anthropic:2.0.1`)까지만 확인했다. API 키가 필요해 실행 검증은 하지 못했다.

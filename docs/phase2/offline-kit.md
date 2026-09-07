@@ -147,5 +147,5 @@ curl -s <엔드포인트>/v1/models -H "Authorization: Bearer <키>"
 ```properties
 spring.ai.openai.base-url=<엔드포인트>
 spring.ai.openai.api-key=${INTERNAL_LLM_KEY}
-spring.ai.openai.chat.options.model=<모델명>
+spring.ai.openai.chat.model=<모델명>
 ```

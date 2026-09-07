@@ -13,8 +13,9 @@
 - **1.0 (2025-05)** — 기본 추상화 등장: `ChatClient`, Structured Output, Tool Calling, RAG.
 - **1.1 (2025-11)** — 안정화, Advisor 체계 정비.
 - **2.0 (2026-06)** — Spring Boot 4로 토대를 다시 세운 릴리스. Tool Calling 정리, ToolSearch, MCP 편입.
+- **2.0.1 (2026-08)** — 패치. 도구 호출 상한이 새로 들어왔고(§4), 스트리밍·도구 호출의 토큰 사용량 집계가 고쳐졌습니다.
 
-이 문서는 **2.0만 기준으로** 설명합니다. 1.x를 몰라도 읽는 데 지장이 없습니다. 기존 코드를 올려야 하는 경우에 필요한 변경점은 마지막 "1.x → 2.0 한눈에" 절에 모아 두었습니다.
+이 문서는 **2.0.1 기준으로** 설명합니다. 1.x를 몰라도 읽는 데 지장이 없습니다. 기존 코드를 올려야 하는 경우에 필요한 변경점은 마지막 "1.x → 2.0 한눈에" 절에 모아 두었습니다.
 
 ---
 
@@ -290,7 +291,26 @@ chatClient.prompt()
 
 체인은 **재진입**도 지원합니다. Advisor가 하위 체인으로 다시 들어갈 수 있어서 도구 호출 루프·Structured Output 재시도(`StructuredOutputValidationAdvisor`)·평가 루프가 모두 이 하나의 메커니즘 위에서 돌아갑니다.
 
-> **제어의 역전(IoC).** 기존 백엔드는 개발자가 모든 분기를 작성했습니다(`if A else B`). Tool Calling은 "도구를 제공할 테니 목표를 달성하라"고 **위임**하는 방식입니다. LLM이 오케스트레이터가 되고 개발자는 검증된 도구만 제공합니다. 이것이 **에이전트의 본질**입니다.
+#### 루프가 멈추는 자리 (2.0.1)
+
+왕복을 몇 번 돌지는 모델이 정합니다. 그러면 **언제 멈추는가**가 문제가 됩니다. 2.0.1에 호출 상한이 들어왔고, 아무것도 설정하지 않아도 켜져 있습니다.
+
+```properties
+spring.ai.tools.limits.max-calls-per-tool-default=40   # 도구 하나당
+spring.ai.tools.limits.max-total-tool-calls=150        # 한 요청의 전체 합
+spring.ai.tools.limits.on-limit-exceeded=throw         # 또는 return_error_response
+```
+
+넘으면 `ToolCallLimitExceededException`이 납니다. `throw`면 `ToolCallingAdvisor`가 그것을 잡아 최종 응답으로 돌려주되, **이미 실행된 도구 결과는 버리지 않고** `METADATA_PARTIAL_TOOL_RESPONSES`에 담습니다. `return_error_response`면 남은 호출을 건너뛰고 한도 초과를 알리는 응답을 만들어 모델에게 돌려주므로, 모델이 그 사실을 알고 대화를 잇습니다.
+
+도구별로 따로 매기거나(`max-calls-per-tool.<이름>`) 제한에서 빼는 것(`excluded-tools`)도 됩니다.
+
+기본값 40과 150은 정상적인 대화라면 닿지 않을 높이입니다. **비용을 재는 자가 아니라 폭주를 끊는 안전판**으로 보는 편이 맞습니다. 여기에 걸렸다면 대개 모델이 같은 도구를 반복해서 부르고 있다는 신호입니다.
+
+> [!warning] 요청에 없던 도구가 불릴 수 있습니다
+> `spring.ai.tools.resolution.fallback.enabled`를 켜면, 모델이 지목한 이름을 `.tools(...)`로 넘긴 목록 **밖에서도** `ToolCallbackResolver`로 찾아 실행합니다. 리졸버가 아는 도구가 전부 사정권에 들어옵니다. 기본값은 `false`이고, 공식 문서도 완전히 통제할 수 있을 때만 켜라고 경고를 답니다.
+
+> **제어의 역전(IoC).** 기존 백엔드는 개발자가 모든 분기를 작성했습니다(`if A else B`). Tool Calling은 "도구를 제공할 테니 목표를 달성하라"고 **위임**하는 방식입니다. LLM이 오케스트레이터가 되고 개발자는 검증된 도구만 제공합니다. 이것이 **에이전트의 본질**입니다. 다만 위임에도 끝은 있어야 해서, 위의 호출 상한이 그 끝을 대신 지킵니다.
 
 ### 5. RAG — 회사 내부 문서에 근거해 답하기
 
@@ -391,6 +411,9 @@ class ManyTools {                                          // 서로 무관한 �
 
 Advisor를 직접 구성해 필요한 호출에만 붙입니다. 부품 두 개만 주면 됩니다 — **도구를 어떻게 찾을지**(`ToolIndex`: 정규식·Lucene·벡터 중 택1)와 **찾은 도구를 실행할 것**(`ToolCallingManager`, §4에서 본 그 실행 루프).
 
+> [!info] 손으로 만든 매니저에도 호출 상한은 붙습니다
+> §4의 상한은 자동 구성만의 것이 아닙니다. `ToolCallingManager.builder()` 자체가 도구당 40·전체 150을 기본값으로 들고 있어, 아래처럼 직접 만들어도 같은 천장이 적용됩니다. 다만 `spring.ai.tools.limits.*` 프로퍼티는 자동 구성된 빈을 겨냥하므로, 손으로 만든 매니저의 값을 바꾸려면 빌더에 직접 줘야 합니다 — `.maxCallsPerTool(10)`, `.maxTotalToolCalls(50)`, `.onLimitExceeded(...)`.
+
 ```kotlin
 private val toolSearchAdvisor = ToolSearchToolCallingAdvisor.builder()
     .toolIndex(RegexToolIndex())                     // regex / lucene / vector
@@ -409,7 +432,9 @@ chatClient.prompt()
 
 RAG가 문서를 검색해 주입하듯 도구를 검색해 주입하는 셈입니다.
 
-`spring.ai.chat.client.tool-search-advisor.enabled=true` 프로퍼티로 자동 구성하는 경로도 있습니다. 다만 2.0.0 기준으로 적용 범위가 전역이고 starter가 BOM에 없는 등 제약이 있어 이 문서는 수동 구성을 권합니다.
+`spring.ai.chat.client.tool-search-advisor.enabled=true` 프로퍼티로 자동 구성하는 경로도 있습니다. **2.0.1에서 `spring-ai-starter-tool-search-advisor`가 BOM에 편입돼**, 2.0.0에서 버전을 직접 적어야 했던 불편은 사라졌습니다.
+
+다만 적용 범위는 여전히 전역입니다. 자동 구성이 내놓는 것은 공유 `ToolCallingAdvisor.Builder` 빈이라, 켜는 순간 그 빈을 쓰는 `ChatClient`가 전부 영향을 받습니다. 도구 검색을 일부 경로에만 걸고 싶다면 이 문서처럼 수동으로 구성하는 편이 낫습니다.
 
 ### 7. MCP — 도구의 상호운용 표준 (2.0 핵심)
 
@@ -547,6 +572,9 @@ usage.cacheReadInputTokens        // 캐시로 읽은 토큰 (2.0 통합 지표)
 
 캐시 토큰처럼 벤더마다 이름이 다르던 지표도 `Usage` 인터페이스가 흡수합니다. 벤더가 바뀌어도 위 코드는 그대로입니다.
 
+> [!warning] 도구 호출이 섞이면 2.0.1 이상을 쓰십시오
+> §4에서 봤듯 도구를 쓰는 요청은 모델을 여러 번 부릅니다. 그런데 **2.0.0에서는 이 반복 사이의 토큰이 합산되지 않았습니다.** 2.0.1이 이를 고쳤습니다(스트리밍에서 사용량이 0으로 나오던 것도 함께). 위 `usage`를 과금 집계에 쓴다면 버전을 확인하십시오 — 도구를 쓰는 경로일수록 적게 잡힙니다.
+
 #### 지표로 모으기
 
 `ChatObservationAutoConfiguration`이 Micrometer Observation을 자동 구성합니다. `MeterRegistry` 빈이 있으면(actuator를 넣으면) `ChatModelMeterObservationHandler`가 호출별 토큰 사용량과 소요 시간을 지표로 기록합니다. 대시보드·알림은 기존 Micrometer 파이프라인을 그대로 씁니다.
@@ -660,5 +688,6 @@ AI를 도입하면 백엔드 개발자는 더 이상 모든 분기를 직접 작
 - Spring AI 2.0.0 GA 블로그: https://spring.io/blog/2026/06/12/spring-ai-2-0-0-GA-available-now
 - Spring AI 1.0 GA 블로그: https://spring.io/blog/2025/05/20/spring-ai-1-0-GA-released/
 - Spring AI 1.1 GA 블로그: https://spring.io/blog/2025/11/12/spring-ai-1-1-GA-released/
+- Spring AI 2.0.1 릴리스 블로그: https://spring.io/blog/2026/08/21/spring-ai-2-0-1-available-now
 - 임베딩 모델 `all-MiniLM-L6-v2`: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
 

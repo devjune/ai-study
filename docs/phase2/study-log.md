@@ -200,6 +200,9 @@ SearchRequest.builder().topK(3).similarityThreshold(0.5).build()
 spring.ai.ollama.embedding.options.model=bge-m3
 ```
 
+> 당시 적은 그대로 둔다. 이 이름은 2.0 부터 deprecated 였고(대체: `spring.ai.ollama.embedding.model`),
+> 2026-09-07 에 바꿨다 — 아래 "deprecated 프로퍼티를 걷어내다" 참고.
+
 | | nomic-embed-text | bge-m3 |
 | --- | --- | --- |
 | 주문 질문 검색 건수 | 3건 (무관 문서 주입) | **0건** |
@@ -335,3 +338,65 @@ UnexpectedEndOfInputException: Unexpected end-of-input:
 | 임베딩 | 로컬 ONNX(transformers) | Ollama (`nomic-embed-text`) | 반입 채널이 하나로 통일된다. ONNX 는 기본 URI 가 githubusercontent 라 phase1 에서 사내망에 막혔다 |
 | 대화 메모리 | H2 유지 | 제거 | 어떤 시험 축도 쓰지 않는다. 다중 턴 축을 넣게 되면 되살린다 |
 | 모델 옵션 | `OllamaChatOptions` | 포터블 `ChatOptions` | 벤더 중립이라 OpenAI 호환 사내 서버로 바꿔도 코드가 그대로다. 이식성이 논점인 데모에 더 맞다 |
+
+## Spring AI 2.0.1 로 올리고 다시 재기 (2026-09-07)
+
+`springAi = "2.0.0"` → `"2.0.1"` 한 줄만 바꾸고 21장을 전부 다시 돌렸다.
+
+**실패 0건. 장별 호출 횟수도 그대로다** — 5·13장 2회(도구 왕복), 10·15장 0회(MCP 는 모델을 안 부른다), 21장 6회(후보 3 생성 + 3 채점). RAG 유사도도 `0.813 / 0.611 / 0.561` 로 동일하다.
+
+### 새로 생긴 천장
+
+2.0.1 에 도구 호출 상한이 들어왔다. 아티팩트에서 직접 확인한 값이다.
+
+```
+spring-ai-model-2.0.1.jar
+  org/springframework/ai/model/tool/ToolCallLimits.class
+  org/springframework/ai/model/tool/ToolCallLimitBehavior.class      THROW · RETURN_ERROR_RESPONSE
+  org/springframework/ai/model/tool/ToolCallLimitExceededException.class
+
+spring-ai-autoconfigure-model-tool-2.0.1.jar
+  ToolCallingProperties$Limits 생성자 →  bipush 40  /  sipush 150
+```
+
+`spring-configuration-metadata.json` 쪽에는 숫자 기본값이 안 실려 있어(`defaultValue=null`) 문서 사이트의 40·150 을 그대로 믿을 수 없었다. **필드 초기화 바이트코드를 봐야 확인된다.**
+
+`on-limit-exceeded` 는 `throw`, `resolution.fallback.enabled` 는 `false` — 이 둘은 메타데이터에 기본값이 실려 있다.
+
+### BOM 이 164 → 169 개
+
+2.0.1 에서 다섯 개가 들어왔다.
+
+```
+spring-ai-autoconfigure-model-chat-memory-repository-redis
+spring-ai-autoconfigure-tool-search-advisor
+spring-ai-google-genai-image
+spring-ai-starter-model-google-genai-image
+spring-ai-starter-tool-search-advisor
+```
+
+phase1 에서 "ToolSearch 는 starter 가 BOM 에 없어 버전을 직접 적어야 한다"고 적어 둔 제약이 여기서 풀렸다. 다만 자동 구성이 내놓는 것은 공유 `ToolCallingAdvisor.Builder` 빈이라, **켜면 전역이라는 지적은 그대로다.**
+
+`agent` 가 이름에 들어간 아티팩트는 2.0.1 에서도 **0 개**다. phase1 에서 확인한 사실이 유지된다.
+
+## deprecated 프로퍼티를 걷어내다 (2026-09-07)
+
+2.0.1 로 올리며 코드와 문서 전체를 deprecated 기준으로 훑었다. **컴파일 경고는 양쪽 데모 모두 0건**이었지만, 프로퍼티에서 셋이 나왔다.
+
+| 쓰던 이름 | 대체 |
+| --- | --- |
+| `spring.ai.ollama.chat.options.model` | `spring.ai.ollama.chat.model` |
+| `spring.ai.ollama.chat.options.temperature` | `spring.ai.ollama.chat.temperature` |
+| `spring.ai.ollama.embedding.options.model` | `spring.ai.ollama.embedding.model` |
+
+**2.0.1 에서 새로 deprecated 된 것이 아니다.** 2.0.0 의 `spring-ai-autoconfigure-model-ollama` 메타데이터에도 이미 deprecation 이 붙어 있었다(2.0.0 은 37 개, 2.0.1 은 57 개). 처음부터 옛 이름을 쓰고 있었고, 발표 자료 14장도 그 이름을 가르치고 있었다.
+
+**왜 안 보였나** — Spring Boot 는 모르는 프로퍼티를 조용히 무시하고, deprecated 프로퍼티도 기동 로그에 경고를 남기지 않는다. 동작에 지장이 없으니 드러날 계기가 없었다. `spring-configuration-metadata.json` 의 `deprecation` 필드를 직접 읽어야 나온다.
+
+```
+jar → META-INF/spring-configuration-metadata.json → properties[].deprecation.replacement
+```
+
+**검증** — 임베딩이 카나리아였다. 이름을 바꾸고 14장을 다시 돌려 유사도가 `0.813 / 0.611 / 0.561` 로 **소수점까지 같았다.** 새 이름이 실제로 바인딩된다는 증거다. 이어서 21장 전수를 브라우저로 다시 돌려 실패 0 건을 확인했다.
+
+**타입·메서드 쪽** — `javap -v` 로 2.0.1 jar 33 개를 훑어 `Deprecated: true` 를 색인하고 문서·코드가 언급한 이름과 대조했다. 걸린 것은 `ChatClient.Builder.defaultToolCallbacks(...)` 와 `ChatClientRequestSpec.toolCallbacks(...)` 인데, **우리는 `.tools(...)` 만 쓰고 문서도 그것만 가르친다.** `TokenTextSplitter` · `ChatModel` 도 처음엔 걸렸으나 `Deprecated: true` 가 0 개인 오탐이었다 — LocalVariableTable 을 시그니처로 잘못 읽은 것이었다.

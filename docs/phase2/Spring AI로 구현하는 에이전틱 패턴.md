@@ -49,7 +49,7 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 굵게 표시한 다섯만 그 패턴 전용 타입이 있습니다. 나머지 열여섯은 범용 기능을 조합하는데, 오른쪽 열에 같은 이름이 반복됩니다 — `.entity()` 다섯 번, `Evaluator` 네 번, `@Tool` 과 `@McpTool` 각각 두 번.
 
 > [!info] 어디까지 확인한 것인가
-> 클래스와 애너테이션은 `spring-ai` 2.0.0 아티팩트에서 확인했고, **21개 전부 예제 애플리케이션에서 실제로 돌려 봤습니다.** 화면에서 하나씩 눌러 실행하면 모델 호출이 몇 번 일어나는지 그대로 나옵니다.
+> 클래스와 애너테이션은 `spring-ai` 2.0.1 아티팩트에서 확인했고, **21개 전부 예제 애플리케이션에서 실제로 돌려 봤습니다.** 화면에서 하나씩 눌러 실행하면 모델 호출이 몇 번 일어나는지 그대로 나옵니다.
 
 ## 1장 프롬프트 체이닝 (Prompt Chaining)
 
@@ -195,12 +195,35 @@ sequenceDiagram
 
 사용자는 한 번 물었는데 모델은 두 번 돕니다. 1차에서 모델은 답 대신 "이 함수를 이 인자로 불러 달라"고 하고, 런타임이 실제로 실행한 뒤, 결과를 붙여 2차로 다시 묻습니다.
 
-**횟수를 정하는 쪽은 코드가 아니라 모델입니다.** 도구가 필요 없다고 보면 한 번으로 끝나고, 여러 도구를 차례로 써야 하면 세 번 네 번으로 늘어납니다.
+**몇 번 돌지는 모델이 정합니다.** 도구가 필요 없다고 보면 한 번으로 끝나고, 여러 도구를 차례로 써야 하면 세 번 네 번으로 늘어납니다.
 
 > [!warning] 비용이 요청 수에 비례하지 않습니다
 > 종량제 API라면 청구도 그만큼 늘어납니다. 사용자 요청 수로 비용을 어림잡으면 빗나갑니다.
+> 2.0.0까지는 `chatResponse().metadata.usage` 마저 왕복을 합산하지 않아 적게 잡혔습니다. 2.0.1에서 고쳐졌습니다.
+
+다만 **천장은 코드가 쥡니다.** 2.0.1부터 호출 상한이 들어왔고, 아무것도 설정하지 않아도 켜져 있습니다.
+
+```properties
+spring.ai.tools.limits.max-calls-per-tool-default=40   # 도구 하나당
+spring.ai.tools.limits.max-total-tool-calls=150        # 한 요청의 전체 합
+spring.ai.tools.limits.on-limit-exceeded=throw         # 또는 return_error_response
+```
+
+넘으면 `ToolCallLimitExceededException` 이 납니다. `throw` 면 `ToolCallingAdvisor` 가 그것을 잡아 최종 응답으로 돌려주는데, **이미 실행된 도구 결과는 버리지 않고** `METADATA_PARTIAL_TOOL_RESPONSES` 에 담아 둡니다. `return_error_response` 면 남은 호출을 건너뛰고 "한도를 넘었다"는 응답을 만들어 모델에게 돌려주므로, 모델이 그 사실을 알고 대화를 잇습니다.
+
+도구별로 따로 매기거나 아예 빼는 것도 됩니다.
+
+```properties
+spring.ai.tools.limits.max-calls-per-tool.search=10
+spring.ai.tools.limits.excluded-tools=getCurrentWeather
+```
+
+**끝없이 도는 것을 막는 안전판이지, 비용을 재는 자는 아닙니다.** 기본값 40과 150은 정상적인 대화라면 닿지 않을 높이입니다. 여기에 걸렸다면 대개 모델이 같은 도구를 반복해서 부르는 상황입니다.
 
 이 왕복을 도는 것이 `ToolCallingAdvisor` 입니다. Advisor 체인 위에 있어서 도구 실행 앞뒤에 다른 Advisor를 끼울 수 있습니다.
+
+> [!warning] 요청에 없던 도구가 불릴 수 있습니다
+> `spring.ai.tools.resolution.fallback.enabled` 를 켜면, 모델이 지목한 이름을 `.tools(...)` 로 넘긴 목록 밖에서도 찾아 실행합니다. 리졸버가 아는 도구가 전부 사정권에 들어옵니다. 기본값은 `false` 이고, 공식 문서도 완전히 통제할 수 있을 때만 켜라고 답니다.
 
 > [!info] ToolSearch — 원서에 없는 패턴
 > 도구가 수백 개가 되면 목록 전체를 프롬프트에 실을 수 없습니다. Spring AI 2.0의 `ToolSearch` 가 질문과 관련된 것만 골라 싣습니다. **원서 21개 어디에도 없는 패턴입니다.**
@@ -458,7 +481,7 @@ SearchRequest.builder()
 `bge-m3` — 한국어까지 학습된 모델입니다. 설정 한 줄만 바꿉니다.
 
 ```properties
-spring.ai.ollama.embedding.options.model=bge-m3
+spring.ai.ollama.embedding.model=bge-m3
 ```
 
 ```
@@ -730,3 +753,4 @@ cd demo-phase2 && ./gradlew bootRun
 - Antonio Gulli, *Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems*, Springer, 2025
 - [Tool Calling in Spring AI 2.0: A Composable, Agentic Architecture](https://spring.io/blog/2026/06/15/spring-ai-composable-tool-calling/)
 - [The Spring AI Ecosystem in 2026: From Foundations to Agents](https://2026.springio.net/sessions/the-spring-ai-ecosystem-in-2026-from-foundations-to-agents/) — Spring I/O 2026
+- [Spring AI 2.0.1 릴리스](https://spring.io/blog/2026/08/21/spring-ai-2-0-1-available-now) — 도구 호출 상한이 들어온 릴리스
