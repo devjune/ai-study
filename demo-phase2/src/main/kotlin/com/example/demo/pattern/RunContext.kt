@@ -109,7 +109,7 @@ class RunContext(
     }
 
     /**
-     * `Evaluator` 처럼 **자기 `ChatClient` 를 따로 만들어 쓰는** 부품의 호출도 타임라인에 남긴다.
+     * `Evaluator` 처럼 **자기 `ChatClient` 를 따로 만들어 쓰는** 구성 요소의 호출도 타임라인에 남긴다.
      * 추적 Advisor 를 기본으로 단 빌더를 넘겨주면 그 안에서 일어난 호출이 잡힌다.
      */
     fun <T> external(label: String, block: (ChatClient.Builder) -> T): T {

@@ -44,7 +44,7 @@
         font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
         white-space:pre-wrap; word-break:break-word; overflow-x:auto; }
   /* Kotlin 하이라이팅 — 흑백을 유지하고 굵기와 명도로만 가른다.
-     애너테이션만 부품 상자와 같은 --hi 를 써서, 그 장의 주인공이 눈에 먼저 들어오게 한다. */
+     애너테이션만 위 구성 요소 상자와 같은 --hi 를 써서, 그 장의 주인공이 눈에 먼저 들어오게 한다. */
   .kt { color:#333; }
   .kt .k { color:#000; font-weight:600; }
   .kt .t { color:#000; }
@@ -163,7 +163,7 @@ function renderList() {
 function select(p) {
   current = p;
   $('title').textContent = `${p.chapter}장 ${p.name} (${p.english})`;
-  $('parts').innerHTML = '<b>부품</b> ' + p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
+  $('parts').innerHTML = p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
   $('summary').textContent = p.summary;
   $('code').innerHTML = highlight(p.code);
   $('input').value = p.defaultInput;
