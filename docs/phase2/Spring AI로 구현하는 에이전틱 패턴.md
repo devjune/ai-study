@@ -47,13 +47,14 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 
 ### 그림 읽는 법
 
-장마다 맨 앞에 그 패턴의 모양을 그려 두었습니다. 기호는 넷뿐입니다.
+장마다 맨 앞에 그 패턴의 모양을 그려 두었습니다. 기호는 다섯뿐입니다.
 
 | 기호 | 뜻 |
 | --- | --- |
 | 원 | **모델 호출 한 번.** 예제 화면의 타임라인 막대 하나와 같은 것입니다 |
 | 사각형 | 코드가 하는 일 |
 | 원통 | 저장소 — `VectorStore` · 대화 이력 · 주문 데이터 |
+| 마름모 | 갈림길 — 코드의 분기 |
 | 점선 | 프로세스나 사람의 경계를 넘는 것 |
 
 **원의 개수가 그 패턴이 모델을 부르는 최소 횟수입니다.** 도구를 쓰는 경로는 왕복이 붙어 여기서 더 늘어나고(5장), 몇 번 늘어날지는 모델이 정합니다. 10·15장처럼 원이 하나도 없는 장도 있습니다.
@@ -71,7 +72,8 @@ flowchart LR
 복잡한 작업을 프롬프트 하나에 몰아넣으면 모델이 지시를 빠뜨리거나 맥락을 잃습니다. **한 프롬프트로 감당이 안 될 만큼 복잡하거나, 단계 사이에 외부 도구를 써야 할 때** 씁니다.
 
 ```kotlin
-// 모델이 채워 줄 그릇. 이 클래스로 JSON 스키마가 만들어져 프롬프트에 함께 실린다
+// 모델이 채워 줄 그릇. 이 클래스로 JSON 스키마가 만들어져 프롬프트에 함께 실리고,
+// 돌아온 JSON 은 Jackson 이 생성자 파라미터 이름을 맞춰 그대로 채운다
 data class Outline(val sections: List<String>)
 
 val outline = chatClient.prompt()
@@ -87,7 +89,7 @@ val draft = chatClient.prompt()
 
 전용 API는 없습니다. 호출을 두 번 하면 됩니다. 다만 중간 결과를 `.entity()` 로 받으면 **응답 문자열을 파싱할 필요가 없고**, 다음 단계에서 컴파일러가 먼저 잡아 줍니다.
 
-`joinToString` 으로 전부 싣는 것은 중간 결과가 이 목차만큼 작을 때 이야기입니다. 커지면 비용이 따라 커지고, 프롬프트가 길수록 모델이 가운데를 흘립니다. 그때는 **다음 단계가 쓸 조각만** 넘깁니다 — 항목이 나뉘면 항목별로 따로 부르고(6장), 통째로 두고 써야 하면 저장소에 넣고 필요한 부분만 검색해 끼웁니다(14장).
+`joinToString` 으로 전부 싣는 것은 중간 결과가 이 목차만큼 작을 때 이야기입니다. 커지면 비용이 따라 커지고, 프롬프트가 길수록 모델이 가운데를 흘립니다. 그때는 **다음 단계가 쓸 조각만** 넘깁니다 — 항목이 나뉘면 항목별로 따로 부르고, 통째로 두고 써야 하면 저장소에 넣고 필요한 부분만 검색해 끼웁니다. 각각 뒤에 나올 6장과 14장이 하는 일입니다.
 
 ## 2장 라우팅 (Routing)
 
@@ -106,7 +108,20 @@ flowchart LR
 들어오는 입력이 늘 같은 종류는 아닙니다. 순차 흐름 하나로는 상황에 따라 다르게 처리할 수 없습니다. **판매 문의·기술 지원·계정 관리처럼 문의를 분류해 각각 다른 처리로 넘겨야 할 때** 씁니다.
 
 ```kotlin
-data class RouteDecision(val route: String, val reason: String)
+data class RouteDecision(val route: String, val reason: String) {
+    // route 값은 모델이 쓴 텍스트다. "Order" 로 오든 엉뚱한 값이 오든 여기서 좁힌다
+    fun route(): Route =
+        Route.entries.firstOrNull { it.name.equals(route.trim(), true) } ?: Route.GENERAL
+}
+
+// 분류 규칙의 전부. 경로를 늘리거나 기준을 바꾸려면 여기를 고친다
+val CLASSIFIER = """
+    너는 고객 문의를 분류하는 라우터다. 질문에 답하지 말고 분류만 해라.
+    - order   : 주문번호·배송 상태 등 주문 조회 시스템을 봐야 하는 질문
+    - policy  : 환불·교환·장비 대여 등 사내 규정 문서를 찾아야 하는 질문
+    - general : 위 둘에 해당하지 않는 일반 질문
+    route 에는 order, policy, general 중 하나만 적는다.
+""".trimIndent()
 
 val decision = chatClient.prompt()
     .system(CLASSIFIER)                     // 분류 규칙을 시스템 메시지로
@@ -120,13 +135,6 @@ when (decision.route()) {                   // 여기부터는 평범한 코틀�
     Route.GENERAL -> request.call().content()
 }
 ```
-
-`when` 이 평범한 코드라서 `@Transactional` 을 붙이거나 권한 검사를 넣거나 단위 테스트를 짜는 일이 평소와 똑같습니다.
-
-> [!warning] 모델은 아무 문자열이나 넣을 수 있습니다
-> 모델이 `route` 에 없는 값을 넣을 수 있습니다. 열거형으로 좁히고, 못 알아본 값은 가장 안전한 경로로 보냅니다.
-
-라우팅에는 모델 호출이 한 번 더 듭니다. **건너뛰는 경로가 그 한 번보다 비쌀 때만 이득입니다.**
 
 ## 3장 병렬화 (Parallelization)
 
@@ -170,6 +178,7 @@ val evaluator = RelevancyEvaluator.builder()
 var answer = chatClient.prompt().user(질문).call().content()
 
 for (round in 1..2) {                // 최대 두 번까지만 고쳐 쓴다
+    // 문서들 — 채점의 근거가 될 문맥. 이것에 비추어 답이 맞는지를 판정한다
     val verdict = evaluator.evaluate(EvaluationRequest(질문, 문서들, answer))
     if (verdict.isPass) break                    // isPass — 통과하면 더 부르지 않는다
     answer = chatClient.prompt()
@@ -195,13 +204,16 @@ flowchart LR
 Spring AI에서는 함수에 애너테이션 하나만 붙이면 도구가 됩니다.
 
 ```kotlin
-// @Tool      — 이 함수를 모델이 부를 수 있는 도구로 등록한다
-// description — 모델이 읽는 유일한 설명. 언제 부를지 여기서 판단한다
-@Tool(description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
-fun lookupOrder(
-    // @ToolParam — 인자 설명. 스키마의 description 으로 들어간다
-    @ToolParam(description = "주문 번호. 예: A-1024") orderId: String,
-): String = orders.find(orderId)?.summary() ?: "주문번호 $orderId 를 찾을 수 없습니다."
+class SupportTools(private val orders: OrderService) {
+
+    // @Tool      — 이 함수를 모델이 부를 수 있는 도구로 등록한다
+    // description — 모델이 읽는 유일한 설명. 언제 부를지 여기서 판단한다
+    @Tool(description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
+    fun lookupOrder(
+        // @ToolParam — 인자 설명. 스키마의 description 으로 들어간다
+        @ToolParam(description = "주문 번호. 예: A-1024") orderId: String,
+    ): String = orders.find(orderId)?.summary() ?: "주문번호 $orderId 를 찾을 수 없습니다."
+}
 ```
 
 ```kotlin
@@ -223,49 +235,39 @@ sequenceDiagram
     participant LLM as 모델
     participant Fn as "@Tool lookupOrder"
     U->>App: "A-1024 지금 어디쯤 왔어?"
-    App->>LLM: 질문 + 도구 목록
-    LLM->>App: lookupOrder("A-1024") 호출 요청
+    rect rgba(128, 128, 128, 0.15)
+        Note over App,LLM: 1차 호출 — 답 대신 도구를 지목한다
+        App->>LLM: 질문 + 도구 목록
+        LLM->>App: lookupOrder("A-1024") 호출 요청
+    end
     App->>Fn: 실제 함수 실행
     Fn->>App: "배송중 · 09-05 도착 예정"
-    App->>LLM: 결과를 대화에 추가해 재호출
-    LLM->>App: "A-1024는 배송 중입니다"
+    rect rgba(128, 128, 128, 0.15)
+        Note over App,LLM: 2차 호출 — 결과를 보고 답을 쓴다
+        App->>LLM: 결과를 대화에 추가해 재호출
+        LLM->>App: "A-1024는 배송 중입니다"
+    end
     App->>U: 최종 응답
 ```
 
-사용자는 한 번 물었는데 모델은 두 번 돕니다. 1차에서 모델은 답 대신 "이 함수를 이 인자로 불러 달라"고 하고, 런타임이 실제로 실행한 뒤, 결과를 붙여 2차로 다시 묻습니다.
-
-**몇 번 돌지는 모델이 정합니다.** 도구가 필요 없다고 보면 한 번으로 끝나고, 여러 도구를 차례로 써야 하면 세 번 네 번으로 늘어납니다.
+**두 번은 코드가 정한 숫자가 아닙니다.** 코드는 `.call()` 한 번에 도구를 건넸을 뿐이고, "도구 호출이 오면 실행해서 결과를 붙여 다시 묻는다"는 규칙은 `ToolCallingAdvisor` 의 것입니다. 그 규칙 안에서 **몇 번 돌지는 모델이 정합니다** — 도구가 필요 없다고 보면 한 번으로 끝나고, 여러 도구를 차례로 써야 하면 세 번 네 번으로 늘어납니다.
 
 > [!warning] 비용이 요청 수에 비례하지 않습니다
-> 종량제 API라면 청구도 그만큼 늘어납니다. 사용자 요청 수로 비용을 어림잡으면 빗나갑니다.
-> 2.0.0까지는 `chatResponse().metadata.usage` 마저 왕복을 합산하지 않아 적게 잡혔습니다. 2.0.1에서 고쳐졌습니다.
+> 종량제 API에서는 왕복 하나하나가 각각 과금되는 호출입니다. 게다가 2차 호출에는 앞의 대화와 도구 스키마가 통째로 다시 실리므로, 질문 하나에 나가는 토큰이 눈에 보이는 답보다 훨씬 많습니다. 과금 구조는 [Anthropic 도구 사용 문서의 Pricing 절](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview#pricing)에 그대로 나옵니다.
 
-다만 **천장은 코드가 쥡니다.** 2.0.1부터 호출 상한이 들어왔고, 아무것도 설정하지 않아도 켜져 있습니다.
+다만 **상한은 코드에서 작성합니다.** 2.0.1부터 호출 상한이 기본으로 켜져 있습니다.
 
 ```properties
 spring.ai.tools.limits.max-calls-per-tool-default=40   # 도구 하나당
 spring.ai.tools.limits.max-total-tool-calls=150        # 한 요청의 전체 합
-spring.ai.tools.limits.on-limit-exceeded=throw         # 또는 return_error_response
+spring.ai.tools.limits.on-limit-exceeded=throw         # 넘으면 ToolCallLimitExceededException
 ```
-
-넘으면 `ToolCallLimitExceededException` 이 납니다. `throw` 면 `ToolCallingAdvisor` 가 그것을 잡아 최종 응답으로 돌려주는데, **이미 실행된 도구 결과는 버리지 않고** `METADATA_PARTIAL_TOOL_RESPONSES` 에 담아 둡니다. `return_error_response` 면 남은 호출을 건너뛰고 "한도를 넘었다"는 응답을 만들어 모델에게 돌려주므로, 모델이 그 사실을 알고 대화를 잇습니다.
-
-도구별로 따로 매기거나 아예 빼는 것도 됩니다.
-
-```properties
-spring.ai.tools.limits.max-calls-per-tool.search=10
-spring.ai.tools.limits.excluded-tools=getCurrentWeather
-```
-
-**끝없이 도는 것을 막는 안전판이지, 비용을 재는 자는 아닙니다.** 기본값 40과 150은 정상적인 대화라면 닿지 않을 높이입니다. 여기에 걸렸다면 대개 모델이 같은 도구를 반복해서 부르는 상황입니다.
-
-이 왕복을 도는 것이 `ToolCallingAdvisor` 입니다. Advisor 체인 위에 있어서 도구 실행 앞뒤에 다른 Advisor를 끼울 수 있습니다.
-
-> [!warning] 요청에 없던 도구가 불릴 수 있습니다
-> `spring.ai.tools.resolution.fallback.enabled` 를 켜면, 모델이 지목한 이름을 `.tools(...)` 로 넘긴 목록 밖에서도 찾아 실행합니다. 리졸버가 아는 도구가 전부 사정권에 들어옵니다. 기본값은 `false` 이고, 공식 문서도 완전히 통제할 수 있을 때만 켜라고 답니다.
 
 > [!info] ToolSearch — 원서에 없는 패턴
-> 도구가 수백 개가 되면 목록 전체를 프롬프트에 실을 수 없습니다. Spring AI 2.0의 `ToolSearch` 가 질문과 관련된 것만 골라 싣습니다. **원서 21개 어디에도 없는 패턴입니다.**
+> 등록한 도구의 스키마는 매 호출 프롬프트에 전부 실립니다. 도구가 300개라면 질문 한 줄에 스키마 300개가 따라가는 셈이라, 토큰도 커지고 모델도 그중에서 고르다 헷갈립니다.
+> ToolSearch 는 도구를 프롬프트에 미리 싣는 대신 **검색해서 찾을 수 있는 곳**에 넣어 둡니다. "A-1024 어디쯤 왔어?"가 들어오면 거기서 주문 관련 도구 서너 개만 찾아, 그것만 모델에게 보여줍니다.
+>
+> 이 일을 하는 클래스가 `ToolSearchToolCallingAdvisor` 이고, 찾는 방법은 정규식·Lucene·벡터 검색 중 고릅니다. 문서를 검색해 프롬프트에 끼우는, 뒤에 나올 14장 RAG와 같은 원리입니다.
 
 ## 6장 계획 수립 (Planning)
 
@@ -280,22 +282,32 @@ flowchart LR
 
 복잡한 요청은 한 번의 행동으로 끝나지 않습니다. **조사 보고서 작성이나 온보딩 절차처럼 여러 단계가 얽힌 일을 자동화할 때** 씁니다.
 
+1장 체이닝과의 차이는 **단계를 누가 정하느냐**입니다. 체이닝은 목차 → 초안이라는 흐름이 코드에 박혀 있어, 어떤 입력이 와도 늘 두 번 부릅니다. 계획 수립은 첫 호출에서 모델이 단계 목록을 돌려주고, 코드는 그 목록을 도는 `for` 문일 뿐입니다. 단계를 몇 개로 쪼갤지는 목표를 보고 모델이 정하므로, 전체 호출은 **1 + 단계 수**가 됩니다.
+
 ```kotlin
 data class Plan(val steps: List<Step>)
 data class Step(val order: Int, val instruction: String)
 
 val plan = chatClient.prompt()
-    .system(PLANNER)                     // "목표를 단계로 쪼개라"는 지시
-    .user(목표)
+    .system("목표를 실행 가능한 단계로 쪼개라. instruction 은 한 문장씩.")
+    .user("신입 개발자 첫 주 온보딩")
     .call()
     .entity(Plan::class.java)
+
+// plan 에는 이런 것이 담겨 온다. 단계 수도 내용도 실행할 때마다 모델이 정한다
+// Plan(steps = [
+//     Step(order = 1, instruction = "개발 환경과 계정을 준비한다"),
+//     Step(order = 2, instruction = "첫 주에 만날 팀과 일정을 표로 정리한다"),
+// ])
 
 for (step in plan.steps.sortedBy { it.order }) {   // 실행은 여기서 직접
     chatClient.prompt().user(step.instruction).call().content()
 }
 ```
 
-**`for` 문이 곧 실행 엔진입니다.** 재시도, 단계 건너뛰기, 중간 실패 처리는 전부 여기에 씁니다.
+계획을 실행해 주는 기능은 따로 없습니다 — **위의 `for` 문이 전부입니다.** 실패한 단계를 다시 돌리거나 중간에 멈추고 싶으면, 이 루프 안에 평범한 코틀린으로 씁니다.
+
+한 가지 조심할 점이 있습니다. 루프가 모델에 보내는 것은 `step.instruction` 하나뿐이라, **2단계를 실행하는 모델은 1단계의 답을 모릅니다.** 앞 단계의 결과가 필요한 단계라면 1장처럼 프롬프트에 함께 실어 보냅니다.
 
 ## 7장 멀티 에이전트 (Multi-Agent)
 
@@ -321,7 +333,9 @@ val draft  = 작성자.prompt().user(주제).call().content()
 val review = 검토자.prompt().user(draft).call().content()
 ```
 
-빈을 역할 수만큼 두는 것까지가 프레임워크의 몫입니다. **조율을 맡는 클래스는 없습니다.**
+Bean을 역할 수만큼 두는 것까지가 프레임워크의 몫입니다. **조율을 맡는 클래스는 없습니다.** 뒤집으면 조율이 전부 평범한 코드라는 뜻입니다 — 순서를 바꾸고, 조건으로 가르고(2장), 동시에 돌리고(3장), 여러 라운드를 도는(4장) 일이 앞 장들에서 하던 그대로입니다.
+
+4장 리플렉션과 그림이 닮았지만 목적이 다릅니다. 리플렉션은 한 답을 채점해 고쳐 쓰는 **품질 루프**고, 여기는 **역할 분담**입니다. 분담의 값어치는 역할마다 다른 것을 붙일 수 있다는 데서 나옵니다 — 검토자에게만 규정 문서 검색을 달거나 작성자만 큰 모델로 돌리는 식인데, 각각 뒤에 나올 14장과 16장에서 다룹니다.
 
 ## 8장 메모리 관리 (Memory Management)
 
@@ -336,6 +350,9 @@ flowchart LR
 LLM은 호출마다 아무것도 기억하지 못합니다. **대화가 여러 턴 이어지거나, 여러 단계에 걸친 작업의 진행 상황을 추적해야 할 때** 씁니다.
 
 ```kotlin
+// 무엇을 기억할지 정하는 정책 — 최근 20개 메시지만 유지한다
+val chatMemory = MessageWindowChatMemory.builder().maxMessages(20).build()
+
 val chatClient = builder
     // 지난 대화를 프롬프트에 자동으로 붙여 주는 Advisor
     .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
@@ -348,10 +365,15 @@ chatClient.prompt()
     .call().content()
 ```
 
-기본 구현은 메모리에만 담아서 재시작하면 사라집니다. 저장소는 **스타터로 갈아 끼웁니다** — JDBC · Redis · MongoDB · Neo4j · Cassandra.
+위의 `chatMemory` 는 몇 개를 기억할지 정하는 **정책**이고, 실제 저장은 기본이 인메모리라 재시작하면 사라집니다. 대화를 남겨야 하면 **저장소만 갈아 끼웁니다** — JDBC · Redis · MongoDB · Neo4j · Cassandra. 코드는 그대로고, 의존성과 설정 한 줄이 바뀝니다.
 
 ```kotlin
 implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
+```
+
+```properties
+# 대화 테이블을 기동 때 만들지 여부. 내장 DB 가 아니면 always 로 켠다
+spring.ai.chat.memory.repository.jdbc.initialize-schema=always
 ```
 
 ## 9장 학습과 적응 (Learning and Adaptation)
@@ -360,7 +382,8 @@ implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repos
 flowchart LR
     A[사람이 고쳐 준 답] --> S[(VectorStore)]
     Q[다음 질문] --> S
-    S -->|비슷한 사례를 예시로| M((모델))
+    Q --> M((모델))
+    S -->|비슷한 사례를 예시로| M
 ```
 
 설계 시점에 예상하지 못한 상황에서는 미리 짜 둔 로직이 통하지 않습니다. **개인화가 필요하거나 환경이 계속 바뀌는 곳에서** 씁니다.
@@ -403,7 +426,11 @@ class McpTools(private val orders: OrderService) {
 }
 ```
 
-이 선언만으로 다른 언어로 짠 에이전트가 `tools/list` 로 스키마를 받아 갑니다. 전송(Streamable HTTP · STDIO)도 내장이라 별도 SDK가 필요 없습니다.
+```kotlin
+implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
+```
+
+스타터를 얹으면 앱이 MCP 서버가 됩니다. 다른 언어로 짠 에이전트는 MCP 표준 요청인 `tools/list` 로 위 도구의 스키마를 받아 가고, `tools/call` 로 실행을 요청합니다. 전송(Streamable HTTP · STDIO)도 내장이라 별도 SDK가 필요 없습니다.
 
 ## 11장 목표 설정과 모니터링 (Goal Setting and Monitoring)
 
@@ -423,8 +450,12 @@ flowchart LR
 ```kotlin
 data class Goal(val description: String, val successCriteria: String)
 
-val goal = chatClient.prompt().system(GOAL_SETTER).user(요청)
+val goal = chatClient.prompt()
+    .system("요청을 목표로 정리한다. successCriteria 에는 달성 여부를 판정할 기준을 한 문장으로 적는다.")
+    .user(요청)
     .call().entity(Goal::class.java)
+
+val 작업결과 = chatClient.prompt().user(goal.description).call().content()
 
 // evaluator 는 4장에서 만든 것과 같다
 // 작업 결과가 성공 기준을 만족하는지 코드가 판정한다
@@ -491,6 +522,9 @@ flowchart LR
 
 ```kotlin
 // description 에 "실제로 취소하지 않는다"고 적어 둔다. 모델이 읽는 계약이다
+// 승인을 기다리는 주문 번호. 화면이 이 값을 보고 승인 버튼을 단다
+var pendingCancel: String? = null
+
 @Tool(description = "주문 취소를 요청한다. 실제로 취소하지 않고 고객 승인을 받는 단계다.")
 fun requestCancellation(orderId: String): String {
     orders.cancelBlockedReason(orderId)?.let { return "취소할 수 없습니다 — $it" }
@@ -541,7 +575,7 @@ Advisor 하나가 문서 검색과 프롬프트 주입을 모두 처리합니다
 문제는 **언제 끼워 넣을지**입니다. 기본값은 관련도를 따지지 않고 `topK` 만큼 채웁니다. 주문 상태를 묻는 질문에 사내 규정 문서가 딸려 들어가면, 모델이 그쪽에 끌려가 도구를 부르지 않습니다.
 
 ```kotlin
-SearchRequest.builder()
+val SEARCH = SearchRequest.builder()
     .topK(3)                   // 상위 몇 건까지 가져올지
     .similarityThreshold(0.5)  // 이 점수 미만이면 아예 주입하지 않는다
     .build()
@@ -559,7 +593,7 @@ SearchRequest.builder()
 0.823  디지털 상품은 다운로드 이력이…        1위
 0.781  사내 장비 대여는 총무팀 승인 후…      2위 · 질문과 무관
 0.765  교환은 수령 후 7일 이내…
-(잘림) 환불은… 단순 변심이면 왕복 배송비 6,000원…   정답 · 4위
+(topK 밖) 환불은… 단순 변심이면 왕복 배송비 6,000원…   정답인데 4위
 ```
 
 질문에 "단순 변심", "환불", "배송비"가 그대로 들어 있는 문서가 무관한 문서보다 뒤에 있습니다. 점수가 0.76~0.82 사이에 몰려 있어 어떤 임계값을 잡아도 정답만 남길 수 없습니다.
@@ -738,12 +772,14 @@ flowchart LR
 
 할 수 있는 일은 많고 자원은 한정돼 있습니다. 무엇을 먼저 할지 정하지 못하면 에이전트는 비효율적으로 움직입니다. **서로 충돌하는 여러 목표를 자원 제약 안에서 관리해야 할 때** 씁니다.
 
-6장 계획 수립과 모양이 같습니다.
+6장 계획 수립처럼 목록을 타입으로 받아 코드가 돌립니다. 다른 점은 뒤가 조용하다는 것 — 정렬도 처리도 모델을 다시 부르지 않아, 호출은 처음 한 번뿐입니다.
 
 ```kotlin
 data class Task(val title: String, val priority: Int, val reason: String)
 
-val tasks = chatClient.prompt().system(PRIORITIZER).user(할일들)
+val tasks = chatClient.prompt()
+    .system("문의를 처리 우선순위로 정렬한다. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
+    .user(할일들)
     .call()
     // 컬렉션은 ParameterizedTypeReference 로 받는다
     .entity(object : ParameterizedTypeReference<List<Task>>() {})
@@ -772,7 +808,13 @@ flowchart LR
 
 ```kotlin
 val 후보들 = coroutineScope {
-    (1..3).map { async { chatClient.prompt().user(질문).call().content() } }.awaitAll()
+    (1..3).map {
+        async {
+            chatClient.prompt().user(질문)
+                .options(ChatOptions.builder().temperature(0.9))   // 온도를 높여 답을 벌린다
+                .call().content()
+        }
+    }.awaitAll()
 }
 
 val 최선 = 후보들.maxByOrNull {
@@ -780,7 +822,7 @@ val 최선 = 후보들.maxByOrNull {
 }
 ```
 
-온도를 높여 서로 다른 답을 만들고 채점기로 거르는 방식입니다. 호출이 후보 수만큼 늘어나니 **비용을 먼저 계산해야 합니다.**
+온도를 높이지 않으면 세 후보가 거의 같은 답이 되어 고를 것이 없습니다. 그리고 호출이 후보 수만큼 늘어나니 **비용을 먼저 계산해야 합니다.**
 
 ---
 
