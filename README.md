@@ -14,7 +14,7 @@ Spring AI를 주제로 단계(phase)를 나눠 진행한다. 각 phase는 학습
 
 ### Phase 1 — Spring AI 2.0 개념부터 에이전트까지
 
-Spring AI 2.0.0 GA(2026-06) 기준으로 핵심 개념과 사용법을 처음부터 정리한다. 시작하기 → 핵심 기능 9개(ChatClient·Structured Output·ChatMemory·Tool Calling·RAG·ToolSearch·MCP·Advisor·관측성) → 직접 만들어 보기.
+Spring AI 2.0.1(2026-08) 기준으로 핵심 개념과 사용법을 처음부터 정리한다. 시작하기 → 핵심 기능 9개(ChatClient·Structured Output·ChatMemory·Tool Calling·RAG·ToolSearch·MCP·Advisor·관측성) → 직접 만들어 보기.
 
 - [학습 자료 본문](./docs/phase1/Spring%20AI%202.0%20—%20개념부터%20에이전트까지.md) — 위키 포팅 대상
 - [결정 로그](./docs/phase1/decisions.md) · [학습 로그](./docs/phase1/study-log.md)

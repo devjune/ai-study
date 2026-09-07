@@ -1,7 +1,7 @@
 # Spring AI 2.0 데모
 
 스터디 문서([`docs/phase1`](../docs/phase1))의 예제를 실제로 동작시키는 Spring Boot 앱.
-**Spring Boot 4 + Spring AI 2.0.0 + Anthropic(claude-sonnet-4-5)**. 흰/검 단일 페이지 UI에서 각 기능을 눌러 확인한다.
+**Spring Boot 4 + Spring AI 2.0.1 + Anthropic(claude-sonnet-4-5)**. 흰/검 단일 페이지 UI에서 각 기능을 눌러 확인한다.
 
 ## 요구사항
 
