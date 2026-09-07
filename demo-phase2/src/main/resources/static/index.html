@@ -38,16 +38,16 @@
   .panel > h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft);
                 border-bottom:1px solid var(--line); }
   .panel > .inner { padding:.7rem; }
-  .parts { font-size:.78rem; background:var(--hi); border:1px solid var(--line); padding:.3rem .5rem; margin-bottom:.6rem; }
   .summary { font-size:.88rem; margin:0 0 .7rem; }
   pre { margin:0 0 .7rem; padding:.6rem; background:var(--soft); border-left:3px solid var(--line);
         font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
         white-space:pre-wrap; word-break:break-word; overflow-x:auto; }
   /* Kotlin 하이라이팅 — 흑백을 유지하고 굵기와 명도로만 가른다.
-     애너테이션만 위 구성 요소 상자와 같은 --hi 를 써서, 그 장의 주인공이 눈에 먼저 들어오게 한다. */
+     그 장의 주인공(Spring AI 타입·애너테이션·시그니처 메서드)에만 무게를 준다. */
   .kt { color:#333; }
   .kt .k { color:#000; font-weight:600; }
-  .kt .t { color:#000; }
+  .kt .t { color:#000; font-weight:600; }
+  .kt .m { color:#000; font-weight:600; }
   .kt .s { color:#6a6a6a; }
   .kt .c { color:#9a9a9a; font-style:italic; }
   .kt .n { color:#6a6a6a; }
@@ -106,7 +106,6 @@
       <div class="panel">
         <h2><span id="title">패턴을 고르세요</span></h2>
         <div class="inner">
-          <div class="parts" id="parts"></div>
           <p class="summary" id="summary"></p>
           <pre id="code" class="kt"></pre>
           <div class="run">
@@ -135,6 +134,8 @@ let PATTERNS = [], current = null, history = [];
    사내망에서 그대로 띄우는 데모라 외부 라이브러리를 쓰지 않는다. 정규식 한 번으로
    왼쪽부터 토큰을 끊어 나가므로, 주석이나 문자열 안의 낱말이 키워드로 잡히지 않는다. */
 const KEYWORD = /^(package|import|class|interface|object|data|enum|fun|val|var|override|return|if|else|for|while|when|is|in|as|by|private|public|internal|companion|const|suspend|this|it|true|false|null|implementation)$/;
+/* 패턴의 주인공이 되는 Spring AI 메서드. 타입·애너테이션과 같은 무게로 띄운다. */
+const METHOD = /^(entity|tools|advisors|system|defaultSystem|defaultAdvisors|getOrder|evaluate|options|searchRequest|similarityThreshold|topK|disableThinking)$/;
 const TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|^[ \t]*#[^\n]*)|("""[\s\S]*?"""|"(?:\\.|[^"\\\n])*")|(@\w+)|\b(\d+(?:\.\d+)?f?)\b|\b([A-Za-z_]\w*)\b/gm;
 
 function highlight(code) {
@@ -142,7 +143,8 @@ function highlight(code) {
   TOKEN.lastIndex = 0;
   while ((m = TOKEN.exec(code)) !== null) {
     const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'a' : m[4] ? 'n'
-      : KEYWORD.test(m[5]) ? 'k' : /^[A-Z]/.test(m[5]) ? 't' : '';
+      : KEYWORD.test(m[5]) ? 'k' : METHOD.test(m[5]) ? 'm'
+      : /^[A-Z]/.test(m[5]) ? 't' : '';
     out += esc(code.slice(last, m.index))
       + (cls ? `<span class="${cls}">${esc(m[0])}</span>` : esc(m[0]));
     last = m.index + m[0].length;
@@ -163,7 +165,6 @@ function renderList() {
 function select(p) {
   current = p;
   $('title').textContent = `${p.chapter}장 ${p.name} (${p.english})`;
-  $('parts').innerHTML = p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
   $('summary').textContent = p.summary;
   $('code').innerHTML = highlight(p.code);
   $('input').value = p.defaultInput;

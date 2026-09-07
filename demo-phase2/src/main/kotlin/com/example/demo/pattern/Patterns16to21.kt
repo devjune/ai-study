@@ -17,14 +17,19 @@ import org.springframework.stereotype.Component
 class ResourceAware : PatternRunner {
     override val spec = PatternSpec(
         16, "자원 인식 최적화", "Resource-Aware Optimization",
-        parts = "`ChatOptions` · Micrometer 지표",
         summary = "LLM 호출은 비싸고 느립니다. 모든 일에 가장 좋은 모델을 쓸 이유가 없습니다.",
         code = """
-            // ChatOptions — 벤더 중립 옵션. 재시작 없이 모델만 교체된다
-            .options(ChatOptions.builder().model(if (단순분류) "qwen3:1.7b" else "qwen3:4b-instruct"))
+            // 분류·요약처럼 정해진 형식만 뽑는 일과, 근거를 들어 답해야 하는 일을 가른다
+            val model = when (decision.route()) {
+                Route.ORDER   -> "qwen3:1.7b"          // 도구가 조회한 값을 옮겨 적기만 한다
+                Route.GENERAL -> "qwen3:1.7b"          // 인사·잡담
+                Route.POLICY  -> "qwen3:4b-instruct"   // 규정 문서를 읽고 근거를 들어야 한다
+            }
 
-            // 쓴 만큼은 actuator 를 올리면 지표로 쌓인다
-            // /actuator/metrics/gen_ai.client.token.usage
+            chatClient.prompt().user(질문)
+                // ChatOptions — 벤더 중립 옵션. 재시작 없이 모델만 교체된다
+                .options(ChatOptions.builder().model(model))
+                .call().content()
         """.trimIndent(),
         defaultInput = "이 문장이 긍정인지 부정인지 한 단어로만 답해라: 배송이 너무 늦었어요",
         model = "qwen3:4b-instruct",
@@ -53,13 +58,14 @@ class ResourceAware : PatternRunner {
 class ReasoningTechniques : PatternRunner {
     override val spec = PatternSpec(
         17, "추론 기법", "Reasoning Techniques",
-        parts = "`.system()`",
         summary = "한 번에 답이 나오지 않는 문제가 있습니다. 모델이 단계를 밟아 생각하도록 프롬프트로 유도합니다.",
         code = """
             chatClient.prompt()
                 .system("답하기 전에 근거를 단계별로 적고, 마지막 줄에 결론만 남겨라")
                 .user(질문)
                 .call().content()
+
+            OllamaChatOptions.builder().disableThinking()   // 공통 ChatOptions 에는 없다
         """.trimIndent(),
         defaultInput = "사과 3개를 5,000원에 사서 2개를 3,000원에 팔았다. 남은 1개를 얼마에 팔아야 본전인가?",
         model = "qwen3:4b-instruct",
@@ -79,17 +85,20 @@ class ReasoningTechniques : PatternRunner {
 class Guardrails : PatternRunner {
     override val spec = PatternSpec(
         18, "가드레일", "Guardrails",
-        parts = "`BaseAdvisor` · `getOrder()`",
         summary = "자율성이 커질수록 예측 못 한 출력이 나올 위험도 커집니다. 입력과 출력을 검사해 범위를 제한합니다.",
         code = """
             // BaseAdvisor — before / after / getOrder 셋만 구현하면 된다
             class MaskingAdvisor : BaseAdvisor {
 
                 // 모델로 나가기 직전. 프롬프트를 고쳐서 돌려준다
-                override fun before(req: ChatClientRequest, chain: AdvisorChain) =
+                override fun before(req: ChatClientRequest, chain: AdvisorChain): ChatClientRequest =
                     req.mutate().prompt(마스킹(req.prompt())).build()
 
-                // 작을수록 먼저. ToolCallingAdvisor 는 Integer.MIN_VALUE + 300
+                // 모델에서 돌아온 직후. 응답을 검사하거나 바꿔치기한다
+                override fun after(res: ChatClientResponse, chain: AdvisorChain): ChatClientResponse =
+                    if (금칙어(res)) 거절응답() else res
+
+                // 작을수록 먼저 실행된다. ToolCallingAdvisor 는 Integer.MIN_VALUE + 300
                 override fun getOrder(): Int = 1000
             }
         """.trimIndent(),
@@ -137,7 +146,6 @@ class MaskingAdvisor : BaseAdvisor {
 class Evaluation : PatternRunner {
     override val spec = PatternSpec(
         19, "평가와 모니터링", "Evaluation and Monitoring",
-        parts = "`Evaluator` · `RelevancyEvaluator` · `FactCheckingEvaluator`",
         summary = "LLM은 확률적이라 기존 테스트로는 신뢰성을 보장할 수 없습니다. 답의 품질을 코드가 잽니다.",
         code = """
             // EvaluationRequest 는 세 가지를 받는다 — 질문, 근거로 삼을 문서, 채점할 답
@@ -145,7 +153,7 @@ class Evaluation : PatternRunner {
 
             response.isPass        // 통과 여부 (boolean)
             response.getScore()    // 점수 (float)
-            response.getFeedback() // 왜 그렇게 판정했는지
+            response.getFeedback() // 왜 그렇게 판정했는지 (채점기에 따라 비어 있다)
         """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "granite4:micro",
@@ -172,12 +180,13 @@ class Evaluation : PatternRunner {
 class Prioritization : PatternRunner {
     override val spec = PatternSpec(
         20, "우선순위 결정", "Prioritization",
-        parts = "`.entity()` · `ParameterizedTypeReference`",
         summary = "할 수 있는 일은 많고 자원은 한정돼 있습니다. 무엇을 먼저 할지 정하지 못하면 비효율적으로 움직입니다.",
         code = """
             data class Task(val title: String, val priority: Int, val reason: String)
 
-            val tasks = chatClient.prompt().system(PRIORITIZER).user(할일들)
+            val tasks = chatClient.prompt()
+                .system("문의를 처리 우선순위로 정렬한다. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
+                .user(할일들)
                 .call()
                 // 컬렉션은 ParameterizedTypeReference 로 받는다
                 .entity(object : ParameterizedTypeReference<List<Task>>() {})
@@ -206,11 +215,16 @@ class Prioritization : PatternRunner {
 class Exploration : PatternRunner {
     override val spec = PatternSpec(
         21, "탐색과 발견", "Exploration and Discovery",
-        parts = "`Evaluator` · 코루틴",
         summary = "정답의 범위가 정해지지 않은 문제에서는 넣어 둔 지식만으로 부족합니다. 여러 갈래를 시도해 나은 것을 찾습니다.",
         code = """
             val 후보들 = coroutineScope {
-                (1..3).map { async { chatClient.prompt().user(질문).call().content() } }.awaitAll()
+                (1..3).map {
+                    async {
+                        chatClient.prompt().user(질문)
+                            .options(ChatOptions.builder().temperature(0.9))   // 온도를 높여 답을 벌린다
+                            .call().content()
+                    }
+                }.awaitAll()
             }
 
             val 최선 = 후보들.maxByOrNull {

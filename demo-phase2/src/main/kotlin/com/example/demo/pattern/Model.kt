@@ -35,8 +35,6 @@ data class PatternSpec(
     val chapter: Int,
     val name: String,
     val english: String,
-    /** 이 패턴을 무엇으로 만드는가 — 문서의 같은 줄과 짝을 이룬다 */
-    val parts: String,
     /** 이 패턴이 무엇을 푸는가 */
     val summary: String,
     /** 화면에 보여줄 코드. 추적용 래퍼는 뺀 알맹이 */

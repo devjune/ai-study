@@ -13,15 +13,21 @@ import org.springframework.stereotype.Component
 class PromptChaining : PatternRunner {
     override val spec = PatternSpec(
         1, "프롬프트 체이닝", "Prompt Chaining",
-        parts = "`ChatClient` · `.entity()`",
         summary = "복잡한 작업을 프롬프트 하나에 몰아넣으면 모델이 지시를 빠뜨립니다. 단계로 쪼개 앞 결과를 뒤 프롬프트에 넣습니다.",
         code = """
-            val outline = chatClient.prompt().user("${'$'}주제 로 목차를 잡아줘")
-                .call().entity(Outline::class.java)      // 문자열이 아니라 객체로
+            // 모델이 채워 줄 그릇. 이 클래스로 JSON 스키마가 만들어져 프롬프트에 함께 실리고,
+            // 돌아온 JSON 은 Jackson 이 생성자 파라미터 이름을 맞춰 그대로 채운다
+            data class Outline(val sections: List<String>)
+
+            val outline = chatClient.prompt()
+                .user("${'$'}주제 로 목차를 잡아줘")
+                .call()
+                .entity(Outline::class.java)      // 답을 문자열이 아니라 객체로 받는다
 
             val draft = chatClient.prompt()
                 .user("아래 목차로 초안을 써줘\n" + outline.sections.joinToString("\n"))
-                .call().content()
+                .call()
+                .content()
         """.trimIndent(),
         defaultInput = "사내 개발자 대상 Spring AI 스터디",
         model = "qwen3:4b-instruct",
@@ -45,13 +51,28 @@ class PromptChaining : PatternRunner {
 class Routing(private val orders: OrderService, private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         2, "라우팅", "Routing",
-        parts = "`.entity()` — 분기는 평범한 `when`",
         summary = "입력의 의도를 먼저 판별하고 거기에 맞는 경로로만 보냅니다. 주문 조회에 사내 문서를 검색할 이유가 없습니다.",
         code = """
-            data class RouteDecision(val route: String, val reason: String)
+            data class RouteDecision(val route: String, val reason: String) {
+                // route 값은 모델이 쓴 텍스트다. "Order" 로 오든 엉뚱한 값이 오든 여기서 좁힌다
+                fun route(): Route =
+                    Route.entries.firstOrNull { it.name.equals(route.trim(), true) } ?: Route.GENERAL
+            }
 
-            val decision = chatClient.prompt().system(CLASSIFIER).user(질문)
-                .call().entity(RouteDecision::class.java)
+            // 분류 규칙의 전부. 경로를 늘리거나 기준을 바꾸려면 여기를 고친다
+            val CLASSIFIER = ${'"'}""
+                너는 고객 문의를 분류하는 라우터다. 질문에 답하지 말고 분류만 해라.
+                - order   : 주문번호·배송 상태 등 주문 조회 시스템을 봐야 하는 질문
+                - policy  : 환불·교환·장비 대여 등 사내 규정 문서를 찾아야 하는 질문
+                - general : 위 둘에 해당하지 않는 일반 질문
+                route 에는 order, policy, general 중 하나만 적는다.
+            ${'"'}"".trimIndent()
+
+            val decision = chatClient.prompt()
+                .system(CLASSIFIER)                     // 분류 규칙을 시스템 메시지로
+                .user(질문)
+                .call()
+                .entity(RouteDecision::class.java)
 
             when (decision.route()) {                   // 여기부터는 평범한 코틀린
                 Route.ORDER   -> request.tools(SupportTools(orders)).call().content()
@@ -100,12 +121,11 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
 class Parallelization : PatternRunner {
     override val spec = PatternSpec(
         3, "병렬화", "Parallelization",
-        parts = "`ChatClient` 뿐. 나머지는 코루틴",
         summary = "서로 기다릴 이유가 없는 작업까지 순서대로 돌리면 느립니다. 독립적인 호출을 동시에 던집니다.",
         code = """
             val (요약, 감정) = coroutineScope {
-                val a = async { chatClient.prompt().user("요약해줘: ${'$'}글").call().content() }
-                val b = async { chatClient.prompt().user("감정을 분류해줘: ${'$'}글").call().content() }
+                val a = async { chatClient.prompt().user("이 글을 요약해줘: ${'$'}글").call().content() }
+                val b = async { chatClient.prompt().user("이 글의 감정을 분류해줘: ${'$'}글").call().content() }
                 a.await() to b.await()
             }
         """.trimIndent(),
@@ -131,15 +151,19 @@ class Parallelization : PatternRunner {
 class Reflection : PatternRunner {
     override val spec = PatternSpec(
         4, "리플렉션", "Reflection",
-        parts = "`RelevancyEvaluator` · `EvaluationRequest`",
         summary = "모델의 첫 답은 대개 부족합니다. 답을 낸 뒤 그 답을 다시 채점해 미달이면 고쳐 씁니다.",
         code = """
-            val evaluator = RelevancyEvaluator.builder().chatClientBuilder(builder).build()
+            // RelevancyEvaluator — 답이 질문·문맥에 맞는지 모델에게 되묻는 채점기
+            val evaluator = RelevancyEvaluator.builder()
+                .chatClientBuilder(builder)      // 채점에도 모델을 쓴다. 작은 모델이면 충분
+                .build()
+
             var answer = chatClient.prompt().user(질문).call().content()
 
-            for (round in 1..2) {
+            for (round in 1..2) {                // 최대 두 번까지만 고쳐 쓴다
+                // 문서들 — 채점의 근거가 될 문맥. 이것에 비추어 답이 맞는지를 판정한다
                 val verdict = evaluator.evaluate(EvaluationRequest(질문, 문서들, answer))
-                if (verdict.isPass) break
+                if (verdict.isPass) break                    // isPass — 통과하면 더 부르지 않는다
                 answer = chatClient.prompt()
                     .user("${'$'}질문\n\n앞선 답은 이런 점이 부족했다: ${'$'}{verdict.feedback}")
                     .call().content()
@@ -169,16 +193,24 @@ class Reflection : PatternRunner {
 class ToolUse(private val orders: OrderService) : PatternRunner {
     override val spec = PatternSpec(
         5, "도구 사용", "Tool Use",
-        parts = "`@Tool` · `@ToolParam` · `ToolCallingAdvisor`",
         summary = "모델의 지식은 학습 시점에 멈춰 있습니다. 도구 사용은 모델이 필요할 때 외부 함수를 부르게 합니다.",
         code = """
-            @Tool(description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
-            fun lookupOrder(@ToolParam(description = "주문 번호. 예: A-1024") orderId: String): String =
-                orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
+            class SupportTools(private val orders: OrderService) {
 
-            chatClient.prompt().user(질문)
+                // @Tool      — 이 함수를 모델이 부를 수 있는 도구로 등록한다
+                // description — 모델이 읽는 유일한 설명. 언제 부를지 여기서 판단한다
+                @Tool(description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
+                fun lookupOrder(
+                    // @ToolParam — 인자 설명. 스키마의 description 으로 들어간다
+                    @ToolParam(description = "주문 번호. 예: A-1024") orderId: String,
+                ): String = orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
+            }
+
+            chatClient.prompt()                   // 호출 하나를 조립하기 시작한다
+                .user(질문)
                 .tools(SupportTools(orders))      // @Tool 이 붙은 객체를 통째로 넘긴다
-                .call().content()
+                .call()                           // 동기 호출 (토큰을 흘리려면 .stream())
+                .content()                        // 응답을 문자열로. 타입으로 받으려면 .entity()
         """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
         model = "qwen3:4b-instruct",
@@ -198,14 +230,22 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
 class Planning : PatternRunner {
     override val spec = PatternSpec(
         6, "계획 수립", "Planning",
-        parts = "`.entity()` — 실행하는 `for` 문은 직접",
         summary = "복잡한 요청은 한 번의 행동으로 끝나지 않습니다. 목표를 단계로 나누고 순서대로 실행합니다.",
         code = """
             data class Plan(val steps: List<Step>)
             data class Step(val order: Int, val instruction: String)
 
-            val plan = chatClient.prompt().system(PLANNER).user(목표)
-                .call().entity(Plan::class.java)
+            val plan = chatClient.prompt()
+                .system("목표를 실행 가능한 단계로 쪼개라. instruction 은 한 문장씩.")
+                .user("신입 개발자 첫 주 온보딩")
+                .call()
+                .entity(Plan::class.java)
+
+            // plan 에는 이런 것이 담겨 온다. 단계 수도 내용도 실행할 때마다 모델이 정한다
+            // Plan(steps = [
+            //     Step(order = 1, instruction = "개발 환경과 계정을 준비한다"),
+            //     Step(order = 2, instruction = "첫 주에 만날 팀과 일정을 표로 정리한다"),
+            // ])
 
             for (step in plan.steps.sortedBy { it.order }) {   // 실행은 여기서 직접
                 chatClient.prompt().user(step.instruction).call().content()
@@ -234,13 +274,13 @@ class Planning : PatternRunner {
 class MultiAgent : PatternRunner {
     override val spec = PatternSpec(
         7, "멀티 에이전트", "Multi-Agent",
-        parts = "`ChatClient.Builder` · `defaultSystem()`",
         summary = "하나의 에이전트가 모든 전문성을 갖출 수는 없습니다. 역할을 나눠 맡기고 결과를 합칩니다.",
         code = """
             // defaultSystem — 이 ChatClient 로 나가는 모든 호출에 붙는 고정 시스템 메시지
             @Bean fun 작성자(b: ChatClient.Builder) = b.defaultSystem("너는 초안을 쓴다").build()
             @Bean fun 검토자(b: ChatClient.Builder) = b.defaultSystem("너는 초안을 비판한다").build()
 
+            // 누가 먼저 말하고 몇 번 주고받을지는 직접 짠다
             val draft  = 작성자.prompt().user(주제).call().content()
             val review = 검토자.prompt().user(draft).call().content()
         """.trimIndent(),

@@ -15,14 +15,18 @@ import org.springframework.stereotype.Component
 class MemoryManagement : PatternRunner {
     override val spec = PatternSpec(
         8, "메모리 관리", "Memory Management",
-        parts = "`ChatMemory` · `MessageChatMemoryAdvisor` · `ChatMemoryRepository`",
         summary = "LLM은 호출마다 아무것도 기억하지 못합니다. 맥락을 유지하려면 지난 메시지를 다시 넣어 줘야 합니다.",
         code = """
+            // 무엇을 기억할지 정하는 정책 — 최근 20개 메시지만 유지한다
+            val chatMemory = MessageWindowChatMemory.builder().maxMessages(20).build()
+
             val chatClient = builder
+                // 지난 대화를 프롬프트에 자동으로 붙여 주는 Advisor
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build()
 
-            chatClient.prompt().user("방금 뭐라고 했지?")
+            chatClient.prompt()
+                .user("방금 뭐라고 했지?")
                 // 대화 ID는 호출 시점에 넘긴다. 빠뜨리면 예외가 난다
                 .advisors { it.param(ChatMemory.CONVERSATION_ID, "user-42") }
                 .call().content()
@@ -53,7 +57,6 @@ class MemoryManagement : PatternRunner {
 class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         9, "학습과 적응", "Learning and Adaptation",
-        parts = "`VectorStore` · `Document` · `QuestionAnswerAdvisor`",
         summary = "설계 때 예상 못 한 상황에서는 짜 둔 로직이 안 통합니다. 실제 사용에서 얻은 피드백을 반영합니다.",
         code = """
             // 사람이 고쳐 준 좋은 답을 저장해 두고
@@ -90,14 +93,19 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
 class GoalSetting : PatternRunner {
     override val spec = PatternSpec(
         11, "목표 설정과 모니터링", "Goal Setting and Monitoring",
-        parts = "`.entity()` · `Evaluator`",
         summary = "목표가 없으면 에이전트는 시키는 것에만 반응합니다. 목표를 명시하고 달성 여부를 확인합니다.",
         code = """
             data class Goal(val description: String, val successCriteria: String)
 
-            val goal = chatClient.prompt().system(GOAL_SETTER).user(요청)
+            val goal = chatClient.prompt()
+                .system("요청을 목표로 정리한다. successCriteria 에는 달성 여부를 판정할 기준을 한 문장으로 적는다.")
+                .user(요청)
                 .call().entity(Goal::class.java)
 
+            val 작업결과 = chatClient.prompt().user(goal.description).call().content()
+
+            // evaluator 는 4장에서 만든 것과 같다
+            // 작업 결과가 성공 기준을 만족하는지 코드가 판정한다
             val done = evaluator
                 .evaluate(EvaluationRequest(goal.successCriteria, 작업결과))
                 .isPass
@@ -129,7 +137,6 @@ class GoalSetting : PatternRunner {
 class ExceptionHandling : PatternRunner {
     override val spec = PatternSpec(
         12, "예외 처리와 복구", "Exception Handling and Recovery",
-        parts = "`spring.ai.retry` 프로퍼티",
         summary = "실제 환경에서는 도구가 실패하고 네트워크가 끊깁니다. 감지해서 복구 경로로 넘깁니다.",
         code = """
             # 기본값은 10회에 2초 → 50초 백오프. 모델이 없으면 화면이 몇 분 멈춘다
@@ -167,19 +174,25 @@ class ExceptionHandling : PatternRunner {
 class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
     override val spec = PatternSpec(
         13, "사람 개입", "Human-in-the-Loop",
-        parts = "`@Tool` · 그리고 LLM이 없는 평범한 `@PostMapping`",
         summary = "실수의 대가가 큰 일을 모델에게 맡기는 것은 위험합니다. 결정적인 지점에 사람의 판단을 끼웁니다.",
         code = """
             // description 에 "실제로 취소하지 않는다"고 적어 둔다. 모델이 읽는 계약이다
+            // 승인을 기다리는 주문 번호. 화면이 이 값을 보고 승인 버튼을 단다
+            var pendingCancel: String? = null
+
             @Tool(description = "주문 취소를 요청한다. 실제로 취소하지 않고 고객 승인을 받는 단계다.")
             fun requestCancellation(orderId: String): String {
-                pendingCancel = orders.find(orderId)!!.id      // 요청만 기록. 상태는 그대로
-                return "주문 ${'$'}pendingCancel 은 취소 가능합니다. 승인 버튼을 눌러야 실제로 취소됩니다."
+                orders.cancelBlockedReason(orderId)?.let { return "취소할 수 없습니다 — ${'$'}it" }
+                pendingCancel = orders.find(orderId)!!.id      // 요청만 기록. 상태는 건드리지 않는다
+                return "주문 ${'$'}pendingCancel 은 취소 가능합니다. 고객이 승인 버튼을 눌러야 실제로 취소됩니다."
             }
 
             // 평범한 컨트롤러. ChatClient 도 Advisor 도 등장하지 않는다
             @PostMapping("/approve")
-            fun approve(@RequestBody req: ApproveRequest) = orders.cancel(req.orderId)
+            fun approve(@RequestBody req: ApproveRequest): ApproveReply {
+                orders.cancel(req.orderId)                   // 여기서 비로소 상태가 바뀐다
+                return ApproveReply(true, "취소되었습니다", orders.all())
+            }
         """.trimIndent(),
         defaultInput = "A-1024 취소해줘",
         model = "qwen3:4b-instruct",
@@ -202,18 +215,19 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
 class KnowledgeRetrieval(private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         14, "지식 검색", "Knowledge Retrieval (RAG)",
-        parts = "`QuestionAnswerAdvisor` · `VectorStore` · `SearchRequest`",
         summary = "모델은 학습 데이터 밖의 것을 모릅니다. 답하기 전에 관련 문서를 찾아 프롬프트에 넣어 근거를 만듭니다.",
         code = """
             .advisors(
-                QuestionAnswerAdvisor.builder(vectorStore)
-                    .searchRequest(
-                        SearchRequest.builder()
-                            .topK(3)                   // 상위 몇 건까지
-                            .similarityThreshold(0.5)  // 이 점수 미만이면 아예 주입하지 않는다
-                            .build(),
-                    ).build(),
+                QuestionAnswerAdvisor            // RAG 전용 Advisor. 검색부터 주입까지 한다
+                    .builder(vectorStore)        // 어디서 찾을지
+                    .searchRequest(SEARCH)       // 어떻게 찾을지 (아래)
+                    .build(),
             )
+
+            val SEARCH = SearchRequest.builder()
+                .topK(3)                   // ① 점수 높은 순으로 3건을 뽑고
+                .similarityThreshold(0.5)  // ② 그중 0.5 미만은 버린다 (전부 미달이면 주입 없음)
+                .build()
         """.trimIndent(),
         defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "qwen3:4b-instruct",

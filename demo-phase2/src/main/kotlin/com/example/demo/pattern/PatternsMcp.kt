@@ -22,17 +22,15 @@ private fun call(method: String, params: String = "{}"): String =
 class ModelContextProtocol : PatternRunner {
     override val spec = PatternSpec(
         10, "MCP", "Model Context Protocol",
-        parts = "`@McpTool` · `@McpToolParam`",
         summary = "모델과 외부 도구를 이을 때마다 다른 방식으로 붙이면 재사용이 안 됩니다. 표준 프로토콜로 도구를 노출합니다.",
         code = """
             @Component
             class McpTools(private val orders: OrderService) {
-
                 // @McpTool — MCP 프로토콜로 노출된다. 스키마는 시그니처에서 자동 생성
                 @McpTool(name = "lookupOrder", description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
                 fun lookupOrder(
                     @McpToolParam(description = "주문 번호. 예: A-1024") orderId: String,
-                ): String = orders.find(orderId)?.summary() ?: "찾을 수 없습니다"
+                ): String = orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
             }
         """.trimIndent(),
         defaultInput = "A-1024",
@@ -53,7 +51,6 @@ class ModelContextProtocol : PatternRunner {
 class InterAgentCommunication : PatternRunner {
     override val spec = PatternSpec(
         15, "에이전트 간 통신", "Inter-Agent Communication",
-        parts = "`@McpTool` · MCP 서버/클라이언트 스타터",
         summary = "다른 프레임워크로 만든 에이전트끼리는 공통 언어가 없습니다. 규격을 정해 일을 위임하고 정보를 주고받습니다.",
         code = """
             // 서버 — 내 함수를 밖으로 연다
