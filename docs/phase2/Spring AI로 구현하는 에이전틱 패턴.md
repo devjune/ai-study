@@ -53,7 +53,7 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 
 ## 1장 프롬프트 체이닝 (Prompt Chaining)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatClient` · `.entity()`
 
 복잡한 작업을 프롬프트 하나에 몰아넣으면 모델이 지시를 빠뜨리거나 맥락을 잃습니다. 작업을 단계로 쪼개 한 번에 하나씩만 시키고, 앞 단계의 결과를 다음 프롬프트에 넣습니다. **한 프롬프트로 감당이 안 될 만큼 복잡하거나, 단계 사이에 외부 도구를 써야 할 때** 씁니다.
@@ -77,7 +77,7 @@ val draft = chatClient.prompt()
 
 ## 2장 라우팅 (Routing)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatClient` · `.entity()` — 분기는 평범한 `when`
 
 들어오는 입력이 늘 같은 종류는 아닙니다. 순차 흐름 하나로는 상황에 따라 다르게 처리할 수 없습니다. 라우팅은 입력의 의도를 먼저 판별하고 거기에 맞는 경로로 흐름을 보냅니다. **판매 문의·기술 지원·계정 관리처럼 문의를 분류해 각각 다른 처리로 넘겨야 할 때** 씁니다.
@@ -92,7 +92,7 @@ val decision = chatClient.prompt()
     .entity(RouteDecision::class.java)
 
 when (decision.route()) {                   // 여기부터는 평범한 코틀린
-    Route.ORDER   -> request.tools(OrderTools()).call().content()
+    Route.ORDER   -> request.tools(SupportTools(orders)).call().content()
     Route.POLICY  -> request.advisors(qaAdvisor).call().content()
     Route.GENERAL -> request.call().content()
 }
@@ -107,7 +107,7 @@ when (decision.route()) {                   // 여기부터는 평범한 코틀�
 
 ## 3장 병렬화 (Parallelization)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatClient` 뿐. 나머지는 코루틴이나 `CompletableFuture` 로 평소처럼 처리합니다
 
 서로 기다릴 이유가 없는 작업까지 순서대로 돌리면 느려집니다. 독립적인 호출을 동시에 던져 전체 시간을 줄입니다. **여러 API에서 자료를 모으거나, 조각난 데이터를 각각 처리할 때** 씁니다.
@@ -122,7 +122,7 @@ val (요약, 감정) = coroutineScope {
 
 ## 4장 리플렉션 (Reflection)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `RelevancyEvaluator` · `EvaluationRequest` · `EvaluationResponse`
 
 모델의 첫 답은 대개 부족합니다. 스스로 틀린 것을 알아채고 고칠 장치가 기본 흐름에는 없습니다. 리플렉션은 답을 낸 뒤 그 답을 다시 평가해 고쳐 쓰게 만듭니다. **속도와 비용보다 정확도와 완성도가 중요할 때** 씁니다.
@@ -148,7 +148,7 @@ for (round in 1..2) {                // 최대 두 번까지만 고쳐 쓴다
 
 ## 5장 도구 사용 (Tool Use)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `@Tool` · `@ToolParam` · `ToolCallingAdvisor`
 
 모델의 지식은 학습 시점에 멈춰 있고, 바깥 세상에 손을 뻗을 수도 없습니다. 도구 사용은 모델이 필요할 때 외부 함수를 부르게 해서 그 벽을 넘습니다. **실시간 데이터가 필요하거나 실제로 무언가를 실행해야 할 때** 씁니다.
@@ -207,7 +207,7 @@ sequenceDiagram
 
 ## 6장 계획 수립 (Planning)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `.entity()` — 실행하는 `for` 문은 직접
 
 복잡한 요청은 한 번의 행동으로 끝나지 않습니다. 계획 수립은 목표를 여러 단계로 나누고 순서를 정한 뒤 하나씩 실행합니다. **조사 보고서 작성이나 온보딩 절차처럼 여러 단계가 얽힌 일을 자동화할 때** 씁니다.
@@ -231,7 +231,7 @@ for (step in plan.steps.sortedBy { it.order }) {   // 실행은 여기서 직접
 
 ## 7장 멀티 에이전트 (Multi-Agent)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatClient.Builder` · `defaultSystem()`
 
 하나의 에이전트가 모든 전문성과 도구를 갖출 수는 없습니다. 역할을 나눠 각자 잘하는 부분을 맡기고 결과를 합칩니다. **작업이 성격이 다른 하위 작업으로 쪼개질 때** 씁니다.
@@ -252,7 +252,7 @@ val review = 검토자.prompt().user(draft).call().content()
 
 ## 8장 메모리 관리 (Memory Management)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatMemory` · `MessageChatMemoryAdvisor` · `ChatMemoryRepository`
 
 LLM은 호출마다 아무것도 기억하지 못합니다. 대화 맥락을 유지하려면 지난 메시지를 다시 넣어 줘야 합니다. **대화가 여러 턴 이어지거나, 여러 단계에 걸친 작업의 진행 상황을 추적해야 할 때** 씁니다.
@@ -278,7 +278,7 @@ implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repos
 
 ## 9장 학습과 적응 (Learning and Adaptation)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `VectorStore` · `Document` · `QuestionAnswerAdvisor`
 
 설계 시점에 예상하지 못한 상황에서는 미리 짜 둔 로직이 통하지 않습니다. 학습과 적응은 실제 사용에서 얻은 피드백을 반영해 거동을 개선합니다. **개인화가 필요하거나 환경이 계속 바뀌는 곳에서** 씁니다.
@@ -299,7 +299,7 @@ chatClient.prompt().user(새질문)
 
 ## 10장 MCP (Model Context Protocol)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `@McpTool` · `@McpToolParam`
 
 모델과 외부 도구를 이을 때마다 매번 다른 방식으로 붙이면 재사용이 되지 않습니다. MCP는 도구와 데이터를 노출하는 표준 프로토콜을 정해, 서버가 내놓은 것을 어떤 클라이언트든 찾아 쓰게 합니다. **여러 시스템과 붙는 복잡한 에이전트를 만들 때** 씁니다.
@@ -308,13 +308,12 @@ chatClient.prompt().user(새질문)
 
 ```kotlin
 @Component
-class CalculatorTools {
+class McpTools(private val orders: OrderService) {
     // @McpTool — MCP 프로토콜로 노출된다. 스키마는 시그니처에서 자동 생성
-    @McpTool(name = "add", description = "두 수를 더한다")
-    fun add(
-        @McpToolParam(description = "첫 번째 수") a: Int,
-        @McpToolParam(description = "두 번째 수") b: Int,
-    ): Int = a + b
+    @McpTool(name = "lookupOrder", description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
+    fun lookupOrder(
+        @McpToolParam(description = "주문 번호. 예: A-1024") orderId: String,
+    ): String = orders.find(orderId)?.summary() ?: "주문번호 $orderId 를 찾을 수 없습니다."
 }
 ```
 
@@ -322,7 +321,7 @@ class CalculatorTools {
 
 ## 11장 목표 설정과 모니터링 (Goal Setting and Monitoring)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `.entity()` · `Evaluator`
 
 목표가 없으면 에이전트는 시키는 것에만 반응합니다. 목표를 명시하고 달성 여부를 확인하는 장치를 붙이면 스스로 여러 단계를 밟아 나갑니다. **사람이 계속 붙어 있지 않아도 목표를 완수해야 할 때** 씁니다.
@@ -346,7 +345,7 @@ val done = evaluator
 
 ## 12장 예외 처리와 복구 (Exception Handling and Recovery)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `spring.ai.retry` 프로퍼티
 
 실제 환경에서는 도구가 실패하고 네트워크가 끊기고 이상한 입력이 들어옵니다. 그 상황을 감지해 복구 경로로 넘기는 것이 이 패턴입니다. **운영에 올리는 모든 에이전트에** 필요합니다.
@@ -372,7 +371,7 @@ val answer = runCatching {
 
 ## 13장 사람 개입 (Human-in-the-Loop)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `@Tool` · 그리고 LLM이 없는 평범한 `@PostMapping`
 
 판단이 미묘하거나 실수의 대가가 큰 일을 모델에게 완전히 맡기는 것은 위험합니다. 사람 개입은 결정적인 지점에서 사람의 판단을 흐름에 끼웁니다. **의료·금융처럼 오류의 대가가 크거나, 모델이 확신하지 못하는 경계 사례에서** 씁니다.
@@ -414,7 +413,7 @@ fun approve(@RequestBody req: ApproveRequest): ApproveReply {
 
 ## 14장 지식 검색 (RAG)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `QuestionAnswerAdvisor` · `VectorStore` · `SearchRequest` · `EmbeddingModel`
 
 모델은 학습 데이터 밖의 것을 모릅니다. 사내 문서나 최신 정보를 물으면 지어냅니다. RAG는 답하기 전에 관련 문서를 찾아 프롬프트에 넣어 근거를 만들어 줍니다. **학습에 포함되지 않은 최신·사내 정보로 답해야 할 때** 씁니다.
@@ -475,7 +474,7 @@ spring.ai.ollama.embedding.options.model=bge-m3
 
 ## 15장 에이전트 간 통신 (Inter-Agent Communication)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `@McpTool` · MCP 서버/클라이언트 스타터
 
 서로 다른 프레임워크로 만든 에이전트끼리는 대화할 공통 언어가 없습니다. A2A는 그 규격을 정해 에이전트들이 일을 위임하고 정보를 주고받게 합니다. **여러 팀·여러 언어로 만든 에이전트를 엮어야 할 때** 씁니다.
@@ -494,7 +493,7 @@ implementation("org.springframework.ai:spring-ai-starter-mcp-client")
 
 ## 16장 자원 인식 최적화 (Resource-Aware Optimization)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `ChatOptions` · Micrometer 지표
 
 LLM 호출은 비싸고 느립니다. 모든 일에 가장 좋은 모델을 쓸 이유가 없습니다. 일의 난이도에 따라 모델과 자원을 골라 씁니다. **예산 상한이 있거나 응답 속도가 중요한 서비스에서** 씁니다.
@@ -503,7 +502,7 @@ LLM 호출은 비싸고 느립니다. 모든 일에 가장 좋은 모델을 쓸 
 
 ```kotlin
 // ChatOptions — 벤더 중립 옵션. 재시작 없이 모델만 교체된다
-.options(ChatOptions.builder().model(if (단순분류) "qwen3:1.7b" else "qwen3:8b"))
+.options(ChatOptions.builder().model(if (단순분류) "qwen3:1.7b" else "qwen3:4b-instruct"))
 ```
 
 쓴 만큼은 actuator를 올리면 지표로 쌓입니다.
@@ -519,7 +518,7 @@ gen_ai.client.token.usage
 
 ## 17장 추론 기법 (Reasoning Techniques)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `.system()` — 그리고 벤더 전용 `OllamaChatOptions`
 
 한 번에 답이 나오지 않는 문제가 있습니다. 추론 기법은 모델이 단계를 밟아 생각하도록 프롬프트로 유도합니다. **분해와 다단계 논리가 필요한 문제에** 씁니다.
@@ -541,7 +540,7 @@ OllamaChatOptions.builder().disableThinking()   // 공통 ChatOptions 에는 없
 
 ## 18장 가드레일 (Guardrails)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `BaseAdvisor` · `ChatClientRequest` · `ChatClientResponse` · `getOrder()`
 
 자율성이 커질수록 예측하지 못한 출력이 나올 위험도 커집니다. 가드레일은 입력·출력·도구 사용을 검사해 그 범위를 제한합니다. **에이전트의 출력이 사용자나 시스템, 회사 평판에 영향을 주는 모든 곳에서** 씁니다.
@@ -569,7 +568,7 @@ class MaskingAdvisor : BaseAdvisor {
 
 ## 19장 평가와 모니터링 (Evaluation and Monitoring)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `Evaluator` · `RelevancyEvaluator` · `FactCheckingEvaluator`
 
 LLM은 확률적이라 기존 테스트 방식으로는 신뢰성을 보장할 수 없습니다. 성능이 조용히 나빠지는 것도 잡아야 합니다. 평가와 모니터링은 정확도·지연·토큰 사용량 같은 지표를 정하고, 답의 품질은 모델로 채점합니다. **운영 중인 에이전트의 품질을 계속 지켜봐야 할 때** 씁니다.
@@ -594,7 +593,7 @@ RAG를 붙였다면 **회귀 테스트에 그대로 쓸 수 있습니다.** 문�
 
 ## 20장 우선순위 결정 (Prioritization)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `.entity()` · `ParameterizedTypeReference`
 
 할 수 있는 일은 많고 자원은 한정돼 있습니다. 무엇을 먼저 할지 정하지 못하면 에이전트는 비효율적으로 움직입니다. **서로 충돌하는 여러 목표를 자원 제약 안에서 관리해야 할 때** 씁니다.
@@ -616,7 +615,7 @@ tasks.sortedByDescending { it.priority }.forEach { 처리(it) }
 
 ## 21장 탐색과 발견 (Exploration and Discovery)
 
-> [!abstract] 부품
+> [!quote] 부품
 > `Evaluator` · 코루틴
 
 정답의 범위가 정해지지 않은 문제에서는 미리 넣어 둔 지식만으로 부족합니다. 여러 갈래를 시도해 보고 나은 것을 찾아 나갑니다. **해답 공간이 열려 있고 빠르게 변하는 영역에서** 씁니다.
