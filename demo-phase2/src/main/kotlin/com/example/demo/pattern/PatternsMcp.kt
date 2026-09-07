@@ -25,12 +25,12 @@ class ModelContextProtocol : PatternRunner {
         summary = "모델과 외부 도구를 이을 때마다 다른 방식으로 붙이면 재사용이 안 됩니다. 표준 프로토콜로 도구를 노출합니다.",
         code = """
             @Component
-            class McpTools(private val orders: OrderService) {
+            class McpTools(private val orderService: OrderService) {
                 // @McpTool — MCP 프로토콜로 노출된다. 스키마는 시그니처에서 자동 생성
                 @McpTool(name = "lookupOrder", description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
                 fun lookupOrder(
                     @McpToolParam(description = "주문 번호. 예: A-1024") orderId: String,
-                ): String = orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
+                ): String = orderService.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
             }
         """.trimIndent(),
         diagram = """

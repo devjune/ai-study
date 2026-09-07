@@ -7,6 +7,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor
 import org.springframework.ai.evaluation.EvaluationRequest
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor
+import org.springframework.ai.chat.memory.ChatMemory
+import org.springframework.ai.chat.memory.MessageWindowChatMemory
 import org.springframework.stereotype.Component
 
 @Component
@@ -55,7 +58,7 @@ class PromptChaining : PatternRunner {
 }
 
 @Component
-class Routing(private val orders: OrderService, private val docs: Docs) : PatternRunner {
+class Routing(private val orderService: OrderService, private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         2, "라우팅", "Routing",
         summary = "입력의 의도를 먼저 판별하고 거기에 맞는 경로로만 보냅니다. 주문 조회에 사내 문서를 검색할 이유가 없습니다.",
@@ -82,7 +85,7 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
                 .entity(RouteDecision::class.java)
 
             when (decision.route()) {                   // 여기부터는 평범한 코틀린
-                Route.ORDER   -> request.tools(SupportTools(orders)).call().content()
+                Route.ORDER   -> request.tools(SupportTools(orderService)).call().content()
                 Route.POLICY  -> request.advisors(qaAdvisor).call().content()
                 Route.GENERAL -> request.call().content()
             }
@@ -111,7 +114,7 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
 
         val answer = when (decision.route()) {
             Route.ORDER -> {
-                val tools = SupportTools(orders)
+                val tools = SupportTools(orderService)
                 val reply = ctx.step("② 주문 조회 경로") { it.user(ctx.input).tools(tools).call().content() }
                 ctx.note(tools.callSummary())
                 reply
@@ -175,60 +178,99 @@ class Parallelization : PatternRunner {
 @Component
 class Reflection : PatternRunner {
     override val spec = PatternSpec(
-        4, "리플렉션", "Reflection",
-        summary = "모델의 첫 답은 대개 부족합니다. 답을 낸 뒤 그 답을 다시 채점해 미달이면 고쳐 씁니다.",
+        4, "자기 검토", "Reflection",
+        summary = "모델의 첫 답은 대개 부족합니다. 쓰는 쪽과 검토하는 쪽을 나눠, 검토가 짚어 준 이유로 고쳐 씁니다.",
         code = """
-            // RelevancyEvaluator — 답이 질문·문맥에 맞는지 모델에게 되묻는 채점기
-            val evaluator = RelevancyEvaluator.builder()
-                .chatClientBuilder(builder)      // 채점에도 모델을 쓴다. 작은 모델이면 충분
-                .build()
+            // Critic 이 채워 줄 그릇. reason 이 있어야 무엇을 고칠지가 남는다
+            data class Critique(val pass: Boolean, val reason: String)
 
-            var answer = chatClient.prompt().user(질문).call().content()
+            // Critic 에게는 다른 페르소나를 준다. 자기 답을 자기가 보면 판정이 후해진다
+            val CRITIC = ""${'"'}
+                너는 사내 규정을 검토하는 감사자다. 답을 새로 쓰지 말고 검토만 해라.
+                pass   — 규정의 수치를 그대로 말하고 어긋남이 없을 때만 true
+                reason — 규정의 어느 대목이 빠졌거나 틀렸는지 숫자까지 짚어 한 문장
+            ""${'"'}.trimIndent()
 
-            for (round in 1..2) {                // 최대 두 번까지만 고쳐 쓴다
-                // 문서들 — 채점의 근거가 될 문맥. 이것에 비추어 답이 맞는지를 판정한다
-                val verdict = evaluator.evaluate(EvaluationRequest(질문, 문서들, answer))
-                if (verdict.isPass) break                    // isPass — 통과하면 더 부르지 않는다
-                answer = chatClient.prompt()
-                    .user("${'$'}질문\n\n앞선 답은 이런 점이 부족했다: ${'$'}{verdict.feedback}")
+            var answer = chatClient.prompt()                // Producer — 규정을 주지 않는다
+                .system("고객 문의에 한 문장으로 답해라. 반드시 한국어 단어만 쓴다.")
+                .user(질문).call().content()
+
+            for (round in 1..2) {                          // 루프는 두 바퀴까지만 돈다
+                val critique = chatClient.prompt()          // Critic — 별도 호출, 별도 프롬프트
+                    .system(CRITIC)
+                    .user("규정:\n${'$'}규정\n\n질문: ${'$'}질문\n답: ${'$'}answer")
+                    .call()
+                    .entity(Critique::class.java)           // 판정과 이유를 함께 받는다
+
+                if (critique.pass) break
+
+                answer = chatClient.prompt()                // Producer 가 지적을 받아 다시 쓴다
+                    .user("${'$'}질문\n\n앞선 답: ${'$'}answer\n검토자 지적: ${'$'}{critique.reason}")
                     .call().content()
             }
         """.trimIndent(),
         diagram = """
             flowchart LR
-                Q[질문] --> M1((모델<br/>첫 답))
-                M1 --> M2((모델<br/>채점))
+                Q[질문] --> M1((모델<br/>초안))
+                M1 --> M2((모델<br/>검토))
                 M2 -->|통과| OK[끝]
-                M2 -->|미달| M3((모델<br/>고쳐 쓰기))
+                M2 -->|미달 + 이유| M3((모델<br/>고쳐 쓰기))
                 M3 --> M2
         """.trimIndent(),
-        defaultInput = "환불 정책을 한 문장으로 알려줘",
+        defaultInput = "단순 변심으로 환불하면 배송비 얼마 내야 해?",
         model = "qwen3:4b-instruct",
     )
 
+    /** Critic 의 페르소나. Producer 와 다른 지시를 받는 것이 이 패턴의 핵심이다. */
+    private val critic = """
+        너는 사내 규정을 검토하는 감사자다. 답을 새로 쓰지 말고 검토만 해라.
+        pass 는 아래 둘을 모두 만족할 때만 true 다.
+          1. 규정에 있는 구체적인 수치·기한을 답이 그대로 말하고 있다
+          2. 규정과 어긋나는 내용이 없다
+        일반론으로 얼버무리거나 규정의 수치를 빠뜨렸으면 false 다.
+        reason 은 한 문장. 규정의 어느 대목이 어떻게 빠졌거나 틀렸는지 숫자까지 짚어라.
+    """.trimIndent()
+
     override fun run(ctx: RunContext): RunResult {
-        var answer = ctx.step("① 첫 답") { it.user(ctx.input).call().content() }
+        val rules = Docs.POLICIES.joinToString("\n") { "- ${it.text}" }
+
+        // Producer — 규정을 주지 않는다. 첫 답이 어디까지 지어내는지가 이 장의 출발점이다
+        var answer = ctx.step("① 초안 (Producer)") {
+            it.system("고객 문의에 한 문장으로 답해라. 반드시 한국어 단어만 쓴다.").user(ctx.input).call().content()
+        }
 
         for (round in 1..2) {
-            val verdict = ctx.evaluate("② 채점 (Evaluator)", EvaluationRequest(ctx.input, Docs.POLICIES, answer.orEmpty()))
-            if (verdict == null) { ctx.note("채점기 호출 실패 — 모델이 형식을 못 맞췄습니다"); break }
-            ctx.note("${round}차 채점 — ${verdict.verdict()}")
-            if (verdict.isPass) break                     // 통과하면 더 부르지 않는다
-            answer = ctx.step("③ 고쳐 쓰기") {
-                it.user("${ctx.input}\n\n앞선 답은 근거가 부족했다. 사내 규정에 근거해 다시 답해라.\n앞선 답: $answer").call().content()
+            val critique = runCatching {
+                ctx.step("② 검토 (Critic)") {
+                    it.system(critic)
+                        .user("규정:\n$rules\n\n질문: ${ctx.input}\n답: $answer")
+                        .call().entity(Critique::class.java)
+                }
+            }.getOrNull()
+            if (critique == null) { ctx.note("검토가 형식을 못 맞췄습니다"); break }
+
+            ctx.note("${round}차 검토 — ${if (critique.pass) "통과" else "미달"} · ${critique.reason}")
+            if (critique.pass) break
+
+            answer = ctx.step("③ 고쳐 쓰기 (Producer)") {
+                // 지적만 넘긴다. 규정 원문은 주지 않는다 — 고쳐 쓰는 근거가 검토라는 것이 이 장의 요점이다
+                it.system("고객 문의에 한 문장으로 답해라. 반드시 한국어 단어만 쓴다.")
+                    .user("${ctx.input}\n\n앞선 답: $answer\n검토자 지적: ${critique.reason}\n지적을 반영해 다시 답해라.")
+                    .call().content()
             }
         }
+        ctx.note("초안을 쓴 쪽과 검토한 쪽은 프롬프트가 다릅니다. 자기 답을 자기가 보면 판정이 후해집니다")
         return ctx.result(answer)
     }
 }
 
 @Component
-class ToolUse(private val orders: OrderService) : PatternRunner {
+class ToolUse(private val orderService: OrderService) : PatternRunner {
     override val spec = PatternSpec(
         5, "도구 사용", "Tool Use",
         summary = "모델의 지식은 학습 시점에 멈춰 있습니다. 도구 사용은 모델이 필요할 때 외부 함수를 부르게 합니다.",
         code = """
-            class SupportTools(private val orders: OrderService) {
+            class SupportTools(private val orderService: OrderService) {
 
                 // @Tool      — 이 함수를 모델이 부를 수 있는 도구로 등록한다
                 // description — 모델이 읽는 유일한 설명. 언제 부를지 여기서 판단한다
@@ -236,12 +278,12 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
                 fun lookupOrder(
                     // @ToolParam — 인자 설명. 스키마의 description 으로 들어간다
                     @ToolParam(description = "주문 번호. 예: A-1024") orderId: String,
-                ): String = orders.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
+                ): String = orderService.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
             }
 
             chatClient.prompt()                   // 호출 하나를 조립하기 시작한다
                 .user(질문)
-                .tools(SupportTools(orders))      // @Tool 이 붙은 객체를 통째로 넘긴다
+                .tools(SupportTools(orderService))      // @Tool 이 붙은 객체를 통째로 넘긴다
                 .call()                           // 동기 호출 (토큰을 흘리려면 .stream())
                 .content()                        // 응답을 문자열로. 타입으로 받으려면 .entity()
         """.trimIndent(),
@@ -257,7 +299,7 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
     )
 
     override fun run(ctx: RunContext): RunResult {
-        val tools = SupportTools(orders)
+        val tools = SupportTools(orderService)
         val answer = ctx.step("도구 왕복") { it.user(ctx.input).tools(tools).call().content() }
         ctx.note(tools.callSummary())
         if (tools.calls.isNotEmpty())
@@ -272,23 +314,34 @@ class Planning : PatternRunner {
         6, "계획 수립", "Planning",
         summary = "복잡한 요청은 한 번의 행동으로 끝나지 않습니다. 목표를 단계로 나누고 순서대로 실행합니다.",
         code = """
+            // 모델이 채워 줄 계획의 모양. Plan 은 모델이 아니라 JSON 을 받을 그릇이다
             data class Plan(val steps: List<Step>)
             data class Step(val order: Int, val instruction: String)
 
+            // ① 계획 세우기 — 목표를 주고 단계 목록을 받는다. 모델 호출 한 번
             val plan = chatClient.prompt()
                 .system("목표를 실행 가능한 단계로 쪼개라. instruction 은 한 문장씩.")
                 .user("신입 개발자 첫 주 온보딩")
                 .call()
                 .entity(Plan::class.java)
-
             // plan 에는 이런 것이 담겨 온다. 단계 수도 내용도 실행할 때마다 모델이 정한다
             // Plan(steps = [
             //     Step(order = 1, instruction = "개발 환경과 계정을 준비한다"),
             //     Step(order = 2, instruction = "첫 주에 만날 팀과 일정을 표로 정리한다"),
             // ])
 
+            // ② 계획 실행 — 단계마다 한 번씩 부른다. 앞 단계의 질문과 답은 ChatMemory 가 다음 호출에 실어 준다 (8장)
+            val memory = MessageWindowChatMemory.builder().maxMessages(20).build()
+            val executor = chatClient.mutate()
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(memory).build())
+                .build()
+            val planId = UUID.randomUUID().toString()          // 이 계획 하나가 대화 하나
+
             for (step in plan.steps.sortedBy { it.order }) {   // 실행은 여기서 직접
-                chatClient.prompt().user(step.instruction).call().content()
+                executor.prompt()
+                    .user(step.instruction)                    // 앞 단계는 Advisor 가 알아서 붙인다
+                    .advisors { it.param(ChatMemory.CONVERSATION_ID, planId) }
+                    .call().content()
             }
         """.trimIndent(),
         diagram = """
@@ -311,9 +364,18 @@ class Planning : PatternRunner {
 
         ctx.note("계획 ${plan.steps.size}단계 — " + plan.steps.joinToString(" / ") { it.instruction.take(30) })
 
+        // 계획 하나를 대화 하나로 본다. 앞 단계의 질문·답은 Advisor 가 다음 호출에 실어 준다 (8장)
+        val memory: ChatMemory = MessageWindowChatMemory.builder().maxMessages(20).build()
+        val advisor = MessageChatMemoryAdvisor.builder(memory).build()
+        val planId = "plan-" + System.nanoTime()
         val done = plan.steps.sortedBy { it.order }.take(2).mapIndexed { i, step ->
-            ctx.step("② 단계 ${i + 1} 실행") { it.user("한 문장으로 답해라: ${step.instruction}").call().content() }
+            ctx.step("② 단계 ${i + 1} 실행") {
+                it.user("한 문장으로 답해라: ${step.instruction}")
+                    .advisors(advisor).advisors { a -> a.param(ChatMemory.CONVERSATION_ID, planId) }
+                    .call().content()
+            }
         }
+        ctx.note("2단계 프롬프트를 펼치면 [USER] 1단계 / [ASSISTANT] 답이 앞에 붙어 있습니다 — 순서에 뜻이 생기는 자리입니다")
         return ctx.result(done.joinToString("\n\n"))
     }
 }

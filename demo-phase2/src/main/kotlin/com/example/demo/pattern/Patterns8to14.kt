@@ -200,7 +200,7 @@ class ExceptionHandling : PatternRunner {
 }
 
 @Component
-class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
+class HumanInTheLoop(private val orderService: OrderService) : PatternRunner {
     override val spec = PatternSpec(
         13, "사람 개입", "Human-in-the-Loop",
         summary = "실수의 대가가 큰 일을 모델에게 맡기는 것은 위험합니다. 결정적인 지점에 사람의 판단을 끼웁니다.",
@@ -211,16 +211,16 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
 
             @Tool(description = "주문 취소를 요청한다. 실제로 취소하지 않고 고객 승인을 받는 단계다.")
             fun requestCancellation(orderId: String): String {
-                orders.cancelBlockedReason(orderId)?.let { return "취소할 수 없습니다 — ${'$'}it" }
-                pendingCancel = orders.find(orderId)!!.id      // 요청만 기록. 상태는 건드리지 않는다
+                orderService.cancelBlockedReason(orderId)?.let { return "취소할 수 없습니다 — ${'$'}it" }
+                pendingCancel = orderService.find(orderId)!!.id      // 요청만 기록. 상태는 건드리지 않는다
                 return "주문 ${'$'}pendingCancel 은 취소 가능합니다. 고객이 승인 버튼을 눌러야 실제로 취소됩니다."
             }
 
             // 평범한 컨트롤러. ChatClient 도 Advisor 도 등장하지 않는다
             @PostMapping("/approve")
             fun approve(@RequestBody req: ApproveRequest): ApproveReply {
-                orders.cancel(req.orderId)                   // 여기서 비로소 상태가 바뀐다
-                return ApproveReply(true, "취소되었습니다", orders.all())
+                orderService.cancel(req.orderId)                   // 여기서 비로소 상태가 바뀐다
+                return ApproveReply(true, "취소되었습니다", orderService.all())
             }
         """.trimIndent(),
         diagram = """
@@ -240,10 +240,10 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
     )
 
     override fun run(ctx: RunContext): RunResult {
-        val before = orders.find("A-1024")?.status
-        val tools = SupportTools(orders)
+        val before = orderService.find("A-1024")?.status
+        val tools = SupportTools(orderService)
         val answer = ctx.step("도구 왕복") { it.user(ctx.input).tools(tools).call().content() }
-        val after = orders.find("A-1024")?.status
+        val after = orderService.find("A-1024")?.status
 
         ctx.note(tools.callSummary())
         ctx.note("주문 상태 — 호출 전 `$before` · 호출 후 `$after` (바뀌지 않았습니다)")

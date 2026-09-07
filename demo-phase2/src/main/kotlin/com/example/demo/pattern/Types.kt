@@ -19,6 +19,9 @@ data class RouteDecision(val route: String, val reason: String) {
 
 enum class Route { ORDER, POLICY, GENERAL }
 
+/** 4장 — Critic 이 채워 주는 검토 결과. reason 이 있어야 고쳐 쓸 근거가 생긴다 */
+data class Critique(val pass: Boolean, val reason: String)
+
 data class Plan(val steps: List<Step>)
 
 data class Step(val order: Int, val instruction: String)

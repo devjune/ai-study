@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 class PatternController(
     private val runners: List<PatternRunner>,
     private val builder: ChatClient.Builder,
-    private val orders: OrderService,
+    private val orderService: OrderService,
     @Value("\${demo.models}") private val models: List<String>,
 ) {
     private val byChapter = runners.associateBy { it.spec.chapter }
@@ -29,7 +29,7 @@ class PatternController(
     fun models(): List<String> = models
 
     @GetMapping("/orders")
-    fun orders(): List<Order> = orders.all()
+    fun orders(): List<Order> = orderService.all()
 
     @PostMapping("/patterns/{chapter}/run")
     fun run(@PathVariable chapter: Int, @RequestBody req: RunRequest): RunResult {
@@ -48,15 +48,15 @@ class PatternController(
     /** 13장 사람 개입 — 승인 버튼이 부르는 자리. **LLM 이 관여하지 않는다.** */
     @PostMapping("/approve")
     fun approve(@RequestBody req: ApproveRequest): ApproveReply {
-        orders.cancelBlockedReason(req.orderId)?.let { return ApproveReply(false, it, orders.all()) }
-        val cancelled = orders.cancel(req.orderId)
-            ?: return ApproveReply(false, "주문번호 ${req.orderId} 를 찾을 수 없습니다.", orders.all())
-        return ApproveReply(true, "주문 ${cancelled.id} 이 취소되었습니다.", orders.all())
+        orderService.cancelBlockedReason(req.orderId)?.let { return ApproveReply(false, it, orderService.all()) }
+        val cancelled = orderService.cancel(req.orderId)
+            ?: return ApproveReply(false, "주문번호 ${req.orderId} 를 찾을 수 없습니다.", orderService.all())
+        return ApproveReply(true, "주문 ${cancelled.id} 이 취소되었습니다.", orderService.all())
     }
 
     /** 시연을 반복하려면 주문 상태를 되돌려야 한다. */
     @PostMapping("/reset")
-    fun reset(): List<Order> = orders.reset()
+    fun reset(): List<Order> = orderService.reset()
 }
 
 data class RunRequest(val input: String?, val model: String?)
