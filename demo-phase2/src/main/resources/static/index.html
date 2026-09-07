@@ -47,6 +47,16 @@
   pre { margin:0 0 .7rem; padding:.6rem; background:var(--soft); border-left:3px solid var(--line);
         font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.72rem; line-height:1.5;
         white-space:pre-wrap; word-break:break-word; overflow-x:auto; }
+  /* Kotlin 하이라이팅 — 흑백을 유지하고 굵기와 명도로만 가른다.
+     애너테이션만 부품 상자와 같은 --hi 를 써서, 그 장의 주인공이 눈에 먼저 들어오게 한다. */
+  .kt { color:#333; }
+  .kt .k { color:#000; font-weight:600; }
+  .kt .t { color:#000; }
+  .kt .s { color:#6a6a6a; }
+  .kt .c { color:#9a9a9a; font-style:italic; }
+  .kt .n { color:#6a6a6a; }
+  .kt .a { color:#000; font-weight:600; background:var(--hi); box-shadow:0 0 0 1px #eee; }
+
   .run { display:flex; gap:.4rem; }
   .run input { flex:1; padding:.45rem; border:1px solid var(--line); font:inherit; font-size:.85rem; }
 
@@ -107,7 +117,7 @@
         <div class="inner">
           <div class="parts" id="parts"></div>
           <p class="summary" id="summary"></p>
-          <pre id="code"></pre>
+          <pre id="code" class="kt"></pre>
           <div class="run">
             <input id="input" placeholder="입력">
             <button class="go" id="go">실행</button>
@@ -130,6 +140,25 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let PATTERNS = [], current = null, history = [];
 
+/* ── Kotlin 하이라이팅 ──
+   사내망에서 그대로 띄우는 데모라 외부 라이브러리를 쓰지 않는다. 정규식 한 번으로
+   왼쪽부터 토큰을 끊어 나가므로, 주석이나 문자열 안의 낱말이 키워드로 잡히지 않는다. */
+const KEYWORD = /^(package|import|class|interface|object|data|enum|fun|val|var|override|return|if|else|for|while|when|is|in|as|by|private|public|internal|companion|const|suspend|this|it|true|false|null|implementation)$/;
+const TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|^[ \t]*#[^\n]*)|("""[\s\S]*?"""|"(?:\\.|[^"\\\n])*")|(@\w+)|\b(\d+(?:\.\d+)?f?)\b|\b([A-Za-z_]\w*)\b/gm;
+
+function highlight(code) {
+  let out = '', last = 0, m;
+  TOKEN.lastIndex = 0;
+  while ((m = TOKEN.exec(code)) !== null) {
+    const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'a' : m[4] ? 'n'
+      : KEYWORD.test(m[5]) ? 'k' : /^[A-Z]/.test(m[5]) ? 't' : '';
+    out += esc(code.slice(last, m.index))
+      + (cls ? `<span class="${cls}">${esc(m[0])}</span>` : esc(m[0]));
+    last = m.index + m[0].length;
+  }
+  return out + esc(code.slice(last));
+}
+
 /* ── 목록 ── */
 function renderList() {
   $('list').innerHTML = PATTERNS.map(p => `
@@ -148,7 +177,7 @@ function select(p) {
     ? '<span style="font-size:.7rem;border:1px solid #000;padding:0 .3rem">예제에서 실제로 도는 코드</span>' : '';
   $('parts').innerHTML = '<b>부품</b> ' + p.parts.replace(/`([^`]+)`/g, '<code>$1</code>');
   $('summary').textContent = p.summary;
-  $('code').textContent = p.code;
+  $('code').innerHTML = highlight(p.code);
   $('input').value = p.defaultInput;
   if ([...$('model').options].some(o => o.value === p.model)) $('model').value = p.model;
   $('why').innerHTML = p.modelWhy ? `<b>${esc(p.model)}</b> — ${esc(p.modelWhy)}` : '';
