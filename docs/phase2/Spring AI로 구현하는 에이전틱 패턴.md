@@ -6,9 +6,9 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 
 원서의 예제는 전부 파이썬(Google ADK · LangChain · CrewAI)이고 Spring AI는 한 번도 나오지 않습니다.
 
-## 자주 나오는 이름 여섯 개
+## 이 패턴들은 무엇으로 만드나
 
-| 이름            | 무엇인가                                                   |
+| 이름            | 역할                                                     |
 | ------------- | ------------------------------------------------------ |
 | `ChatClient`  | 모델을 부르는 입구. 모든 호출이 여기를 지납니다. `prompt()…call()` 형태로 씁니다 |
 | `Advisor`     | 그 호출 앞뒤에 끼우는 인터셉터. 서블릿 필터와 같은 자리입니다                    |
@@ -16,9 +16,6 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 | `.entity()`   | 응답을 문자열 대신 타입 객체로 받습니다(구조화 출력)                         |
 | `VectorStore` | 문서를 벡터로 저장하고 의미가 가까운 것을 찾아 주는 저장소                      |
 | `Evaluator`   | 모델의 답을 다시 모델로 채점합니다. 통과 여부·점수·근거를 돌려줍니다                |
-
-- 예제 코드 — [demo-phase2](../../demo-phase2)
-- Spring AI 기능별 설명 — [Spring AI 2.0 — 개념부터 에이전트까지](../phase1/Spring%20AI%202.0%20—%20개념부터%20에이전트까지.md)
 
 ## 21개 한눈에
 
@@ -46,7 +43,7 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 | 20 | [우선순위 결정 (Prioritization)](#20장-우선순위-결정-prioritization) | `.entity()` + 정렬 |
 | 21 | [탐색과 발견 (Exploration and Discovery)](#21장-탐색과-발견-exploration-and-discovery) | 병렬 생성 + `Evaluator` |
 
-굵게 표시한 다섯만 그 패턴 전용 타입이 있습니다. 나머지 열여섯은 범용 기능을 조합하는데, 오른쪽 열에 같은 이름이 반복됩니다 — `.entity()` 다섯 번, `Evaluator` 네 번, `@Tool` 과 `@McpTool` 각각 두 번.
+굵게 표시한 다섯만 그 패턴 전용 타입이 있습니다. 나머지 열여섯은 범용 기능을 조합하는데, 오른쪽 열에 같은 도구가 반복됩니다 — `.entity()` · `Evaluator` · `@Tool` · `@McpTool`.
 
 ### 그림 읽는 법
 
@@ -61,13 +58,7 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 
 **원의 개수가 그 패턴이 모델을 부르는 최소 횟수입니다.** 도구를 쓰는 경로는 왕복이 붙어 여기서 더 늘어나고(5장), 몇 번 늘어날지는 모델이 정합니다. 10·15장처럼 원이 하나도 없는 장도 있습니다.
 
-> [!info] 어디까지 확인한 것인가
-> 클래스와 애너테이션은 `spring-ai` 2.0.1 아티팩트에서 확인했고, **21개 전부 예제 애플리케이션에서 실제로 돌려 봤습니다.** 화면에서 하나씩 눌러 실행하면 모델 호출이 몇 번 일어나는지 그대로 나옵니다.
-
 ## 1장 프롬프트 체이닝 (Prompt Chaining)
-
-> [!quote] 부품
-> `ChatClient` · `.entity()`
 
 ```mermaid
 flowchart LR
@@ -96,10 +87,9 @@ val draft = chatClient.prompt()
 
 전용 API는 없습니다. 호출을 두 번 하면 됩니다. 다만 중간 결과를 `.entity()` 로 받으면 **응답 문자열을 파싱할 필요가 없고**, 다음 단계에서 컴파일러가 먼저 잡아 줍니다.
 
-## 2장 라우팅 (Routing)
+`joinToString` 으로 전부 싣는 것은 중간 결과가 이 목차만큼 작을 때 이야기입니다. 커지면 비용이 따라 커지고, 프롬프트가 길수록 모델이 가운데를 흘립니다. 그때는 **다음 단계가 쓸 조각만** 넘깁니다 — 항목이 나뉘면 항목별로 따로 부르고(6장), 통째로 두고 써야 하면 저장소에 넣고 필요한 부분만 검색해 끼웁니다(14장).
 
-> [!quote] 부품
-> `ChatClient` · `.entity()` — 분기는 평범한 `when`
+## 2장 라우팅 (Routing)
 
 ```mermaid
 flowchart LR
@@ -140,9 +130,6 @@ when (decision.route()) {                   // 여기부터는 평범한 코틀�
 
 ## 3장 병렬화 (Parallelization)
 
-> [!quote] 부품
-> `ChatClient` 뿐. 나머지는 코루틴이나 `CompletableFuture` 로 평소처럼 처리합니다
-
 ```mermaid
 flowchart LR
     G[글] --> M1((모델<br/>요약))
@@ -162,9 +149,6 @@ val (요약, 감정) = coroutineScope {
 ```
 
 ## 4장 리플렉션 (Reflection)
-
-> [!quote] 부품
-> `RelevancyEvaluator` · `EvaluationRequest` · `EvaluationResponse`
 
 ```mermaid
 flowchart LR
@@ -197,9 +181,6 @@ for (round in 1..2) {                // 최대 두 번까지만 고쳐 쓴다
 `for` 와 `if` 는 직접 씁니다. 다만 **무엇을 기준으로 다시 쓸지**를 `Evaluator` 가 판정해 주므로, 재시도 조건이 프롬프트가 아니라 코드에 남습니다.
 
 ## 5장 도구 사용 (Tool Use)
-
-> [!quote] 부품
-> `@Tool` · `@ToolParam` · `ToolCallingAdvisor`
 
 ```mermaid
 flowchart LR
@@ -288,9 +269,6 @@ spring.ai.tools.limits.excluded-tools=getCurrentWeather
 
 ## 6장 계획 수립 (Planning)
 
-> [!quote] 부품
-> `.entity()` — 실행하는 `for` 문은 직접
-
 ```mermaid
 flowchart LR
     G[목표] --> M1((모델<br/>계획))
@@ -321,9 +299,6 @@ for (step in plan.steps.sortedBy { it.order }) {   // 실행은 여기서 직접
 
 ## 7장 멀티 에이전트 (Multi-Agent)
 
-> [!quote] 부품
-> `ChatClient.Builder` · `defaultSystem()`
-
 ```mermaid
 flowchart LR
     T[주제] --> M1((작성자))
@@ -349,9 +324,6 @@ val review = 검토자.prompt().user(draft).call().content()
 빈을 역할 수만큼 두는 것까지가 프레임워크의 몫입니다. **조율을 맡는 클래스는 없습니다.**
 
 ## 8장 메모리 관리 (Memory Management)
-
-> [!quote] 부품
-> `ChatMemory` · `MessageChatMemoryAdvisor` · `ChatMemoryRepository`
 
 ```mermaid
 flowchart LR
@@ -384,9 +356,6 @@ implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repos
 
 ## 9장 학습과 적응 (Learning and Adaptation)
 
-> [!quote] 부품
-> `VectorStore` · `Document` · `QuestionAnswerAdvisor`
-
 ```mermaid
 flowchart LR
     A[사람이 고쳐 준 답] --> S[(VectorStore)]
@@ -408,12 +377,9 @@ chatClient.prompt().user(새질문)
     .call().content()
 ```
 
-뒤에 나올 14장 지식 검색과 부품이 똑같습니다. 저장소에 넣는 것이 사내 문서냐 지난 사례냐만 다릅니다.
+뒤에 나올 14장 지식 검색과 쓰는 것이 똑같습니다. 저장소에 넣는 것이 사내 문서냐 지난 사례냐만 다릅니다.
 
 ## 10장 MCP (Model Context Protocol)
-
-> [!quote] 부품
-> `@McpTool` · `@McpToolParam`
 
 ```mermaid
 flowchart LR
@@ -440,9 +406,6 @@ class McpTools(private val orders: OrderService) {
 이 선언만으로 다른 언어로 짠 에이전트가 `tools/list` 로 스키마를 받아 갑니다. 전송(Streamable HTTP · STDIO)도 내장이라 별도 SDK가 필요 없습니다.
 
 ## 11장 목표 설정과 모니터링 (Goal Setting and Monitoring)
-
-> [!quote] 부품
-> `.entity()` · `Evaluator`
 
 ```mermaid
 flowchart LR
@@ -474,9 +437,6 @@ val done = evaluator
 
 ## 12장 예외 처리와 복구 (Exception Handling and Recovery)
 
-> [!quote] 부품
-> `spring.ai.retry` 프로퍼티
-
 ```mermaid
 flowchart LR
     Q[요청] --> M1((모델))
@@ -504,12 +464,9 @@ val answer = runCatching {
 }
 ```
 
-기본값이 10회인 데는 이유가 있습니다. 관측이 목적이면 꺼 두고, **운영에서는 반대로 판단합니다.**
+기본값 10회는 운영 기준으로는 맞는 값입니다 — 순간 장애는 재시도가 조용히 삼킵니다. **실패를 관측하는 것이 목적일 때만 낮춥니다.**
 
 ## 13장 사람 개입 (Human-in-the-Loop)
-
-> [!quote] 부품
-> `@Tool` · 그리고 LLM이 없는 평범한 `@PostMapping`
 
 ```mermaid
 flowchart LR
@@ -559,9 +516,6 @@ fun approve(@RequestBody req: ApproveRequest): ApproveReply {
 > 원서는 사람을 끼우는 대가도 짚습니다. 사람은 수백만 건을 못 봅니다. 판단의 질은 그 사람의 숙련도에 달렸습니다. 그리고 사람에게 보여주려면 화면에 뜨는 내용에서 민감정보를 먼저 지워야 합니다.
 
 ## 14장 지식 검색 (RAG)
-
-> [!quote] 부품
-> `QuestionAnswerAdvisor` · `VectorStore` · `SearchRequest` · `EmbeddingModel`
 
 ```mermaid
 flowchart LR
@@ -629,9 +583,6 @@ spring.ai.ollama.embedding.model=bge-m3
 
 ## 15장 에이전트 간 통신 (Inter-Agent Communication)
 
-> [!quote] 부품
-> `@McpTool` · MCP 서버/클라이언트 스타터
-
 ```mermaid
 flowchart LR
     P[파이썬 LangGraph 에이전트] -.JSON-RPC.-> S[Spring MCP 서버]
@@ -655,9 +606,6 @@ implementation("org.springframework.ai:spring-ai-starter-mcp-client")
 
 ## 16장 자원 인식 최적화 (Resource-Aware Optimization)
 
-> [!quote] 부품
-> `ChatOptions` · Micrometer 지표
-
 ```mermaid
 flowchart LR
     W[들어온 일] --> D{난이도}
@@ -676,7 +624,7 @@ LLM 호출은 비싸고 느립니다. 모든 일에 가장 좋은 모델을 쓸 
 .options(ChatOptions.builder().model(if (단순분류) "qwen3:1.7b" else "qwen3:4b-instruct"))
 ```
 
-쓴 만큼은 actuator를 올리면 지표로 쌓입니다.
+얼마나 썼는지는 actuator 를 올리면 지표로 쌓입니다.
 
 ```
 gen_ai.client.token.usage
@@ -689,9 +637,6 @@ gen_ai.client.token.usage
 
 ## 17장 추론 기법 (Reasoning Techniques)
 
-> [!quote] 부품
-> `.system()` — 그리고 벤더 전용 `OllamaChatOptions`
-
 ```mermaid
 flowchart LR
     Q[질문] --> M1((모델))
@@ -701,7 +646,7 @@ flowchart LR
     M2 --> A2[근거 → 결론]
 ```
 
-한 번에 답이 나오지 않는 문제가 있습니다. **분해와 다단계 논리가 필요한 문제에** 씁니다.
+한 번에 답이 나오지 않는 문제가 있습니다. **쪼개서 단계별로 따져야 풀리는 문제에** 씁니다.
 
 단계적으로 생각하게 만드는 것은 프롬프트 설계의 영역입니다.
 
@@ -719,9 +664,6 @@ OllamaChatOptions.builder().disableThinking()   // 공통 ChatOptions 에는 없
 ```
 
 ## 18장 가드레일 (Guardrails)
-
-> [!quote] 부품
-> `BaseAdvisor` · `ChatClientRequest` · `ChatClientResponse` · `getOrder()`
 
 ```mermaid
 flowchart LR
@@ -756,9 +698,6 @@ class MaskingAdvisor : BaseAdvisor {
 
 ## 19장 평가와 모니터링 (Evaluation and Monitoring)
 
-> [!quote] 부품
-> `Evaluator` · `RelevancyEvaluator` · `FactCheckingEvaluator`
-
 ```mermaid
 flowchart LR
     Q[질문] --> M1((모델<br/>답))
@@ -789,9 +728,6 @@ RAG를 붙였다면 **회귀 테스트에 그대로 쓸 수 있습니다.** 문�
 
 ## 20장 우선순위 결정 (Prioritization)
 
-> [!quote] 부품
-> `.entity()` · `ParameterizedTypeReference`
-
 ```mermaid
 flowchart LR
     T[할 일 목록] --> M((모델))
@@ -818,9 +754,6 @@ tasks.sortedByDescending { it.priority }.forEach { 처리(it) }
 **정렬 기준을 모델이 정하고, 순서대로 도는 것은 코드가 합니다.**
 
 ## 21장 탐색과 발견 (Exploration and Discovery)
-
-> [!quote] 부품
-> `Evaluator` · 코루틴
 
 ```mermaid
 flowchart LR
@@ -894,10 +827,10 @@ cd demo-phase2 && ./gradlew bootRun
 
 화면은 http://localhost:8080 입니다.
 
-- 왼쪽에서 21개 중 하나를 고르면, 그 패턴의 **부품과 코드**가 이 문서와 같은 내용으로 뜹니다
+- 왼쪽에서 21개 중 하나를 고르면, 그 패턴의 **코드가 이 문서와 같은 내용**으로 뜹니다
 - 실행하면 **모델 호출 타임라인**이 남습니다. 막대 하나가 호출 한 번이고, 펼치면 그 호출에 나간 프롬프트 전문이 보입니다
 - 아래쪽에 지금까지 실행한 패턴들의 **호출 횟수가 누적**됩니다
-- 장을 고르면 **그 장에 맞는 모델이 미리 선택**되고, 옆에 왜 그 모델인지 한 줄이 붙습니다
+- 장을 고르면 **그 장에 맞는 모델이 미리 선택**됩니다
 
 몇 개를 돌리고 나면 이렇게 쌓입니다.
 
