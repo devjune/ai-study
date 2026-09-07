@@ -14,7 +14,6 @@ data class RouteDecision(val route: String, val reason: String) {
 enum class Route { ORDER, POLICY, GENERAL }
 
 data class Task(val title: String, val priority: Int, val reason: String)
-data class TaskList(val tasks: List<Task>)
 
 data class Goal(val description: String, val successCriteria: String)
 
@@ -22,11 +21,4 @@ data class Goal(val description: String, val successCriteria: String)
 interface PatternRunner {
     val spec: PatternSpec
     fun run(ctx: RunContext): RunResult
-}
-
-/** `RelevancyEvaluator` 는 feedback 이 비어 있을 때가 있다. 점수라도 보여준다. */
-fun org.springframework.ai.evaluation.EvaluationResponse.verdict(): String {
-    val head = if (isPass) "통과" else "미달"
-    val detail = feedback?.takeIf { it.isNotBlank() }?.take(70) ?: "점수 %.2f".format(score)
-    return "$head · $detail"
 }

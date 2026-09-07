@@ -5,10 +5,17 @@ import org.springframework.ai.chat.client.ChatClientRequest
 import org.springframework.ai.chat.client.ChatClientResponse
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor
+import org.springframework.ai.chat.evaluation.RelevancyEvaluator
 import org.springframework.ai.chat.messages.AssistantMessage
 import org.springframework.ai.chat.messages.Message
 import org.springframework.ai.chat.messages.ToolResponseMessage
 import org.springframework.ai.chat.prompt.ChatOptions
+import org.springframework.ai.evaluation.EvaluationRequest
+import org.springframework.ai.evaluation.EvaluationResponse
+
+/** Advisor 는 작은 order 부터 실행된다. 추적은 프롬프트를 고치는 쪽보다 뒤에 서야 한다. */
+const val GUARDRAIL_ORDER = 1000
+const val TRACE_ORDER = 2000
 
 /**
  * 모델에 나간 프롬프트를 **호출마다** 붙잡는다.
@@ -18,8 +25,11 @@ import org.springframework.ai.chat.prompt.ChatOptions
  *
  * `order` 를 크게 주어 도구 루프(`ToolCallingAdvisor`, `MIN_VALUE + 300`) **안쪽**에 선다.
  * 그래야 왕복마다 다시 불려 전부 잡힌다.
+ *
+ * 패턴이 다는 Advisor 보다도 뒤에 서야 한다. 18장 가드레일처럼 프롬프트를 고치는 Advisor 가
+ * 있으면, 트레이서가 먼저 서는 순간 **고쳐지기 전** 프롬프트를 잡아 화면이 거짓말을 한다.
  */
-class TraceAdvisor(private val order: Int = 1000) : BaseAdvisor {
+class TraceAdvisor(private val order: Int = TRACE_ORDER) : BaseAdvisor {
 
     private val captured = mutableListOf<String>()
     val rounds: List<String> get() = captured
@@ -63,11 +73,14 @@ class RunContext(
     /** 이 실행에 걸 토큰 상한. 장에 따라 더 필요할 수 있다 */
     private val maxTokens: Int = MAX_TOKENS,
 ) {
-    private val calls = mutableListOf<ModelCall>()
+    private val recorded = mutableListOf<ModelCall>()
     private val notes = mutableListOf<String>()
 
     val chatClient: ChatClient = builder.build()
     val builder: ChatClient.Builder = builder
+
+    /** 여기까지 기록된 호출. 실행 도중 걸린 시간을 되짚어 볼 때 쓴다. */
+    val calls: List<ModelCall> get() = recorded
 
     fun note(text: String) { notes.add(text) }
 
@@ -85,8 +98,8 @@ class RunContext(
         val elapsed = (System.nanoTime() - started) / 1_000_000
         val rounds = trace.rounds.ifEmpty { listOf("(프롬프트를 잡지 못함)") }
         rounds.forEachIndexed { i, prompt ->
-            calls += ModelCall(
-                seq = calls.size + 1,
+            recorded += ModelCall(
+                seq = recorded.size + 1,
                 step = if (rounds.size > 1) "$label ${i + 1}차" else label,
                 prompt = prompt,
                 elapsedMs = if (i == rounds.lastIndex) elapsed else 0,
@@ -109,18 +122,13 @@ class RunContext(
         )
         val elapsed = (System.nanoTime() - started) / 1_000_000
         trace.rounds.ifEmpty { listOf("(프롬프트를 잡지 못함)") }.forEachIndexed { i, prompt ->
-            calls += ModelCall(calls.size + 1, if (trace.rounds.size > 1) "$label ${i + 1}" else label, prompt, if (i == 0) elapsed else 0)
+            recorded += ModelCall(recorded.size + 1, if (trace.rounds.size > 1) "$label ${i + 1}" else label, prompt, if (i == 0) elapsed else 0)
         }
         return result
     }
 
-    /** 모델을 부르지 않는 단계도 타임라인에 남긴다(예: 도구 실행, 검색). */
-    fun mark(label: String, detail: String) {
-        notes.add("$label — $detail")
-    }
-
-    fun result(output: String?, ok: Boolean = true, elapsedMs: Long = 0) =
-        RunResult(ok, output.orEmpty(), calls.toList(), elapsedMs, notes.toList())
+    fun result(output: String?, ok: Boolean = true, elapsedMs: Long = 0, pendingCancel: String? = null) =
+        RunResult(ok, output.orEmpty(), recorded.toList(), elapsedMs, notes.toList(), pendingCancel)
 
     companion object {
         /**
@@ -131,4 +139,20 @@ class RunContext(
          */
         const val MAX_TOKENS = 160
     }
+}
+
+/**
+ * 채점기 호출. `Evaluator` 는 자기 `ChatClient` 를 만들어 쓰므로 [RunContext.external] 로
+ * 감싸야 타임라인에 남는다. 작은 모델은 채점 형식을 못 맞출 때가 있어, 실패하면 null 이다.
+ */
+fun RunContext.evaluate(label: String, request: EvaluationRequest): EvaluationResponse? =
+    runCatching {
+        external(label) { RelevancyEvaluator.builder().chatClientBuilder(it).build().evaluate(request) }
+    }.getOrNull()
+
+/** `RelevancyEvaluator` 는 feedback 이 비어 있을 때가 있다. 점수라도 보여준다. */
+fun EvaluationResponse.verdict(): String {
+    val head = if (isPass) "통과" else "미달"
+    val detail = feedback?.takeIf { it.isNotBlank() }?.take(70) ?: "점수 %.2f".format(score)
+    return "$head · $detail"
 }

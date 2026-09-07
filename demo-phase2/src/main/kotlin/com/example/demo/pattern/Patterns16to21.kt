@@ -8,7 +8,6 @@ import org.springframework.ai.chat.client.ChatClientRequest
 import org.springframework.ai.chat.client.ChatClientResponse
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor
-import org.springframework.ai.chat.evaluation.RelevancyEvaluator
 import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.evaluation.EvaluationRequest
 import org.springframework.core.ParameterizedTypeReference
@@ -78,32 +77,6 @@ class ReasoningTechniques : PatternRunner {
     }
 }
 
-/** 18장 가드레일 — 나가는 프롬프트를 가로채 마스킹한다. */
-class MaskingAdvisor(private val order: Int = 1000) : BaseAdvisor {
-    var original: String? = null
-        private set
-    var masked: String? = null
-        private set
-
-    override fun before(request: ChatClientRequest, chain: AdvisorChain): ChatClientRequest {
-        val text = request.prompt().userMessage.text ?: return request
-        original = text
-        val hidden = CARD.replace(text, "****-****-****-****")
-        masked = hidden
-        if (hidden == text) return request
-        return request.mutate()
-            .prompt(request.prompt().augmentUserMessage { it.mutate().text(hidden).build() })
-            .build()
-    }
-
-    override fun after(response: ChatClientResponse, chain: AdvisorChain) = response
-    override fun getOrder(): Int = order
-
-    private companion object {
-        val CARD = Regex("""\d{4}-\d{4}-\d{4}-\d{4}""")
-    }
-}
-
 @Component
 class Guardrails : PatternRunner {
     override val spec = PatternSpec(
@@ -137,6 +110,32 @@ class Guardrails : PatternRunner {
     }
 }
 
+/** 18장 가드레일 — 나가는 프롬프트를 가로채 마스킹한다. */
+class MaskingAdvisor(private val order: Int = GUARDRAIL_ORDER) : BaseAdvisor {
+    var original: String? = null
+        private set
+    var masked: String? = null
+        private set
+
+    override fun before(request: ChatClientRequest, chain: AdvisorChain): ChatClientRequest {
+        val text = request.prompt().userMessage.text ?: return request
+        original = text
+        val hidden = CARD.replace(text, "****-****-****-****")
+        masked = hidden
+        if (hidden == text) return request
+        return request.mutate()
+            .prompt(request.prompt().augmentUserMessage { it.mutate().text(hidden).build() })
+            .build()
+    }
+
+    override fun after(response: ChatClientResponse, chain: AdvisorChain) = response
+    override fun getOrder(): Int = order
+
+    private companion object {
+        val CARD = Regex("""\d{4}-\d{4}-\d{4}-\d{4}""")
+    }
+}
+
 @Component
 class Evaluation : PatternRunner {
     override val spec = PatternSpec(
@@ -162,12 +161,7 @@ class Evaluation : PatternRunner {
         }
         listOf("정상 답" to good.orEmpty(), "엉뚱한 답" to "고객센터 영업시간은 평일 9시부터 6시까지입니다.")
             .forEach { (label, answer) ->
-                val v = runCatching {
-                    ctx.external("② 채점 — $label") { b ->
-                        RelevancyEvaluator.builder().chatClientBuilder(b).build()
-                            .evaluate(EvaluationRequest(ctx.input, Docs.POLICIES, answer))
-                    }
-                }.getOrNull()
+                val v = ctx.evaluate("② 채점 — $label", EvaluationRequest(ctx.input, Docs.POLICIES, answer))
                 ctx.note(
                     if (v == null) "$label — 채점기 호출 실패"
                     else "$label — ${v.verdict()}",
@@ -244,12 +238,7 @@ class Exploration : PatternRunner {
             }.awaitAll()
         }
         val scored = candidates.filterNotNull().mapIndexed { i, c ->
-            val score = runCatching {
-                ctx.external("후보 ${i + 1} 채점") { b ->
-                    RelevancyEvaluator.builder().chatClientBuilder(b).build()
-                        .evaluate(EvaluationRequest(ctx.input, c)).score
-                }
-            }.getOrDefault(0f)
+            val score = ctx.evaluate("후보 ${i + 1} 채점", EvaluationRequest(ctx.input, c))?.score ?: 0f
             ctx.note("%.2f · %s".format(score, c.take(60)))
             c to score
         }

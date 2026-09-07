@@ -8,7 +8,6 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory
 import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.document.Document
 import org.springframework.ai.evaluation.EvaluationRequest
-import org.springframework.ai.chat.evaluation.RelevancyEvaluator
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.stereotype.Component
 
@@ -121,12 +120,7 @@ class GoalSetting : PatternRunner {
 
         val work = ctx.step("② 작업 수행") { it.user("${goal.description} 두 문장 이내로 답해라.").call().content() }
 
-        val verdict = runCatching {
-            ctx.external("③ 달성 판정 (Evaluator)") { b ->
-                RelevancyEvaluator.builder().chatClientBuilder(b).build()
-                    .evaluate(EvaluationRequest(goal.successCriteria, work.orEmpty()))
-            }
-        }.getOrNull()
+        val verdict = ctx.evaluate("③ 달성 판정 (Evaluator)", EvaluationRequest(goal.successCriteria, work.orEmpty()))
         ctx.note(
             if (verdict == null) "채점기 호출 실패"
             else "달성 판정 — ${verdict.verdict()}",
@@ -204,10 +198,10 @@ class HumanInTheLoop(private val orders: OrderService) : PatternRunner {
         val answer = ctx.step("도구 왕복") { it.user(ctx.input).tools(tools).call().content() }
         val after = orders.find("A-1024")?.status
 
-        ctx.note("도구 ${tools.calls.size}회 — ${tools.calls.joinToString().ifBlank { "없음" }}")
+        ctx.note(tools.callSummary())
         ctx.note("주문 상태 — 호출 전 `$before` · 호출 후 `$after` (바뀌지 않았습니다)")
         tools.pendingCancel?.let { ctx.note("승인 대기 — $it. 화면의 [승인] 버튼이 눌려야 실제로 바뀝니다") }
-        return ctx.result(answer)
+        return ctx.result(answer, pendingCancel = tools.pendingCancel)
     }
 }
 

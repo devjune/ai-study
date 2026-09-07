@@ -23,6 +23,11 @@ data class RunResult(
     val elapsedMs: Long,
     /** 화면에 덧붙일 관측 — 검색 점수, 도구 호출 이력 등 */
     val notes: List<String> = emptyList(),
+    /**
+     * 13장 — 모델이 취소를 요청한 주문. 승인 버튼은 **이 값에만** 붙는다.
+     * 화면이 취소 가능한 주문을 스스로 고르면, 아무도 요청하지 않은 주문을 사람이 승인하게 된다.
+     */
+    val pendingCancel: String? = null,
 )
 
 /** 패턴 메타데이터. 문서와 같은 내용을 화면에도 싣는다. */

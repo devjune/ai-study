@@ -3,10 +3,9 @@ package com.example.demo.pattern
 import com.example.demo.support.OrderService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor
-import org.springframework.ai.chat.evaluation.RelevancyEvaluator
-import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.evaluation.EvaluationRequest
 import org.springframework.stereotype.Component
 
@@ -78,7 +77,7 @@ class Routing(private val orders: OrderService, private val docs: Docs) : Patter
             Route.ORDER -> {
                 val tools = SupportTools(orders)
                 val reply = ctx.step("② 주문 조회 경로") { it.user(ctx.input).tools(tools).call().content() }
-                ctx.note("도구 ${tools.calls.size}회 — ${tools.calls.joinToString()}")
+                ctx.note(tools.callSummary())
                 reply
             }
             Route.POLICY -> ctx.step("② 문서 검색 경로") {
@@ -120,14 +119,13 @@ class Parallelization : PatternRunner {
 
     override fun run(ctx: RunContext): RunResult = runBlocking {
         val started = System.nanoTime()
-        val (summary, sentiment) = kotlinx.coroutines.coroutineScope {
+        val (summary, sentiment) = coroutineScope {
             val a = async { ctx.step("① 요약") { it.user("한 문장으로 요약해줘: ${ctx.input}").call().content() } }
             val b = async { ctx.step("② 감정 분류") { it.user("긍정/부정/중립 중 하나로만 답해라: ${ctx.input}").call().content() } }
             listOf(a, b).awaitAll()
         }
         val wall = (System.nanoTime() - started) / 1_000_000
-        val sum = ctx.result("요약 — $summary\n\n감정 — $sentiment", elapsedMs = wall)
-        val serial = sum.calls.sumOf { it.elapsedMs }
+        val serial = ctx.calls.sumOf { it.elapsedMs }
         ctx.note("순차로 돌렸다면 ${serial}ms, 동시에 던져 ${wall}ms")
         ctx.result("요약 — $summary\n\n감정 — $sentiment", elapsedMs = wall)
     }
@@ -160,12 +158,7 @@ class Reflection : PatternRunner {
         var answer = ctx.step("① 첫 답") { it.user(ctx.input).call().content() }
 
         for (round in 1..2) {
-            val verdict = runCatching {
-                ctx.external("② 채점 (Evaluator)") { b ->
-                    RelevancyEvaluator.builder().chatClientBuilder(b).build()
-                        .evaluate(EvaluationRequest(ctx.input, Docs.POLICIES, answer.orEmpty()))
-                }
-            }.getOrNull()
+            val verdict = ctx.evaluate("② 채점 (Evaluator)", EvaluationRequest(ctx.input, Docs.POLICIES, answer.orEmpty()))
             if (verdict == null) { ctx.note("채점기 호출 실패 — 모델이 형식을 못 맞췄습니다"); break }
             ctx.note("${round}차 채점 — ${verdict.verdict()}")
             if (verdict.isPass) break                     // 통과하면 더 부르지 않는다
@@ -201,11 +194,9 @@ class ToolUse(private val orders: OrderService) : PatternRunner {
     override fun run(ctx: RunContext): RunResult {
         val tools = SupportTools(orders)
         val answer = ctx.step("도구 왕복") { it.user(ctx.input).tools(tools).call().content() }
-        ctx.note(
-            if (tools.calls.isEmpty()) "도구 미호출 — 답의 근거가 도구가 아닙니다"
-            else "도구 ${tools.calls.size}회 — ${tools.calls.joinToString()}",
-        )
-        ctx.note("`.call()` 한 번인데 위 타임라인은 두 칸입니다. 프레임워크가 왕복을 돌았기 때문입니다")
+        ctx.note(tools.callSummary())
+        if (tools.calls.isNotEmpty())
+            ctx.note("`.call()` 한 번인데 위 타임라인은 두 칸입니다. 프레임워크가 왕복을 돌았기 때문입니다")
         return ctx.result(answer)
     }
 }

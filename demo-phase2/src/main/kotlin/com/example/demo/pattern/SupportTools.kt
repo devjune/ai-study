@@ -19,6 +19,11 @@ class SupportTools(private val orders: OrderService) {
     var pendingCancel: String? = null
         private set
 
+    /** 화면 노트에 싣는 호출 이력. 부르지 않은 것도 관측 결과라 따로 적는다. */
+    fun callSummary(): String =
+        if (calls.isEmpty()) "도구 미호출 — 답의 근거가 도구가 아닙니다"
+        else "도구 ${calls.size}회 — ${calls.joinToString()}"
+
     @Tool(description = "주문 번호로 주문 상태와 배송 정보를 조회한다")
     fun lookupOrder(@ToolParam(description = "주문 번호. 예: A-1024") orderId: String): String {
         calls += "lookupOrder(orderId=$orderId)"

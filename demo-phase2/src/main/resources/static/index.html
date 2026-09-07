@@ -170,7 +170,7 @@ async function run() {
     history = history.filter(h => h.chapter !== current.chapter);
     history.push({ chapter: current.chapter, name: current.name, calls: r.calls.length, ms: r.elapsedMs });
     renderCompare();
-    if (current.chapter === 13) loadOrders();
+    if (current.chapter === 13) loadOrders(null, r.pendingCancel);
   } catch (e) {
     $('tl').innerHTML = `<h3>요청 실패</h3><div class="answer fail">${esc(e.message)}</div>`;
   } finally { $('go').disabled = false; }
@@ -205,20 +205,21 @@ function renderCompare() {
 }
 
 /* ── 주문 (13장 승인) ── */
-async function loadOrders(list) {
+/* pendingId 는 모델이 취소를 요청한 주문. 화면이 스스로 고르면 아무도 요청하지 않은
+   주문을 승인하게 되므로, 서버가 돌려준 값이 있을 때만 버튼을 단다. */
+async function loadOrders(list, pendingId) {
   const box = $('orders'); if (!box) return;
   const orders = list || await (await fetch('/api/orders')).json();
-  const pending = orders.find(o => o.status !== '취소됨' && o.status !== '배송완료');
   box.innerHTML = `<table class="orders"><tbody>` + orders.map(o => `
       <tr><td>${o.id}</td><td>${o.product}</td>
       <td><span class="status ${o.status === '취소됨' ? 'cancelled' : ''}">${o.status}</span></td></tr>`).join('')
     + `</tbody></table>`
-    + (pending ? `<button id="approve" style="margin-top:.5rem">승인 — ${pending.id} 취소 (LLM 없이 실행)</button>` : '');
+    + (pendingId ? `<button id="approve" style="margin-top:.5rem">승인 — ${esc(pendingId)} 취소 (LLM 없이 실행)</button>` : '');
   const btn = $('approve');
   if (btn) btn.onclick = async () => {
     const r = await (await fetch('/api/approve', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ orderId: pending.id })
+      body: JSON.stringify({ orderId: pendingId })
     })).json();
     loadOrders(r.orders);
   };
