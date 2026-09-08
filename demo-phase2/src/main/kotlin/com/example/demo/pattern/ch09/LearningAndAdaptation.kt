@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         9, "사례로 배우기", "Learning and Adaptation",
-        summary = "설계 때 예상 못 한 상황에서는 짜 둔 로직이 안 통합니다. 실제 사용에서 얻은 피드백을 반영합니다.",
+        summary = "모델은 호출마다 백지입니다. 사람이 고쳐 준 답을 쌓아 두고, 다음 답부터 예시로 반영합니다.",
         code = """
             // 사람이 고쳐 준 좋은 답을 저장해 두고
             vectorStore.add(listOf(Document("질문: ${'$'}질문\n모범 답: ${'$'}고친답")))

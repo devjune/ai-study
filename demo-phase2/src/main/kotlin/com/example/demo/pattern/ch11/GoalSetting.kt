@@ -19,8 +19,7 @@ class GoalSetting : PatternRunner {
 
             val 작업결과 = chatClient.prompt().user(goal.description).call().content()
 
-            // evaluator 는 4장에서 만든 것과 같다
-            // 작업 결과가 성공 기준을 만족하는지 코드가 판정한다
+            // 채점기가 성공 기준과 결과를 받아 판정한다. 채점기는 19장에서 자세히 본다
             val done = evaluator
                 .evaluate(EvaluationRequest(goal.successCriteria, 작업결과))
                 .isPass
