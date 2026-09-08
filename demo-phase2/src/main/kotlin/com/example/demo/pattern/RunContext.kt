@@ -103,6 +103,7 @@ class RunContext(
                 step = if (rounds.size > 1) "$label ${i + 1}차" else label,
                 prompt = prompt,
                 elapsedMs = if (i == rounds.lastIndex) elapsed else 0,
+                sameCall = rounds.size > 1,
             )
         }
         return result
@@ -122,7 +123,13 @@ class RunContext(
         )
         val elapsed = (System.nanoTime() - started) / 1_000_000
         trace.rounds.ifEmpty { listOf("(프롬프트를 잡지 못함)") }.forEachIndexed { i, prompt ->
-            recorded += ModelCall(recorded.size + 1, if (trace.rounds.size > 1) "$label ${i + 1}" else label, prompt, if (i == 0) elapsed else 0)
+            recorded += ModelCall(
+                recorded.size + 1,
+                if (trace.rounds.size > 1) "$label ${i + 1}" else label,
+                prompt,
+                if (i == 0) elapsed else 0,
+                sameCall = trace.rounds.size > 1,
+            )
         }
         return result
     }

@@ -19,6 +19,11 @@ data class ModelCall(
     /** 그 호출에 실제로 나간 프롬프트 전문 */
     val prompt: String,
     val elapsedMs: Long,
+    /**
+     * `.call()` 한 번 안에서 일어난 도구 왕복인가(5장).
+     * 왕복은 따로 잴 수 없어 시간을 마지막 것에 몰아 찍는다. 화면이 그 사정을 표시한다.
+     */
+    val sameCall: Boolean = false,
 )
 
 /** 패턴 하나의 실행 결과. */
