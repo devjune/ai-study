@@ -11,12 +11,11 @@ class ReasoningTechniques : PatternRunner {
         summary = "한 번에 답이 나오지 않는 문제가 있습니다. 모델이 단계를 밟아 생각하도록 프롬프트로 유도합니다.",
         code = """
             chatClient.prompt()
-                .system("답하기 전에 근거를 단계별로 적고, 마지막 줄에 결론만 남겨라")
+                .system("답하기 전에 근거를 단계별로 적고, 마지막 줄에 결론만 남겨라") // zero-shot CoT
                 .user(질문)
                 .call().content()
 
-            OllamaChatOptions.builder().disableThinking()   // 끈다
-            OllamaChatOptions.builder().enableThinking()    // 켠다. thinkLow · thinkMedium · thinkHigh 로 깊이도 정한다
+            OllamaChatOptions.builder().enableThinking()    // thinkLow · thinkMedium · thinkHigh 로 깊이도 정할 수 있다.
         """.trimIndent(),
         diagram = """
             flowchart LR

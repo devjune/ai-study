@@ -13,10 +13,9 @@ class Prioritization : PatternRunner {
             data class Task(val title: String, val priority: Int, val reason: String)
 
             val tasks = chatClient.prompt()
-                .system("문의를 처리 우선순위로 정렬한다. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
+                .system("문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
                 .user(할일들)
                 .call()
-                // 컬렉션은 ParameterizedTypeReference 로 받는다
                 .entity(object : ParameterizedTypeReference<List<Task>>() {})
 
             tasks.sortedByDescending { it.priority }.forEach { 처리(it) }
@@ -35,13 +34,13 @@ class Prioritization : PatternRunner {
 
     override fun run(ctx: RunContext): RunResult {
         val tasks = ctx.step("우선순위 매기기") {
-            it.system("고객 문의를 처리 우선순위로 정렬한다. priority 는 1~5, 클수록 급하다. reason 에는 제목을 반복하지 말고 그 순위인 근거를 한 문장으로 적는다.")
+            it.system("고객 문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로 요약한다. priority 는 1~5, 클수록 급하다. reason 에는 제목을 반복하지 말고 그 순위인 근거를 한 문장으로 적는다.")
                 .user(ctx.input).call().entity(object : ParameterizedTypeReference<List<Task>>() {})
         } ?: return ctx.result("목록을 타입으로 받지 못했습니다", ok = false)
 
         val sorted = tasks.sortedByDescending { it.priority }
         sorted.forEach { ctx.note("[${it.priority}] ${it.title} — ${it.reason.take(50)}") }
-        ctx.note("정렬 기준은 모델이 정하고, 순서대로 도는 것은 코드가 합니다")
+        ctx.note("순위는 모델이 매기고, 정렬과 처리는 코드가 합니다")
         return ctx.result(sorted.joinToString("\n") { "${it.priority} · ${it.title}" })
     }
 }

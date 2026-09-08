@@ -19,7 +19,7 @@ class Exploration : PatternRunner {
                 (1..3).map {
                     async {
                         chatClient.prompt().user(질문)
-                            .options(ChatOptions.builder().temperature(0.9))   // 온도를 높여 답을 벌린다
+                            .options(ChatOptions.builder().temperature(0.9))   // 온도를 높인다. 낮으면 세 번 다 거의 같은 답이 온다
                             .call().content()
                     }
                 }.awaitAll()
