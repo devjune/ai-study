@@ -15,7 +15,8 @@ class ReasoningTechniques : PatternRunner {
                 .user(질문)
                 .call().content()
 
-            OllamaChatOptions.builder().disableThinking()   // 공통 ChatOptions 에는 없다
+            OllamaChatOptions.builder().disableThinking()   // 끈다
+            OllamaChatOptions.builder().enableThinking()    // 켠다. thinkLow · thinkMedium · thinkHigh 로 깊이도 정한다
         """.trimIndent(),
         diagram = """
             flowchart LR
@@ -25,16 +26,20 @@ class ReasoningTechniques : PatternRunner {
                 P --> M2((모델))
                 M2 --> A2[근거 → 결론]
         """.trimIndent(),
-        defaultInput = "사과 3개를 5,000원에 사서 2개를 3,000원에 팔았다. 남은 1개를 얼마에 팔아야 본전인가?",
+        defaultInput = "아버지는 아들보다 24살 많다. 2년 뒤에는 아버지 나이가 아들 나이의 3배가 된다. 아들은 지금 몇 살인가?",
         model = "qwen3:4b-instruct",
+        maxTokens = 700,
     )
 
     override fun run(ctx: RunContext): RunResult {
-        val plain = ctx.step("① 그냥 묻기") { it.user(ctx.input).call().content() }
+        val direct = ctx.step("① 결론만 시키기") {
+            it.system("계산 과정을 쓰지 말고 결론만 한 줄로 답해라").user(ctx.input).call().content()
+        }
         val guided = ctx.step("② 단계를 밟게 시키기") {
             it.system("답하기 전에 근거를 단계별로 적고, 마지막 줄에 결론만 남겨라").user(ctx.input).call().content()
         }
+        ctx.note("요즘 모델은 시키지 않아도 단계를 밟습니다. 그래서 ① 을 오히려 결론만 쓰게 눌러야 대비가 보입니다")
         ctx.note("프레임워크가 개입할 자리가 없습니다. 차이는 시스템 프롬프트 한 줄입니다")
-        return ctx.result("그냥 — $plain\n\n단계 유도 — $guided")
+        return ctx.result("직답 — $direct\n\n단계 유도 — $guided")
     }
 }
