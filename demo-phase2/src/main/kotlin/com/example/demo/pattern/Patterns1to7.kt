@@ -84,7 +84,7 @@ class Routing(private val orderService: OrderService, private val docs: Docs) : 
                 .call()
                 .entity(RouteDecision::class.java)
 
-            when (decision.route()) {                   // 여기부터는 평범한 코틀린
+            when (decision.route()) {
                 Route.ORDER   -> request.tools(SupportTools(orderService)).call().content()
                 Route.POLICY  -> request.advisors(qaAdvisor).call().content()
                 Route.GENERAL -> request.call().content()
@@ -184,18 +184,17 @@ class Reflection : PatternRunner {
             // Critic 이 채워 줄 그릇. reason 이 있어야 무엇을 고칠지가 남는다
             data class Critique(val pass: Boolean, val reason: String)
 
-            // Critic 에게는 다른 페르소나를 준다. 자기 답을 자기가 보면 판정이 후해진다
-            val CRITIC = ""${'"'}
+            val CRITIC = ${'"'}""
                 너는 사내 규정을 검토하는 감사자다. 답을 새로 쓰지 말고 검토만 해라.
                 pass   — 규정의 수치를 그대로 말하고 어긋남이 없을 때만 true
                 reason — 규정의 어느 대목이 빠졌거나 틀렸는지 숫자까지 짚어 한 문장
-            ""${'"'}.trimIndent()
+            ${'"'}"".trimIndent()
 
             var answer = chatClient.prompt()                // Producer — 규정을 주지 않는다
                 .system("고객 문의에 한 문장으로 답해라. 반드시 한국어 단어만 쓴다.")
                 .user(질문).call().content()
 
-            for (round in 1..2) {                          // 루프는 두 바퀴까지만 돈다
+            for (round in 1..2) {                           // 루프는 두 바퀴까지만 돈다
                 val critique = chatClient.prompt()          // Critic — 별도 호출, 별도 프롬프트
                     .system(CRITIC)
                     .user("규정:\n${'$'}규정\n\n질문: ${'$'}질문\n답: ${'$'}answer")
