@@ -15,8 +15,11 @@ class ExceptionHandling : PatternRunner {
 
             val answer = runCatching {
                 chatClient.prompt().user(질문).call().content()
-            }.getOrElse {
-                "지금 답변이 어렵습니다. 상담원에게 연결해 드릴까요?"   // 폴백
+            }.getOrElse { e ->
+                // 폴백은 장애에만 건다. 설정 오류나 버그까지 이 문구로 덮으면 고장이 안 보인다
+                if (e !is TransientAiException) throw e
+                log.warn("model unavailable, falling back", e)
+                "지금 답변이 어렵습니다. 상담원에게 연결해 드릴까요?"
             }
         """.trimIndent(),
         diagram = """
@@ -41,9 +44,10 @@ class ExceptionHandling : PatternRunner {
                 ?.let { "1차 시도 실패 — ${it::class.simpleName}: ${it.message?.take(90)}" }
                 ?: "실패하지 않았습니다",
         )
+        ctx.note("NonTransient — 다시 보내도 똑같이 실패하는 부류입니다. 위 코드라면 폴백에 안 걸리고 그대로 터집니다")
         ctx.note("재시도를 1회로 낮춰 두어 2초 안에 실패가 돌아옵니다. 기본값 10회면 몇 분을 기다립니다")
 
-        val answer = ctx.step("폴백 경로") { it.user(ctx.input).call().content() }
+        val answer = ctx.step("고친 설정으로 복구") { it.user(ctx.input).call().content() }
         return ctx.result(answer)
     }
 }

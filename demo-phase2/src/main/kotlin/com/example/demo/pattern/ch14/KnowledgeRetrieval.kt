@@ -12,21 +12,21 @@ class KnowledgeRetrieval(private val docs: Docs) : PatternRunner {
         summary = "모델은 학습 데이터 밖의 것을 모릅니다. 답하기 전에 관련 문서를 찾아 프롬프트에 넣어 근거를 만듭니다.",
         code = """
             .advisors(
-                QuestionAnswerAdvisor            // RAG 전용 Advisor. 검색부터 주입까지 한다
+                QuestionAnswerAdvisor            // RAG 전용 Advisor. 검색부터 끼워 넣기까지 한다
                     .builder(vectorStore)        // 어디서 찾을지
                     .searchRequest(SEARCH)       // 어떻게 찾을지 (아래)
                     .build(),
             )
 
             val SEARCH = SearchRequest.builder()
-                .topK(3)                   // ① 점수 높은 순으로 3건을 뽑고
-                .similarityThreshold(0.5)  // ② 그중 0.5 미만은 버린다 (전부 미달이면 주입 없음)
+                .topK(3)                   // ① 가까운 순으로 3건을 뽑고
+                .similarityThreshold(0.5)  // ② 그중 0.5 미만은 버린다 (전부 미달이면 끼우지 않음)
                 .build()
         """.trimIndent(),
         diagram = """
             flowchart LR
                 Q[질문] --> S[(VectorStore)]
-                S -->|임계값을 넘은 문서만| P[프롬프트에 주입]
+                S -->|임계값을 넘은 문서만| P[프롬프트에 끼움]
                 Q --> P
                 P --> M((모델))
         """.trimIndent(),
