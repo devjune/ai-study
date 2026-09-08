@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component
 @Component
 class ResourceAware : PatternRunner {
     override val spec = PatternSpec(
-        16, "모델 골라 쓰기", "Resource-Aware Optimization",
-        summary = "LLM 호출은 비싸고 느립니다. 모든 일에 가장 좋은 모델을 쓸 이유가 없습니다.",
+        16, "자원 최적화", "Resource-Aware Optimization",
+        summary = "아껴 써야 할 자원은 계산·시간·비용 셋입니다. 모든 일에 가장 좋은 모델을 쓸 이유가 없습니다.",
         code = """
             // 분류·요약처럼 정해진 형식만 뽑는 일과, 근거를 들어 답해야 하는 일을 가른다
             val model = when (decision.route()) {

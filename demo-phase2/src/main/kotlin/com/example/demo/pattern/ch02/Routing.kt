@@ -32,6 +32,8 @@ class Routing(private val orderService: OrderService, private val docs: Docs) : 
                 .call()
                 .entity(RouteDecision::class.java)
 
+            val request = chatClient.prompt().user(질문)   // 세 경로가 같은 요청에서 갈라진다
+
             when (decision.route()) {
                 Route.ORDER   -> request.tools(SupportTools(orderService)).call().content()
                 Route.POLICY  -> request.advisors(qaAdvisor).call().content()
