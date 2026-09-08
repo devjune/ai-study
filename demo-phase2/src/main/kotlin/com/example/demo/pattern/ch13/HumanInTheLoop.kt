@@ -45,6 +45,9 @@ class HumanInTheLoop(private val orderService: OrderService) : PatternRunner {
     )
 
     override fun run(ctx: RunContext): RunResult {
+        // 시연을 몇 번이고 반복할 수 있게, 승인으로 바뀐 상태를 실행마다 되돌린다
+        orderService.reset()
+
         val before = orderService.find("A-1024")?.status
         val tools = SupportTools(orderService)
         val answer = ctx.step("도구 왕복") { it.user(ctx.input).tools(tools).call().content() }

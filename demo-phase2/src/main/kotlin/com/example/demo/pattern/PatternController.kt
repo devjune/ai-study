@@ -53,10 +53,6 @@ class PatternController(
             ?: return ApproveReply(false, "주문번호 ${req.orderId} 를 찾을 수 없습니다.", orderService.all())
         return ApproveReply(true, "주문 ${cancelled.id} 이 취소되었습니다.", orderService.all())
     }
-
-    /** 시연을 반복하려면 주문 상태를 되돌려야 한다. */
-    @PostMapping("/reset")
-    fun reset(): List<Order> = orderService.reset()
 }
 
 data class RunRequest(val input: String?, val model: String?)

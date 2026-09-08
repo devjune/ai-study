@@ -24,7 +24,7 @@ class OrderService {
 
     fun all(): List<Order> = orders.values.sortedBy { it.id }
 
-    /** 시연을 반복하려면 상태를 되돌려야 한다. */
+    /** 13장 시연을 반복할 수 있게, 그 장을 실행할 때마다 상태를 되돌린다. */
     fun reset(): List<Order> {
         orders.clear()
         orders.putAll(SEED.associateBy { it.id })
