@@ -1,5 +1,11 @@
 package com.example.demo.pattern
 
+/** 패턴 하나를 실행하는 단위. 구현은 장별 패키지(`ch01`~`ch21`)에 하나씩 있다. */
+interface PatternRunner {
+    val spec: PatternSpec
+    fun run(ctx: RunContext): RunResult
+}
+
 /**
  * 모델 호출 한 번. 화면의 타임라인 막대 하나에 대응한다.
  *

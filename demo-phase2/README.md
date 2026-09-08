@@ -35,29 +35,31 @@ http://localhost:8080
 ```
  5장 도구 사용    ██        2회
  2장 라우팅      ███       3회
- 4장 리플렉션    █████     5회
+ 4장 자기 검토   █████     5회
 21장 탐색과 발견 ██████    6회
 ```
 
-`@Tool` 하나 붙였을 뿐인데 호출이 두 번인 것, 리플렉션이 채점 때문에 늘어나는 것이 눈으로 갈립니다.
+`@Tool` 하나 붙였을 뿐인데 호출이 두 번인 것, 자기 검토가 검토 때문에 늘어나는 것이 눈으로 갈립니다.
 
 ## 코드 구조
 
 ```
 com.example.demo
 ├── pattern/
-│   ├── Model.kt              ModelCall · RunResult · PatternSpec
+│   ├── Model.kt              PatternRunner · PatternSpec · RunResult · ModelCall
 │   ├── RunContext.kt         TraceAdvisor — 호출마다 프롬프트를 붙잡는다
-│   ├── Types.kt              모델이 채워 줄 그릇들 (Plan · RouteDecision · Task …)
-│   ├── Patterns1to7.kt       1~7장
-│   ├── Patterns8to14.kt      8~14장 (10장 제외)
-│   ├── Patterns15to21.kt     16~21장
-│   ├── PatternsMcp.kt        10·15장 — 자기 /mcp 엔드포인트를 실제로 부른다
-│   ├── Mcp.kt                @McpTool 선언
+│   ├── Docs.kt               사내 규정 문서 — 9·14장이 검색한다
+│   ├── Mcp.kt                @McpTool 선언과 자기 /mcp 호출
 │   ├── SupportTools.kt       @Tool — 조회는 실행, 취소는 승인 요청만
-│   └── PatternController.kt  실행 · 승인 · 초기화
+│   ├── PatternController.kt  실행 · 승인 · 초기화
+│   ├── ch01/PromptChaining.kt
+│   ├── ch02/Routing.kt
+│   ├──   …                   장 하나에 패키지 하나, 파일 하나
+│   └── ch21/Exploration.kt
 └── support/OrderService.kt   주문 저장소 — 13장에서 실제로 상태가 바뀐다
 ```
+
+장을 찾으려면 `ch05/` 로 갑니다. 그 장이 쓰는 그릇(`Outline` · `Plan` · `Task` …)도 러너 바로 아래에 함께 있습니다.
 
 ## 구현 메모
 
