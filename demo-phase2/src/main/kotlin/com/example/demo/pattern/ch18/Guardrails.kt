@@ -24,20 +24,33 @@ class Guardrails : PatternRunner {
         code = """
             data class Screen(val blocked: Boolean, val why: String)
 
+            // ① 문지기 — 큰 모델 앞에 작은 모델. 답이 아니라 통과 여부만 받는다
             val verdict = chatClient.prompt().system(GUARD)
                 .options(ChatOptions.builder().model("granite4:micro"))   // 작고 빠른 모델
                 .user(입력).call().entity(Screen::class.java)
 
             if (verdict.blocked) return 거절(verdict.why)      // 큰 모델은 부르지 않는다
+
+            // ② 나가는 프롬프트 — Advisor 의 before 가 모델에 닿기 전에 바꿔 끼운다
+            class MaskingAdvisor : BaseAdvisor {
+                override fun before(request: ChatClientRequest, chain: AdvisorChain): ChatClientRequest {
+                    val hidden = CARD.replace(request.prompt().userMessage.text, "****-****-****-****")
+                    return request.mutate()
+                        .prompt(request.prompt().augmentUserMessage { it.mutate().text(hidden).build() })
+                        .build()
+                }
+                override fun getOrder() = 1000     // Advisor 체인에서의 자리
+            }
+
+            chatClient.prompt().user(입력).advisors(MaskingAdvisor()).call().content()
         """.trimIndent(),
         diagram = """
             flowchart LR
                 Q[입력] --> G((작은 모델<br/>문지기))
                 G -->|막힘| X[거절 · 큰 모델을 안 부름]
-                G -->|통과| B[before<br/>카드번호 마스킹]
+                G -->|통과| B[Advisor before<br/>카드번호 마스킹]
                 B --> M((큰 모델))
-                M --> A[after<br/>금칙어 검사]
-                A --> R[응답]
+                M --> R[응답]
         """.trimIndent(),
         defaultInput = "내 카드번호는 1234-5678-9012-3456 인데 환불해줘",
         model = "qwen3:4b-instruct",
@@ -79,7 +92,8 @@ class Guardrails : PatternRunner {
         }
         ctx.note("원본 — ${masking.original}")
         ctx.note("모델에 나간 것 — ${masking.masked}")
-        ctx.note("위 타임라인의 프롬프트를 펼쳐 보면 카드번호가 없습니다")
+        if (masking.masked != masking.original) ctx.note("위 타임라인의 프롬프트를 펼쳐 보면 카드번호가 없습니다")
+        else ctx.note("바꿀 것이 없어 그대로 나갔습니다")
 
         // 문지기가 실제로 막는지, 같은 검사기에 탈옥 표본을 한 번 더 넣어 본다
         val probe = screen(ctx, "③ 문지기 · 탈옥 표본", JAILBREAK)

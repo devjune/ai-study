@@ -8,14 +8,17 @@ import org.springframework.stereotype.Component
 class Evaluation : PatternRunner {
     override val spec = PatternSpec(
         19, "평가와 모니터링", "Evaluation and Monitoring",
-        summary = "LLM은 확률적이라 기존 테스트로는 신뢰성을 보장할 수 없습니다. 답의 품질을 코드가 잽니다.",
+        summary = "LLM은 확률적이라 assertEquals 로는 못 잽니다. 답을 다른 모델 호출이 채점하고, 통과 여부를 코드가 받습니다 — 그대로 회귀 테스트가 됩니다.",
         code = """
-            // EvaluationRequest 는 세 가지를 받는다 — 질문, 근거로 삼을 문서, 채점할 답
-            val response = evaluator.evaluate(EvaluationRequest(질문, 검색된문서, 답))
+            // 채점기도 모델이다 — 자기 ChatClient 를 따로 만들어 쓴다
+            val evaluator = RelevancyEvaluator.builder().chatClientBuilder(builder).build()
 
-            response.isPass        // 통과 여부 (boolean)
-            response.getScore()    // 점수 (float)
-            response.getFeedback() // 왜 그렇게 판정했는지 (채점기에 따라 비어 있다)
+            // EvaluationRequest 는 세 가지를 받는다 — 질문, 근거로 삼을 문서, 채점할 답
+            val response = evaluator.evaluate(EvaluationRequest(질문, 근거문서, 답))
+
+            response.isPass     // 통과 여부
+            response.score      // 점수 — 이 채점기는 통과 1.0, 미달 0.0 둘뿐이다
+            response.feedback   // 왜 그렇게 봤는지 — 채점기에 따라 비어 있다
         """.trimIndent(),
         diagram = """
             flowchart LR

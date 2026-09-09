@@ -94,6 +94,7 @@ class Exploration : PatternRunner {
                 .user("${ctx.input}\n\n앞선 답: $winner\n지적: ${votes.joinToString { v -> v.weakness }}\n지적을 반영해 한국어 한 문장으로 다시 써라.")
                 .call().content()
         }
+        ctx.note("실행마다 후보가 다릅니다 — 온도 0.9 는 21장만의 예외입니다. 후보가 같으면 겨룰 것이 없습니다")
         ctx.note("호출 네 번 — 후보 2 + 겨루기 1 + 다듬기 1. 후보마다 심사위원 셋을 따로 불렀다면 아홉 번입니다")
         ctx.result(refined)
     }
