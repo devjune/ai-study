@@ -60,7 +60,15 @@
   .kt .a { color:#000; font-weight:600; background:var(--hi); box-shadow:0 0 0 1px #eee; }
 
   .run { display:flex; gap:.4rem; }
-  .run input { flex:1; padding:.45rem; border:1px solid var(--line); font:inherit; font-size:.85rem; }
+  /* 터미널 프롬프트 모양. 평소엔 기본값이라 흐릿하게, 잡으면 입력 중이라 또렷하게 */
+  .run { position:relative; }
+  .run .ps { position:absolute; left:.55rem; top:50%; transform:translateY(-50%);
+             color:#aaa; font-size:.85rem; pointer-events:none; }
+  .run:focus-within .ps { color:#000; }
+  .run input { flex:1; padding:.45rem .45rem .45rem 1.7rem; border:1px solid var(--line);
+               font:inherit; font-size:.85rem; box-shadow:inset 0 1px 4px rgba(0,0,0,.10); }
+  .run input:hover { border-color:#999; }
+  .run input:focus { border-color:#000; box-shadow:none; outline:none; }
 
   /* 타임라인 */
   .tl { margin-top:.9rem; }
@@ -76,16 +84,6 @@
   .answer { margin-top:.7rem; padding:.6rem; border:1px solid var(--line); white-space:pre-wrap;
             font-size:.85rem; max-height:16rem; overflow-y:auto; }
   .fail { background:#000; color:#fff; }
-
-  /* 누적 비교 */
-  .compare { margin-top:1.2rem; border:1px solid var(--line); }
-  .compare h2 { margin:0; padding:.5rem .7rem; font-size:.9rem; background:var(--soft); border-bottom:1px solid var(--line); }
-  .compare .inner { padding:.6rem .7rem; }
-  .row { display:grid; grid-template-columns:11rem 1fr 2.4rem; gap:.5rem; align-items:center;
-         font-size:.8rem; padding:.18rem 0; }
-  .row .g { background:#eee; height:.9rem; position:relative; }
-  .row .g i { display:block; height:100%; background:var(--bar); }
-  .row .t { color:var(--dim); font-size:.72rem; text-align:right; font-variant-numeric:tabular-nums; }
 
   /* 주문 (13장) */
   table.orders { width:100%; border-collapse:collapse; font-size:.8rem; margin-top:.7rem; }
@@ -116,7 +114,7 @@
           <p class="summary" id="summary"></p>
           <pre id="code" class="kt"></pre>
           <div class="run">
-            <input id="input" placeholder="입력">
+            <span class="ps">❯</span><input id="input" placeholder="입력">
             <button class="go" id="go">실행</button>
           </div>
 
@@ -124,10 +122,6 @@
         </div>
       </div>
 
-      <div class="compare">
-        <h2>실행한 패턴 — 모델 호출 횟수</h2>
-        <div class="inner" id="compare"></div>
-      </div>
     </div>
   </div>
 </main>
@@ -139,7 +133,7 @@ mermaid.initialize({ startOnLoad:false, theme:'neutral', securityLevel:'strict' 
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-let PATTERNS = [], current = null, history = [];
+let PATTERNS = [], current = null;
 
 /* ── Kotlin 하이라이팅 ──
    사내망에서 그대로 띄우는 데모라 외부 라이브러리를 쓰지 않는다. 정규식 한 번으로
@@ -206,9 +200,6 @@ async function run() {
       body: JSON.stringify({ input: $('input').value, model: $('model').value })
     })).json();
     renderResult(r);
-    history = history.filter(h => h.chapter !== current.chapter);
-    history.push({ chapter: current.chapter, name: current.name, calls: r.calls.length });
-    renderCompare();
     if (current.chapter === 13) loadOrders(null, r.pendingCancel);
   } catch (e) {
     $('tl').innerHTML = `<h3>요청 실패</h3><div class="answer fail">${esc(e.message)}</div>`;
@@ -231,18 +222,6 @@ function renderResult(r) {
   h += `<div class="answer ${r.ok ? '' : 'fail'}">${esc(r.output)}</div>`;
   if (current.chapter === 13) h += `<div id="orders"></div>`;
   $('tl').innerHTML = h;
-}
-
-/* ── 누적 비교 ── */
-function renderCompare() {
-  if (!history.length) return;
-  const max = Math.max(...history.map(h => h.calls), 1);
-  $('compare').innerHTML = history.slice().sort((a,b) => a.chapter - b.chapter).map(h => `
-    <div class="row">
-      <span>${h.chapter}장 ${h.name}</span>
-      <span class="g"><i style="width:${h.calls ? Math.max(h.calls / max * 100, 3) : 0}%"></i></span>
-      <span class="t">${h.calls}회</span>
-    </div>`).join('');
 }
 
 /* ── 주문 (13장 승인) ── */
