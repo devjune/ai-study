@@ -15,12 +15,15 @@ class KnowledgeRetrieval(private val docs: Docs) : PatternRunner {
                 QuestionAnswerAdvisor            // RAG 전용 Advisor. 검색부터 끼워 넣기까지 한다
                     .builder(vectorStore)        // 어디서 찾을지
                     .searchRequest(SEARCH)       // 어떻게 찾을지 (아래)
+                    // .promptTemplate(…)        // 끼워 넣는 틀 교체. 기본은 영어 템플릿(9장에서 본 그 블록)
+                    // .order(…)                 // Advisor 체인에서의 순서 (18장)
                     .build(),
             )
 
             val SEARCH = SearchRequest.builder()
                 .topK(3)                   // ① 가까운 순으로 3건을 뽑고
                 .similarityThreshold(0.5)  // ② 그중 0.5 미만은 버린다 (전부 미달이면 끼우지 않음)
+                // .filterExpression("type == 'refund'")   // ③ 메타데이터로 먼저 거를 수도 있다
                 .build()
         """.trimIndent(),
         diagram = """
