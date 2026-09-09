@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 class PromptChaining : PatternRunner {
     override val spec = PatternSpec(
         1, "프롬프트 체이닝", "Prompt Chaining",
-        summary = "복잡한 작업을 프롬프트 하나에 몰아넣으면 모델이 지시를 빠뜨립니다. 단계로 쪼개 앞 결과를 뒤 프롬프트에 넣습니다.",
+        summary = "파이프라인 패턴이라고도 부르는 분할 정복입니다. 체인의 각 단계는 한 가지 연산에만 집중하고, 앞 단계의 출력이 다음 단계의 입력이 됩니다.",
         code = """
             // 모델이 채워 줄 그릇. 이 클래스로 JSON 스키마가 만들어져 프롬프트에 함께 실리고,
             // 돌아온 JSON 은 Jackson 이 생성자 파라미터 이름을 맞춰 그대로 채운다
@@ -39,6 +39,7 @@ class PromptChaining : PatternRunner {
             it.user("${ctx.input} 로 발표 목차를 3개 항목으로 잡아줘").call().entity(Outline::class.java)
         } ?: return ctx.result("목차를 타입으로 받지 못했습니다", ok = false)
 
+        ctx.note("한 프롬프트에 여러 지시를 몰아넣으면 모델이 일부를 빠뜨립니다. 그래서 쪼갭니다")
         ctx.note("중간 결과가 타입이라 파싱이 없다 — sections ${outline.sections.size}개")
 
         val draft = ctx.step("② 초안 쓰기") {
