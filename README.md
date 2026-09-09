@@ -29,6 +29,7 @@ Spring AI 2.0.1(2026-08) 기준으로 핵심 개념과 사용법을 처음부터
 
 - [발표 자료 본문](./docs/phase2/Spring%20AI%EB%A1%9C%20%EA%B5%AC%ED%98%84%ED%95%98%EB%8A%94%20%EC%97%90%EC%9D%B4%EC%A0%84%ED%8B%B1%20%ED%8C%A8%ED%84%B4.md) — 위키 포팅 대상
 - [결정 로그](./docs/phase2/decisions.md) · [학습 로그](./docs/phase2/study-log.md)
+- [시연 메모](./docs/phase2/%EC%98%88%EC%A0%9C%20%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98%20%EC%8B%A4%ED%96%89%ED%95%98%EA%B8%B0.md) — 데모 실행법과 모델 선정 근거. 위키에는 올리지 않는다
 - [오프라인 반입 키트](./docs/phase2/offline-kit.md) — 외부망이 막힌 사내망에서 돌리기
 - [설계 문서](./docs/superpowers/specs/2026-09-04-phase2-local-llm-design.md)
 
