@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 class Planning : PatternRunner {
     override val spec = PatternSpec(
         6, "계획 수립", "Planning",
-        summary = "단계를 미리 정할 수 없는 일이 있습니다. 단계 나누기부터 모델에게 맡깁니다.",
+        summary = "계획 수립의 핵심은 초기 상태에서 목표 상태로 가는 일련의 행동 순서를 세우는 능력입니다. 그 순서는 미리 정해 두는 것이 아니라 요청을 받고 만들어집니다.",
         code = """
             val report = chatClient.prompt()
                 .user(${'"'}""
