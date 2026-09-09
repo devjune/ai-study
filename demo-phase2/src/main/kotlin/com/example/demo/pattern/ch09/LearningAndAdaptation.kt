@@ -11,8 +11,14 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
         9, "학습과 적응", "Learning and Adaptation",
         summary = "모델은 호출마다 백지입니다. 겪은 일을 쌓아 두면, 다르게 물어도 지난 교정이 다음 답에 반영됩니다.",
         code = """
-            // 겪은 일을 저장한다 — 틀렸던 답까지 함께 남겨 같은 함정을 피하게 한다
-            vectorStore.add(listOf(Document("질문: ${'$'}질문\n처음 답(틀림): ${'$'}틀린답\n고친 답: ${'$'}고친답")))
+            // 상담원이 예전에 고쳐 준 사례. 미리 준비해 둔 데이터다 — 틀렸던 답까지 함께
+            private val 겪은일 = Document(
+                "질문: 환불 배송비 얼마야?\n" +
+                    "처음 답(틀림): 주문 후 7일 이내 반품 시 10,000원을 환불합니다.\n" +
+                    "고친 답: 단순 변심이면 왕복 배송비 6,000원을 구매자가 부담합니다.",
+            )
+
+            vectorStore.add(listOf(겪은일))
 
             // 다르게 물어도 뜻이 가까우면 그 사례가 예시로 딸려 들어간다 (14장 의미 검색)
             chatClient.prompt().user(새질문)
