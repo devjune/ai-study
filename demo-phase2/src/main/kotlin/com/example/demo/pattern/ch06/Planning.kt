@@ -11,7 +11,7 @@ class Planning : PatternRunner {
         code = """
             val report = chatClient.prompt()
                 .user(${'"'}""
-                    1. '${'$'}목표' 를 이룰 계획을 불릿 3개로 세워라.
+                    1. '${'$'}목표' 를 이룰 계획을 불릿 3개로 세워라. 불릿은 하나에 20자 안으로.
                     2. 그 계획을 팀장에게 보고하듯 두 문장으로 요약해라.
 
                     아래 두 절로만 답한다.
@@ -49,7 +49,7 @@ class Planning : PatternRunner {
 
     private companion object {
         val BRIEF = """
-            1. '%s' 를 이룰 계획을 불릿 3개로 세워라.
+            1. '%s' 를 이룰 계획을 불릿 3개로 세워라. 불릿은 하나에 20자 안으로.
             2. 그 계획을 팀장에게 보고하듯 두 문장으로 요약해라.
 
             아래 두 절로만 답한다.

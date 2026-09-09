@@ -22,29 +22,19 @@ class Exploration : PatternRunner {
             data class Vote(val label: String, val winner: Int, val weakness: String)
 
             // ① 만들고 — 온도를 올려 서로 다른 후보를 동시에 뽑는다 (3장)
-            val 후보들 = coroutineScope {
-                (1..2).map {
-                    async {
-                        chatClient.prompt().user(질문)
-                            .options(ChatOptions.builder().temperature(0.9))
-                            .call().content()
-                    }
-                }.awaitAll()
-            }
+            val 후보 = (1..2).map { async { chatClient.prompt().user(질문)
+                .options(ChatOptions.builder().temperature(0.9)).call().content() } }.awaitAll()
 
             // ② 겨루고 — 둘을 나란히 놓고 세 관점이 각각 한 표씩 던진다 (20장처럼 목록을 타입으로)
-            val 표 = chatClient.prompt()
-                .system(JUDGE)
-                .user("후보1: ${'$'}후보1\n후보2: ${'$'}후보2")
-                .call()
-                .entity(object : ParameterizedTypeReference<List<Vote>>() {})
+            val 표 = chatClient.prompt().system(JUDGE)
+                .user("후보1: ${'$'}{후보[0]} · 후보2: ${'$'}{후보[1]}")
+                .call().entity(object : ParameterizedTypeReference<List<Vote>>() {})
 
-            val 이긴답 = if (표.count { it.winner == 2 } > 1) 후보2 else 후보1   // 다수결
+            val 이긴답 = if (표.count { it.winner == 2 } > 1) 후보[1] else 후보[0]   // 다수결
 
             // ③ 키운다 — 이긴 답에 진 쪽 약점을 붙여 한 바퀴 더 (4장)
             val 다듬은답 = chatClient.prompt()
-                .user(질문 + 이긴답 + 표.joinToString { it.weakness })
-                .call().content()
+                .user(질문 + 이긴답 + 표.joinToString { it.weakness }).call().content()
         """.trimIndent(),
         diagram = """
             flowchart LR

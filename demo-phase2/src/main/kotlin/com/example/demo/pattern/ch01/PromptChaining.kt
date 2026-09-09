@@ -42,7 +42,7 @@ class PromptChaining : PatternRunner {
         ctx.note("중간 결과가 타입이라 파싱이 없다 — sections ${outline.sections.size}개")
 
         val draft = ctx.step("② 초안 쓰기") {
-            it.user("아래 목차로 두 문장짜리 소개를 써줘\n" + outline.sections.joinToString("\n")).call().content()
+            it.user("아래 목차를 아우르는 소개를 한 문장으로 써줘. 제목 없이.\n" + outline.sections.joinToString("\n")).call().content()
         }
         return ctx.result(draft)
     }

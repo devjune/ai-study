@@ -13,7 +13,7 @@ class Prioritization : PatternRunner {
             data class Task(val title: String, val priority: Int, val reason: String)
 
             val tasks = chatClient.prompt()
-                .system("문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
+                .system("문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 20자 안팎으로.")
                 .user(할일들)
                 .call()
                 .entity(object : ParameterizedTypeReference<List<Task>>() {})
@@ -34,7 +34,7 @@ class Prioritization : PatternRunner {
 
     override fun run(ctx: RunContext): RunResult {
         val tasks = ctx.step("우선순위 매기기") {
-            it.system("고객 문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로 요약한다. priority 는 1~5, 클수록 급하다. reason 에는 제목을 반복하지 말고 그 순위인 근거를 한 문장으로 적는다.")
+            it.system("고객 문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로 요약한다. priority 는 1~5, 클수록 급하다. reason 에는 제목을 반복하지 말고 그 순위인 근거를 20자 안팎으로 적는다.")
                 .user(ctx.input).call().entity(object : ParameterizedTypeReference<List<Task>>() {})
         } ?: return ctx.result("목록을 타입으로 받지 못했습니다", ok = false)
 

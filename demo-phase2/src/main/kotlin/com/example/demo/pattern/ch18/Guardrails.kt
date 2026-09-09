@@ -22,23 +22,13 @@ class Guardrails : PatternRunner {
         18, "가드레일", "Guardrails",
         summary = "자율성이 커질수록 예측 못 한 출력이 나올 위험도 커집니다. 큰 모델 앞에 싼 모델을 문지기로 세우고, 나가는 프롬프트는 Advisor 가 손봅니다.",
         code = """
-            // ① 문지기 — 큰 모델 앞에 싼 모델을 세워 판정만 시킨다
             data class Screen(val blocked: Boolean, val why: String)
 
             val verdict = chatClient.prompt().system(GUARD)
                 .options(ChatOptions.builder().model("granite4:micro"))   // 작고 빠른 모델
                 .user(입력).call().entity(Screen::class.java)
 
-            if (verdict.blocked) return 거절(verdict.why)     // 큰 모델은 부르지 않는다
-
-            // ② 통과한 것만 마스킹해 큰 모델로 — BaseAdvisor 가 호출 앞뒤에 끼어든다
-            class MaskingAdvisor : BaseAdvisor {
-                override fun before(req: ChatClientRequest, chain: AdvisorChain) =
-                    req.mutate().prompt(마스킹(req.prompt())).build()      // 나가기 직전
-                override fun after(res: ChatClientResponse, chain: AdvisorChain) =
-                    if (금칙어(res)) 거절응답() else res                    // 돌아온 직후
-                override fun getOrder() = 1000                            // 작을수록 먼저
-            }
+            if (verdict.blocked) return 거절(verdict.why)      // 큰 모델은 부르지 않는다
         """.trimIndent(),
         diagram = """
             flowchart LR

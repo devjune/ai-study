@@ -16,25 +16,15 @@ class InterAgentCommunication : PatternRunner {
         15, "에이전트 간 통신", "Inter-Agent Communication",
         summary = "상대의 함수가 아니라 상대의 신분증을 읽고 일을 통째로 맡깁니다. 안에서 무엇을 하는지는 몰라도 됩니다.",
         code = """
-            // ① 상대의 신분증을 읽는다 — 약속된 자리에 걸려 있다
-            val card = rest.get().uri("/.well-known/agent.json").retrieve().body(JsonNode::class.java)
-            card.at("/skills/0/id")        // "order_status" — 할 수 있는 일
-
-            // ② 함수가 아니라 문장을 넘긴다. 봉투는 JSON-RPC
-            {"jsonrpc":"2.0","id":1,"method":"message/send",
-             "params":{"message":{"role":"user","parts":[{"kind":"text","text":"..."}]}}}
-
-            // ③ 돌아오는 것은 값이 아니라 작업(task)이다
-            {"result":{"id":"task-1a2b","status":{"state":"completed"},
-                       "history":[{"state":"submitted"},{"state":"working"},{"state":"completed"}],
-                       "artifacts":[{"parts":[{"kind":"text","text":"..."}]}]}}
+            @GetMapping("/.well-known/agent.json")   // 신분증 — 자기가 할 수 있는 일을 밝힌다
+            @PostMapping("/a2a")                     // 일을 받는 자리 — 봉투는 JSON-RPC
         """.trimIndent(),
         diagram = """
             flowchart LR
-                C[클라이언트 에이전트] -.① 신분증 조회.-> D["/.well-known/agent.json"]
-                C -->|② 문장을 위임| R((원격 에이전트))
-                R -->|③ 작업 상태 + 결과물| C
-                R -.속은 안 보인다.-> X[모델 · 도구]
+                C((클라이언트<br/>에이전트)) -.① 능력을 조회.-> D["/.well-known<br/>/agent.json"]
+                C -->|② 작업 위임| R((원격 에이전트<br/>다른 프레임워크))
+                R -->|③ 진행 상태·결과| C
+                R -.MCP.-> T[도구 · 데이터]
         """.trimIndent(),
         defaultInput = "A-1024 지금 어디쯤 왔어?",
         model = PatternSpec.DEFAULT_MODEL,

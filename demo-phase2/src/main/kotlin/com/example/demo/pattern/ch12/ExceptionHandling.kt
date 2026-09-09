@@ -47,7 +47,7 @@ class ExceptionHandling : PatternRunner {
         ctx.note("NonTransient — 다시 보내도 똑같이 실패하는 부류입니다. 위 코드라면 폴백에 안 걸리고 그대로 터집니다")
         ctx.note("재시도를 1회로 낮춰 두어 2초 안에 실패가 돌아옵니다. 기본값 10회면 몇 분을 기다립니다")
 
-        val answer = ctx.step("고친 설정으로 복구") { it.user(ctx.input).call().content() }
+        val answer = ctx.step("고친 설정으로 복구") { it.system("고객 상담원이다. 문의에 한국어 두 문장 안으로 답한다.").user(ctx.input).call().content() }
         return ctx.result(answer)
     }
 }

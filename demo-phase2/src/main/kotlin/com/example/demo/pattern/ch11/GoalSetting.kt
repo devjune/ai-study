@@ -18,7 +18,7 @@ class GoalSetting(private val docs: Docs) : PatternRunner {
             val 목표들 = listOf(
                 "환불 가능 기한을 숫자로 밝힌다",
                 "단순 변심일 때 배송비를 누가 얼마 부담하는지 밝힌다",
-                "두 문장 이내로 쓴다",
+                "교환 조건도 함께 안내한다",
             )
 
             // 목표마다 충족 여부를 따로 받는다. 이 목록이 곧 진행 상황판이다
@@ -27,7 +27,7 @@ class GoalSetting(private val docs: Docs) : PatternRunner {
             var 답 = ""
             var 미달 = emptyList<Check>()
 
-            for (round in 1..2) {          // 원서는 최대 5회. 시연이라 둘로 묶었다                       // 원서는 최대 5회
+            for (round in 1..2) {                       // 원서는 최대 5회
                 답 = chatClient.prompt()
                     .user(질문 + 규정 + 미달.joinToString { it.goal })   // 못 채운 목표만 다시 싣는다
                     .call().content()
@@ -63,7 +63,7 @@ class GoalSetting(private val docs: Docs) : PatternRunner {
 
     private val monitor = """
         답이 아래 목표를 각각 채웠는지 판정한다. 목표 수만큼 항목을 낸다.
-        goal 에는 목표를 그대로, met 에는 true 또는 false 를, why 에는 판단 근거를 15자 이내로 적는다.
+        goal 에는 목표를 8자 안으로 줄여 적고, met 에는 true 또는 false 를, why 에는 판단 근거를 15자 이내로 적는다.
     """.trimIndent()
 
     override fun run(ctx: RunContext): RunResult {

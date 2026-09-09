@@ -317,7 +317,7 @@ flowchart LR
 ```kotlin
 val report = chatClient.prompt()
     .user("""
-        1. '$목표' 를 이룰 계획을 불릿 3개로 세워라.
+        1. '$목표' 를 이룰 계획을 불릿 3개로 세워라. 불릿은 하나에 20자 안으로.
         2. 그 계획을 팀장에게 보고하듯 두 문장으로 요약해라.
 
         아래 두 절로만 답한다.
@@ -986,7 +986,7 @@ flowchart LR
 data class Task(val title: String, val priority: Int, val reason: String)
 
 val tasks = chatClient.prompt()
-    .system("문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 한 문장으로.")
+    .system("문의마다 처리 우선순위를 매긴다. title 은 문의를 10자 안팎 명사구로. priority 는 1~5, 클수록 급하다. reason 에는 그 순위인 근거를 20자 안팎으로.")
     .user(할일들)
     .call()
     .entity(object : ParameterizedTypeReference<List<Task>>() {})
