@@ -47,7 +47,7 @@ class Routing(private val orderService: OrderService, private val docs: Docs) : 
                 R -->|order| T[도구]
                 R -->|policy| V[(규정 문서)]
                 R -->|general| G[아무것도 안 붙임]
-                T --> M2((모델))
+                T --> M2((모델<br/>답))
                 V --> M2
                 G --> M2
         """.trimIndent(),
