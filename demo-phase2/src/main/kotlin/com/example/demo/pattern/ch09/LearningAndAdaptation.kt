@@ -30,6 +30,16 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
         model = "qwen3:4b-instruct",
     )
 
+    /**
+     * 상담원이 예전에 고쳐 준 사례. 미리 준비해 둔 데이터다.
+     * 저장하는 것은 문서가 아니라 겪은 일이다 — 질문, 틀렸던 답, 사람이 고쳐 준 답.
+     */
+    private val 겪은일 = Document(
+        "질문: 환불 배송비 얼마야?\n" +
+            "처음 답(틀림): 주문 후 7일 이내 반품 시 10,000원을 환불합니다.\n" +
+            "고친 답: 단순 변심이면 왕복 배송비 6,000원을 구매자가 부담합니다.",
+    )
+
     /** 사례는 한 번만 쌓는다. 여러 번 눌러도 같은 것이 중복되지 않게 */
     @Volatile private var seeded = false
 
@@ -37,27 +47,20 @@ class LearningAndAdaptation(private val docs: Docs) : PatternRunner {
         val before = ctx.step("① 사례 없이") { it.user("${ctx.input} 한 문장으로만 답해라.").call().content() }
 
         if (!seeded) {
-            docs.lessons.add(
-                listOf(
-                    // 저장하는 것은 문서가 아니라 겪은 일이다 — 질문, 틀렸던 답, 사람이 고쳐 준 답
-                    Document(
-                        "질문: 환불 배송비 얼마야?\n" +
-                            "처음 답(틀림): 주문 후 7일 이내 반품 시 10,000원을 환불합니다.\n" +
-                            "고친 답: 단순 변심이면 왕복 배송비 6,000원을 구매자가 부담합니다.",
-                    ),
-                ),
-            )
+            docs.lessons.add(listOf(겪은일))
             seeded = true
         }
-        ctx.note("저장한 사례의 질문은 \"환불 배송비 얼마야?\" — 지금 물은 말과 다릅니다")
+        ctx.note("미리 준비해 둔 사례 하나를 저장했습니다 — 상담원이 예전에 고쳐 준 답이라는 설정입니다")
+        ctx.note("사례의 질문은 \"환불 배송비 얼마야?\" — 지금 물은 말과 다릅니다")
         ctx.note("틀렸던 답까지 함께 저장해 같은 함정을 피하게 합니다")
 
-        val after = ctx.step("② 사례를 쌓은 뒤") {
+        val after = ctx.step("② 사례 하나를 저장한 뒤") {
             it.user("${ctx.input} 한 문장으로만 답해라.")
                 .advisors(QuestionAnswerAdvisor.builder(docs.lessons).build())
                 .call().content()
         }
         ctx.note("말이 달라도 뜻이 가까우면 걸립니다 — 검색은 14장과 같은 의미 검색입니다")
+        ctx.note("② 프롬프트의 영어 블록(Context information…)은 Advisor 의 기본 템플릿입니다. 등록만 한 한 줄이 프롬프트를 어떻게 고치는지가 여기서 보입니다")
         ctx.note("모델을 다시 학습시킨 것이 아니라 프롬프트에 예시를 넣은 것입니다")
         return ctx.result("전 — $before\n\n후 — $after")
     }

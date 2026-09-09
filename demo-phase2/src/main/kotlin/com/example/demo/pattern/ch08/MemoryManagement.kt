@@ -51,6 +51,7 @@ class MemoryManagement : PatternRunner {
                 .call().content()
         }
         ctx.note("두 번째 호출의 프롬프트를 펼쳐 보면 첫 턴이 그대로 실려 있습니다")
+        ctx.note("이어지는 대화처럼 보이는 채팅 서비스도 실은 매번 이렇게 다시 보냅니다. 그 다시 보내기가 단기 기억이고, 한 번에 실을 수 있는 만큼(컨텍스트 창)이 한계입니다")
         return ctx.result("1턴 — $first\n\n2턴 — $second")
     }
 }
