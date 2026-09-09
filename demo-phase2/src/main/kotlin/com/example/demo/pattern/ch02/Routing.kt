@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class Routing(private val orderService: OrderService, private val docs: Docs) : PatternRunner {
     override val spec = PatternSpec(
         2, "라우팅", "Routing",
-        summary = "입력의 의도를 먼저 판별하고 거기에 맞는 경로로만 보냅니다. 주문 조회에 사내 문서를 검색할 이유가 없습니다.",
+        summary = "1장의 직선 체인에 조건 로직을 넣습니다. 의도는 모델이 판별하고, 어느 경로로 갈지는 그 판정을 받은 코드의 when 이 정합니다.",
         code = """
             data class RouteDecision(val route: String, val reason: String) {
                 // route 값은 모델이 쓴 텍스트다. "Order" 로 오든 엉뚱한 값이 오든 여기서 좁힌다
@@ -61,6 +61,7 @@ class Routing(private val orderService: OrderService, private val docs: Docs) : 
         } ?: RouteDecision("general", "분류 실패 — 가장 안전한 경로로")
 
         ctx.note("라우터 판단: ${decision.route} — ${decision.reason.take(60)}")
+        ctx.note("판정은 모델이, 분기는 코드의 when 이 — 주문 조회에 사내 문서를 검색할 이유가 없습니다")
 
         val answer = when (decision.route()) {
             Route.ORDER -> {
