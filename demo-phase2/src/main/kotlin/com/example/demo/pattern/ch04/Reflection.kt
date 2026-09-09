@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 class Reflection : PatternRunner {
     override val spec = PatternSpec(
         4, "자기 검토", "Reflection",
-        summary = "모델의 첫 답은 대개 부족합니다. 쓰는 쪽과 검토하는 쪽을 나눠, 검토가 짚어 준 이유로 고쳐 씁니다.",
+        summary = "에이전트의 첫 출력이나 계획은 완벽하지 않을 수 있습니다. 스스로 평가하고 고쳐 쓰는 피드백 루프로 자기 개선을 합니다 — 여기서는 쓰는 쪽(Producer)과 검토하는 쪽(Critic)을 나눕니다.",
         code = """
             // Critic 이 채워 줄 그릇. reason 이 있어야 무엇을 고칠지가 남는다
             data class Critique(val pass: Boolean, val reason: String)
