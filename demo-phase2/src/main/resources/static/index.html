@@ -217,7 +217,7 @@ async function run() {
 
 function renderResult(r) {
   const n = r.calls.length;
-  let h = `<h3>모델 호출 <b>${n}회</b> · ${(r.elapsedMs/1000).toFixed(1)}초${n === 0 ? ' — 이 패턴은 모델을 부르지 않습니다' : ''}</h3>`;
+  let h = `<h3>모델 호출 <b>${n}회</b> · ${(r.elapsedMs/1000).toFixed(1)}초${n === 0 ? ' — 이 앱에서는 모델을 부르지 않았습니다' : ''}</h3>`;
   if (n) h += `<p class="hint">펼치면 그 호출에 <b>실제로 나간 프롬프트</b>가 보입니다. 프레임워크가 얹어 준 것도 여기서 확인합니다.</p>`;
   h += r.calls.map(c => `
     <div class="call">

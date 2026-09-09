@@ -46,7 +46,7 @@ class Exploration : PatternRunner {
                 W --> E((다듬기))
                 E --> R[결과]
         """.trimIndent(),
-        defaultInput = "환불 안내 문구를 한 문장으로 써줘",
+        defaultInput = "가을 세일 안내 문구를 한 문장으로 써줘",
         model = "qwen3:4b-instruct",
         maxTokens = 150,
     )
@@ -85,7 +85,7 @@ class Exploration : PatternRunner {
         }.getOrNull().orEmpty().ifEmpty { listOf(Vote("?", 1, "판정 형식을 못 맞춤")) }
 
         val winner = if (votes.count { it.winner == 2 } > votes.size / 2) candidates[1] else candidates[0]
-        candidates.forEachIndexed { i, c -> ctx.note("후보 ${i + 1} · ${c.take(60)}") }
+        candidates.forEachIndexed { i, c -> ctx.note("후보 ${i + 1} · ${c.take(60)}${if (c.length > 60) "…" else ""}") }
         votes.forEach { ctx.note("${it.label} — 후보 ${it.winner} 승 · 진 쪽 약점: ${it.weakness.take(40)}") }
 
         // ③ 키운다 — 이긴 답에 약점을 붙여 한 바퀴 더
