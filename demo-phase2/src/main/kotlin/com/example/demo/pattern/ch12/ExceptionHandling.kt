@@ -47,7 +47,8 @@ class ExceptionHandling : PatternRunner {
         ctx.note("NonTransient — 다시 보내도 똑같이 실패하는 부류입니다. 위 코드라면 폴백에 안 걸리고 그대로 터집니다")
         ctx.note("재시도를 1회로 낮춰 두어 2초 안에 실패가 돌아옵니다. 기본값 10회면 몇 분을 기다립니다")
 
-        val answer = ctx.step("고친 설정으로 복구") { it.system("고객 상담원이다. 문의에 한국어 두 문장 안으로 답한다.").user(ctx.input).call().content() }
-        return ctx.result(answer)
+        // 화면 코드의 폴백 분기 그대로 — 장애로 답을 못 받으면 모델 없이 문구로 응답한다
+        ctx.note("장애(Transient)로 끝났다면 사용자에게 나가는 것은 아래 문구가 전부입니다. 모델을 다시 부르지 않습니다")
+        return ctx.result("지금 답변이 어렵습니다. 상담원에게 연결해 드릴까요?")
     }
 }

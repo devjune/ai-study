@@ -234,7 +234,7 @@ async function loadOrders(list, pendingId) {
       <tr><td>${o.id}</td><td>${o.product}</td>
       <td><span class="status ${o.status === '취소됨' ? 'cancelled' : ''}">${o.status}</span></td></tr>`).join('')
     + `</tbody></table>`
-    + (pendingId ? `<button id="approve" style="margin-top:.5rem">승인 — ${esc(pendingId)} 취소 (LLM 없이 실행)</button>` : '');
+    + (pendingId ? `<button id="approve" class="go" style="margin-top:.5rem">승인 — ${esc(pendingId)} 취소 (LLM 없이 실행)</button>` : '');
   const btn = $('approve');
   if (btn) btn.onclick = async () => {
     const r = await (await fetch('/api/approve', {

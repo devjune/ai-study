@@ -17,6 +17,11 @@ class ModelContextProtocol : PatternRunner {
                     @McpToolParam(description = "주문 번호. 예: A-1024") orderId: String,
                 ): String = orderService.find(orderId)?.summary() ?: "주문번호 ${'$'}orderId 를 찾을 수 없습니다."
             }
+
+            // 클라이언트 쪽 — 언어 불문, 표준 요청 둘이면 끝. 이 데모도 자기 /mcp 로 같은 것을 보낸다
+            // 목록:  POST /mcp  {"jsonrpc":"2.0","method":"tools/list"}
+            // 실행:  POST /mcp  {"jsonrpc":"2.0","method":"tools/call",
+            //                    "params":{"name":"lookupOrder","arguments":{"orderId":"A-1024"}}}
         """.trimIndent(),
         diagram = """
             flowchart LR
