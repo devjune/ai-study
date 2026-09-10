@@ -6,7 +6,7 @@
 
 **Architecture:** `demo-phase3`는 UI 없는 Spring Boot 프로젝트로, 장별 예제를 `@SpringBootTest` 통합 테스트로 담는다(로컬 Ollama 필요). 문서는 `docs/phase3/`에 한 편, 각 장은 "예제를 먼저 돌려 보고 → 그 코드로 집필" 순서를 지킨다.
 
-**Tech Stack:** Spring Boot 4.0.0 · Spring AI 2.0.1 · Koog 1.2.0 (`koog-spring-ai-starter-*`) · Kotlin · Ollama (qwen3:4b-instruct, granite4:micro, bge-m3)
+**Tech Stack:** Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0-beta (`koog-spring-ai-starter-*`) · Kotlin 2.2.21 · Kotest 5.9.1 · Ollama (qwen3:4b-instruct, bge-m3) — 실행 중 판정으로 수정됨, Global Constraints 참조
 
 **Spec:** `docs/superpowers/specs/2026-09-10-phase3-koog-design.md`
 

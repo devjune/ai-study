@@ -94,11 +94,11 @@ Koog 전용 프로퍼티는 없습니다 — 6장에서 하나 만나게 됩니�
 Spring AI ChatModel 빈  →  Koog SpringAiLLMClient  →  PromptExecutor 빈
 ```
 
-스타터의 오토컨피규레이션이 이 세 칸을 이어 붙입니다. 애플리케이션 코드가 할 일은 마지막 칸을 주입받는 것뿐입니다.
+스타터의 오토컨피규레이션이 이 세 칸을 이어 붙입니다. 애플리케이션 코드가 할 일은 마지막 칸을 주입받는 것뿐입니다. 테스트에서는 `SpringExtension`이 생성자 파라미터를 컨텍스트에서 찾아 넣어 주므로 `@Autowired`도 붙이지 않습니다.
 
 ```kotlin
 @SpringBootTest
-class ContextLoadsTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class ContextLoadsTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("Koog 스타터가 Spring AI ChatModel을 PromptExecutor로 감싼다") {
@@ -141,7 +141,7 @@ object KoogModels {
 
 ```kotlin
 @SpringBootTest
-class Ch03SingleAgentTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("AIAgent 한 개가 Ollama로 답한다") {
@@ -541,7 +541,7 @@ koog.spring.ai.chat-memory.chat-memory-repository-bean-name=chatMemoryRepository
 3장부터 쓰던 `AIAgent(...)` 뒤에 블록이 하나 더 붙습니다. 기능을 설치하는 자리입니다.
 
 ```kotlin
-@Autowired val historyProvider: ChatHistoryProvider,
+val historyProvider: ChatHistoryProvider,
 
 val agent = AIAgent(
     promptExecutor = promptExecutor,
@@ -929,7 +929,7 @@ BOM 프로퍼티를 덮어씁니다.
 extra["kotlin-serialization.version"] = libs.versions.kotlinxSerialization.get()
 ```
 
-앞 일곱 장은 `1.6.3`에서 전부 통과했습니다. 이 충돌이 처음 드러나는 자리가 MCP SDK입니다. **2장의 버전 제약이 다시 나온 셈인데 방향이 반대입니다.** 그때는 Koog 브리지에 맞추려고 Spring Boot를 내려야 했고, 이번에는 MCP SDK에 맞추려고 Spring Boot가 고정한 값을 올려야 합니다. 어느 쪽이든 버전을 정하는 주체가 우리가 아닙니다.
+앞 일곱 장은 `1.6.3`에서 전부 통과했습니다. 이 충돌이 처음 드러나는 자리가 MCP SDK이고, `1.10.0`으로 덮은 뒤에도 전체 스위트는 그대로 통과합니다. **2장의 버전 제약이 다시 나온 셈인데 방향이 반대입니다.** 그때는 Koog 브리지에 맞추려고 Spring Boot를 내려야 했고, 이번에는 MCP SDK에 맞추려고 Spring Boot가 고정한 값을 올려야 합니다. 어느 쪽이든 버전을 정하는 주체가 우리가 아닙니다.
 
 ### 트랜스포트 — 문서에 없는 쪽을 써야 합니다
 
