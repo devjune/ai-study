@@ -98,15 +98,13 @@ Spring AI ChatModel 빈  →  Koog SpringAiLLMClient  →  PromptExecutor 빈
 
 ```kotlin
 @SpringBootTest
-class ContextLoadsTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class ContextLoadsTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+    extensions(SpringExtension)
 
-    @Test
-    fun `Koog 스타터가 Spring AI ChatModel을 PromptExecutor로 감싼다`() {
-        assertNotNull(promptExecutor)
+    test("Koog 스타터가 Spring AI ChatModel을 PromptExecutor로 감싼다") {
+        promptExecutor.shouldNotBeNull()
     }
-}
+})
 ```
 
 가운데 `SpringAiLLMClient`가 어댑터 본체입니다. Koog 쪽 프롬프트 타입을 Spring AI의 `Prompt`로 옮기고, 돌아온 응답을 Koog 메시지로 되돌립니다. 앞의 `ClassCastException`이 난 자리도 여기입니다.
@@ -143,21 +141,19 @@ object KoogModels {
 
 ```kotlin
 @SpringBootTest
-class Ch03SingleAgentTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class Ch03SingleAgentTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+    extensions(SpringExtension)
 
-    @Test
-    fun `AIAgent 한 개가 Ollama로 답한다`() = runBlocking {
+    test("AIAgent 한 개가 Ollama로 답한다") {
         val agent = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             systemPrompt = "한 문장으로만 답한다.",
         )
         val result = agent.run("Spring AI가 무엇인지 한 문장으로")
-        assertTrue(result.isNotBlank())
+        result.shouldNotBeBlank()
     }
-}
+})
 ```
 
 주입받는 것은 스타터가 만들어 준 `PromptExecutor` 하나입니다. 모델은 `LLModel` 값으로 따로 넘깁니다. 실행기와 모델이 따로 놀기 때문에 같은 실행기에 다른 모델을 물려 에이전트를 여러 개 만들 수 있습니다.
@@ -195,10 +191,10 @@ Suspend function 'suspend fun run(agentInput: String, sessionId: String? = null)
 can only be called from a coroutine or another suspend function.
 ```
 
-에러 메시지에 시그니처가 그대로 나옵니다. 입력은 `String`, 둘째 인자 `sessionId`는 생략 가능, 반환도 `String`입니다. 그래서 테스트는 `runBlocking`으로 감쌉니다.
+에러 메시지에 시그니처가 그대로 나옵니다. 입력은 `String`, 둘째 인자 `sessionId`는 생략 가능, 반환도 `String`입니다. Kotest의 `test` 블록은 이미 suspend라서 따로 감쌀 필요가 없습니다.
 
 ```kotlin
-fun `temperature와 maxIterations를 지정한다`() = runBlocking {
+test("temperature와 maxIterations를 지정한다") {
 ```
 
 Kotlin 코루틴을 쓰는 코드에서는 자연스럽습니다. 다만 앞 편처럼 블로킹 호출이 기본인 자리에 얹으면 경계가 하나 생깁니다. 부르는 쪽도 `suspend`가 되거나, 아니면 `runBlocking`으로 막아야 합니다.
@@ -414,10 +410,10 @@ Spring AI가 받아 가는 "스키마"의 실체는 `ToolDescriptor`입니다. �
 ```kotlin
 val descriptor = ExchangeToolSet().asTools().single().descriptor
 
-assertEquals("exchangeRate", descriptor.name)
-assertEquals("통화 코드의 원화 환율을 돌려준다", descriptor.description)
-assertEquals(listOf("code"), descriptor.requiredParameters.map { it.name })
-assertEquals("통화 코드, 예: USD", descriptor.requiredParameters.single().description)
+descriptor.name shouldBe "exchangeRate"
+descriptor.description shouldBe "통화 코드의 원화 환율을 돌려준다"
+descriptor.requiredParameters.map { it.name } shouldBe listOf("code")
+descriptor.requiredParameters.single().description shouldBe "통화 코드, 예: USD"
 ```
 
 이름 하나, 설명 하나, 파라미터마다 이름과 설명. 애노테이션에 적은 문자열이 그대로 옮겨져 있습니다. 모델에게 도구란 이 몇 줄이 전부이고, 함수 본문은 모델 쪽으로 넘어가지 않습니다. `@LLMDescription`을 대충 쓰면 도구를 안 부르는 이유가 여기 있습니다.
@@ -545,8 +541,7 @@ koog.spring.ai.chat-memory.chat-memory-repository-bean-name=chatMemoryRepository
 3장부터 쓰던 `AIAgent(...)` 뒤에 블록이 하나 더 붙습니다. 기능을 설치하는 자리입니다.
 
 ```kotlin
-@Autowired
-lateinit var historyProvider: ChatHistoryProvider
+@Autowired val historyProvider: ChatHistoryProvider,
 
 val agent = AIAgent(
     promptExecutor = promptExecutor,
@@ -581,12 +576,9 @@ agent.run("1달러는 몇 원이야?", sessionId)
 
 val stored = chatMemoryRepository.findByConversationId(sessionId)
 
-assertEquals(listOf("USD"), tools.calls)
-assertEquals(
-    listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT),
-    stored.map { it.messageType },
-)
-assertTrue("1385" in stored.last().text)
+tools.calls shouldBe listOf("USD")
+stored.map { it.messageType } shouldBe listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT)
+stored.last().text shouldContain "1385"
 ```
 
 남은 행은 셋입니다.
