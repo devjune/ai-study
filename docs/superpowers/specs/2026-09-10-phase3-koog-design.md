@@ -40,9 +40,11 @@ phase2에서 손으로 만든 Reflection · Planning · Multi-Agent가 프레임
 
 ## 기술 전제
 
-- Spring Boot 4.0.0 · Spring AI 2.0.1 · Koog 1.2.0
+- ~~Spring Boot 4.0.0 · Spring AI 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0-beta** (2026-09-10 스파이크 수정 — 아래 참조)
 - 모델은 phase2와 동일: Ollama의 qwen3:4b-instruct · granite4:micro · bge-m3. API 키 불필요 원칙 유지
 - `demo-phase3`는 `demo-phase2`와 별개의 Gradle 프로젝트
+
+**2026-09-10 스파이크 수정**: `koog-spring-ai` 1.2.0-beta는 Spring AI 1.1.6 · Boot 3.5.14를 타깃하고, Spring AI 2.0.1에서는 런타임에 깨진다(`DefaultChatOptions` → `OllamaChatOptions` ClassCastException). Koog의 어떤 릴리스도 Spring AI 2.x를 타깃한 적이 없다. demo-phase3만 브리지의 타깃 버전으로 내리고, 이 간극 자체를 문서 2장의 1급 관찰로 싣는다. 상세는 `docs/phase3/decisions.md`.
 
 ## 리스크 — Kotlin 버전
 

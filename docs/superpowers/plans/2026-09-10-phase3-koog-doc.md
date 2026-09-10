@@ -14,7 +14,7 @@
 
 - Kotlin **2.2.21**로 먼저 시도(저장소 고정 버전). 실패 시에만 demo-phase3 한정 2.3.x — Task 1이 판정한다
 - JDK 툴체인 21 (demo-phase2와 동일)
-- Spring Boot **4.0.0** · Spring AI BOM **2.0.1** · Koog **1.2.0** (spring-ai 스타터는 `1.2.0-beta`일 수 있음 — Task 1에서 Maven Central로 실버전 확인)
+- ~~Spring Boot 4.0.0 · Spring AI BOM 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI BOM 1.1.6 · Koog 1.2.0-beta** (Task 2 스파이크 판정: 브리지가 Spring AI 2.x 미지원 — 스펙의 "2026-09-10 스파이크 수정" 참조)
 - 모델: Ollama `qwen3:4b-instruct`(채팅) · `bge-m3`(임베딩). API 키 불필요 원칙
 - demo-phase1 · docs/phase1은 불가침. 위키도 손대지 않는다
 - 문서 문체: 담백하게, 각주(`[^x]`) 금지, "이 데모는…" 식 데모 지목 서술 금지, 이름만 봐도 아는 주석 금지
