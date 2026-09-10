@@ -655,3 +655,218 @@ val compress by nodeLLMCompressHistory<Message.Assistant>(
 | 추론 · 첨부   | 담을 행이 없음                        | `MessagePart.Reasoning` 등    | 없음                |
 
 이력은 이제 `run()` 밖에서도 남고 길어져도 접힙니다. 다음 장은 대화가 아니라 **문서**를 밖에 두는 쪽입니다.
+
+## 7장 RAG — `EmbeddingModel` · `VectorStore` 어댑터
+
+6장까지 밖에 내놓은 것은 대화였습니다. 이 장은 문서입니다. 모델이 모르는 사내 규정을 프롬프트에 실어 주는 자리이고, 무엇을 실을지는 의미 검색이 고릅니다.
+
+앞의 두 장과 다른 점이 하나 있습니다. 어댑터가 둘입니다.
+
+```
+Spring AI EmbeddingModel 빈  →  SpringAiLLMEmbeddingProvider  =  LLMEmbeddingProvider 빈
+Spring AI VectorStore 빈     →  SpringAiKoogVectorStore       =  KoogVectorStore 빈
+```
+
+문장을 좌표로 바꾸는 쪽과 그 좌표를 담아 두고 가까운 순으로 꺼내 주는 쪽이 Koog에서도 따로입니다. 둘은 스타터도 따로입니다.
+
+### 의존성은 셋
+
+```kotlin
+// SimpleVectorStore(인메모리) — 7장
+implementation(libs.spring.ai.vector.store)
+// Spring AI의 EmbeddingModel을 Koog의 LLMEmbeddingProvider로 감싸는 스타터
+implementation(libs.koog.spring.ai.starter.model.embedding)
+// Spring AI의 VectorStore를 Koog의 KoogVectorStore로 감싸는 스타터
+implementation(libs.koog.spring.ai.starter.vector.store)
+```
+
+Koog 쪽 좌표는 `ai.koog:koog-spring-ai-starter-model-embedding`과 `ai.koog:koog-spring-ai-starter-vector-store`이고, 버전은 2장의 브리지와 같은 `1.2.0-beta`입니다.
+
+Spring AI 쪽은 `org.springframework.ai:spring-ai-vector-store`를 직접 넣습니다. 6장의 저장소는 Ollama 스타터가 알아서 끌어왔지만 벡터 저장소는 그렇지 않습니다.
+
+임베딩 모델은 채팅과 같은 Ollama 채널을 씁니다.
+
+```properties
+spring.ai.ollama.embedding.model=bge-m3
+```
+
+### 빈 둘을 직접 짓습니다
+
+`SimpleVectorStore`는 자동 구성 대상이 아닙니다. 어느 벤더 저장소도 안 붙였으면 컨텍스트에 `VectorStore` 빈이 하나도 없고, 그러면 감쌀 것이 없어 `KoogVectorStore`도 생기지 않습니다.
+
+```kotlin
+@Bean
+fun vectorStore(embeddingModel: EmbeddingModel): VectorStore =
+    SimpleVectorStore.builder(embeddingModel).build()
+```
+
+이 빈만 있으면 벡터 저장소 쪽은 끝입니다. 6장처럼 프로퍼티로 이름을 적어 줄 일도 없습니다. `SpringAiVectorStoreAutoConfiguration`은 `@AutoConfiguration(afterName = …)`에 벤더 벡터 저장소 오토컨피규레이션들을 적어 두는데, 우리 빈은 컴포넌트 스캔으로 먼저 올라오므로 `@ConditionalOnSingleCandidate`가 평가될 때 이미 후보로 잡힙니다.
+
+임베딩 쪽에서 다시 걸립니다.
+
+### 그런데 임베딩 빈이 만들어지지 않습니다
+
+의존성을 넣고 `LLMEmbeddingProvider`를 주입받으면 컨텍스트는 뜹니다. 부르는 순간 죽습니다.
+
+```
+java.lang.UnsupportedOperationException: Embedding is not supported by SpringAiLLMClient.
+Use SpringAiLLMEmbeddingProvider instead.
+	at ai.koog.spring.ai.chat.SpringAiLLMClient.embed(SpringAiLLMClient.kt:350)
+```
+
+주입된 것이 임베딩 어댑터가 아니라 2장에서 붙인 **채팅 어댑터**입니다. 컨텍스트의 빈 이름을 찍어 보면 이유가 보입니다.
+
+```
+EmbeddingModel beans: [ollamaEmbeddingModel]
+LLMEmbeddingProvider beans: [springAiChatModelLLMClient]
+```
+
+`ollamaEmbeddingModel`은 멀쩡히 올라와 있는데 임베딩 어댑터 빈이 아예 없습니다. 6장과 증상이 같고 원인은 다릅니다. 순서가 아니라 **타입 계층**입니다.
+
+Koog의 `LLMClient`는 `LLMEmbeddingProvider`를 상속합니다. 채팅 클라이언트도 임베딩 제공자인 셈입니다. 그리고 임베딩 스타터의 빈 선언에는 이것이 붙어 있습니다.
+
+```
+@Bean
+@ConditionalOnMissingBean(LLMEmbeddingProvider::class)
+fun springAiEmbeddingModelLLMEmbeddingProvider(…): LLMEmbeddingProvider
+```
+
+2장의 채팅 브리지가 올려 둔 `springAiChatModelLLMClient`가 이 조건에 걸립니다. 이미 `LLMEmbeddingProvider` 빈이 있다고 판단해 임베딩 어댑터를 건너뜁니다. 남은 하나가 임베딩을 거부하는 쪽이라는 것은 조건이 볼 수 없는 사실입니다. 두 스타터를 같이 쓰면 반드시 겪습니다.
+
+빠져나갈 문은 6장처럼 프로퍼티가 아니라 빈입니다. 어댑터에는 빌더가 있습니다.
+
+```kotlin
+@Bean
+fun embeddingProvider(embeddingModel: EmbeddingModel): SpringAiLLMEmbeddingProvider =
+    SpringAiLLMEmbeddingProvider.builder()
+        .embeddingModel(embeddingModel)
+        .build()
+```
+
+반환 타입을 인터페이스가 아니라 구현 클래스로 적었습니다. `LLMEmbeddingProvider`로 적으면 주입받는 쪽에서 채팅 클라이언트와 후보가 둘로 갈립니다.
+
+### 넣고 찾습니다
+
+저장은 `add`, 검색은 `search`입니다.
+
+```kotlin
+val vpn = DocumentWithMetadata(
+    content = "사내 VPN은 재택 시 필수",
+    metadata = mapOf("category" to "보안"),
+    id = "policy-vpn",
+)
+val lunch = DocumentWithMetadata(
+    content = "점심 법인카드 한도는 1.5만원",
+    metadata = mapOf("category" to "총무"),
+    id = "policy-lunch",
+)
+
+val ids = vectorStore.add(listOf(vpn, lunch))
+
+val hits = vectorStore.search(
+    SimilaritySearchRequest(queryText = "재택근무 네트워크 규정", limit = 2),
+)
+```
+
+`"재택근무 네트워크 규정"`에는 두 문서와 겹치는 낱말이 하나도 없습니다. 점수가 갈립니다.
+
+```
+0.6475443896237172 | 사내 VPN은 재택 시 필수
+0.3978873254533483 | 점심 법인카드 한도는 1.5만원
+```
+
+`metadata`도 왕복합니다. 담을 수 있는 값의 타입은 `String`과 수·논리 원시형 일곱 개까지입니다.
+
+`embed`는 텍스트를 좌표로 바꿉니다. 인자가 둘인 것을 짚어 둡니다.
+
+```kotlin
+val embedding = embeddingProvider.embed("사내 VPN은 재택 시 필수", KoogModels.BGE_M3)
+```
+
+`bge-m3`는 프로퍼티에 이미 적어 뒀는데 모델을 또 넘깁니다. 어댑터가 이 값을 무시하지 않습니다. `LLModel.id`를 꺼내 Spring AI의 `EmbeddingOptions.model`로 실어 보냅니다. 즉 호출마다 프로퍼티를 덮어씁니다. 여기에 Ollama에 없는 이름을 적으면 프로퍼티가 맞아도 실패합니다. 그래서 이 모델 정의의 `id`는 실제로 올라온 모델 이름이어야 합니다.
+
+```kotlin
+val BGE_M3 = LLModel(
+    provider = LLMProvider.Ollama,
+    id = "bge-m3",
+    capabilities = listOf(LLMCapability.Embed),
+)
+```
+
+차원은 1024가 나옵니다. `bge-m3`의 차원이 그대로 건너옵니다.
+
+### 어댑터가 옮기지 않는 것
+
+`KoogVectorStore`가 구현한다고 선언한 인터페이스는 셋입니다.
+
+```kotlin
+interface KoogVectorStore :
+    WriteStorage<TextDocument>,
+    SearchStorage<TextDocument, SearchRequest>,
+    FilteringDeletionStorage
+```
+
+Koog가 저장소 쪽에 준비해 둔 인터페이스 중 하나가 빠져 있습니다. `LookupStorage` — id로 문서 하나를 읽어 오는 쪽입니다. 구현하지 않은 이유는 Spring AI에 포터블한 read-by-id API가 없기 때문입니다. 벤더별 저장소는 대개 그 기능이 있지만 `VectorStore` 인터페이스에는 없고, 어댑터는 인터페이스만 보고 씁니다.
+
+그래서 id는 우리가 들고 있어야 합니다. `TextDocument.id`가 널 가능이라 문서 객체를 다시 꺼내 쓸 수도 없습니다. `add`가 돌려주는 목록이 유일한 통로입니다.
+
+```kotlin
+val ids = vectorStore.add(listOf(vpn, lunch))
+vectorStore.delete(ids)
+```
+
+`update`도 이 자리에서 갈립니다. `VectorStore`에는 갱신이 없어서 어댑터가 `delete(ids)`를 부르고 이어 `add(documents)`를 부릅니다. 트랜잭션이 아닙니다. 사이에서 실패하면 지워진 채로 남습니다.
+
+삭제 쪽 반환값도 짚어 둘 만합니다. `delete(ids)`는 넘긴 id를 그대로 돌려줍니다. 실제로 무엇이 지워졌는지는 Spring AI가 알려 주지 않아 확인할 방법이 없습니다. 필터로 지우는 `delete(filterExpression)`은 빈 목록을 돌려줍니다.
+
+검색 요청의 타입도 선언보다 좁습니다. `SearchStorage<TextDocument, SearchRequest>`는 어떤 `SearchRequest`든 받겠다는 뜻이지만, 키워드 검색을 넣어 보면 거절합니다.
+
+```
+java.lang.IllegalArgumentException: Spring AI VectorStore supports only similarity search requests
+```
+
+**1장에서 예고한 어댑터 제약의 세 번째 사례입니다.** 2장은 버전이 맞아야 한다는 조건, 6장은 기능의 일부만 건너간다는 쪽이었습니다. 이번 것은 **타입이 약속한 것보다 구현이 좁다**는 쪽입니다. 컴파일은 통과하고 실행에서 갈립니다.
+
+### 검색은 전략 노드입니다
+
+앞 편에서 이 자리는 어드바이저였습니다. `QuestionAnswerAdvisor`를 등록해 두면 프레임워크가 호출 직전에 끼어들어 검색하고 프롬프트를 고쳤습니다. 제어의 역전입니다. 어디서 검색이 일어나는지는 코드에 없고, `.advisors(...)` 한 줄이 그 사실을 대신했습니다.
+
+Koog에는 그 자리가 없습니다. 검색은 우리가 부르고, 흐름에 넣으려면 노드로 세웁니다.
+
+```kotlin
+val rag = strategy<String, String>("rag") {
+    val retrieve by node<String, String>("retrieve") { question ->
+        val found = vectorStore.search(
+            SimilaritySearchRequest(queryText = question, limit = 1),
+        )
+        "아래 규정만 근거로 답한다.\n규정: ${found.first().document.content}\n질문: $question"
+    }
+    val answer by nodeLLMRequest()
+
+    edge(nodeStart forwardTo retrieve)
+    edge(retrieve forwardTo answer)
+    edge(answer forwardTo nodeFinish transformed { it.textContent() })
+}
+```
+
+`"재택근무할 때 뭘 켜야 하지?"`를 넣으면 `"사내 VPN을 켜야 한다."`가 나옵니다.
+
+4장의 커스텀 노드 그대로입니다. 검색이 노드 하나로 그래프에 들어와 있고, 무엇을 몇 건 뽑아 어떤 문장으로 프롬프트에 실을지가 전부 그 블록 안에 보입니다. 앞 편의 `topK`와 `similarityThreshold`에 해당하는 것이 `limit`과 `minScore`인데, 여기서는 어드바이저 설정이 아니라 노드 안의 인자입니다.
+
+방향이 반대입니다. 어드바이저는 끼워 넣기까지 해 주는 대신 어디서 무엇을 실었는지 가립니다. 노드는 프롬프트 문장까지 우리가 쓰는 대신 검색이 흐름의 한 단계로 보입니다. 검색을 조건에 따라 건너뛰거나, 두 번 하거나, 결과가 비었을 때 다른 경로로 보내는 일은 노드 쪽이 엣지 하나로 끝납니다. 어드바이저 쪽에서는 그런 분기가 어드바이저 밖의 일입니다.
+
+1장에서 프레임워크가 아래층을 가린다고 적었습니다. RAG에서는 반대로 나옵니다. 앞 편이 더 가렸고 Koog는 다시 드러냅니다. 가려 주는 쪽이 늘 프레임워크는 아닙니다.
+
+### 이 장에서 갈린 것
+
+| 축         | Spring AI 쪽                                | Koog 쪽                                 | 어댑터가 옮기는 것    |
+| --------- | ------------------------------------------ | -------------------------------------- | ------------- |
+| 임베딩       | `EmbeddingModel`                           | `LLMEmbeddingProvider`                 | 전부            |
+| 저장소       | `VectorStore`                              | `KoogVectorStore`                      | 쓰기 · 검색 · 삭제  |
+| 문서        | `Document`                                 | `TextDocument`                         | 본문 · 메타데이터    |
+| id로 읽기    | 포터블 API 없음                                 | `LookupStorage`                        | 없음            |
+| 갱신        | 없음                                         | `WriteStorage.update`                  | 삭제 후 삽입, 비트랜잭션 |
+| 검색 방식     | 유사도                                        | 유사도 · 키워드 · 하이브리드                      | 유사도만          |
+| 검색을 부르는 쪽 | `QuestionAnswerAdvisor`가 자동으로              | 전략 노드에서 직접                             | —             |
+
+문서까지 밖에 두었으니 이제 남은 것은 도구입니다. 5장의 도구는 우리 코드 안에 있었고, 다음 장은 그것을 프로세스 밖에 두는 쪽입니다.
