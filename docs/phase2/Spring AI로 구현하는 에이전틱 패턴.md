@@ -4,6 +4,31 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 
 이런 구성 방식마다 붙은 이름이 **에이전틱 패턴**입니다. 이 문서는 *Agentic Design Patterns*(Antonio Gulli, Springer 2025)가 정리한 **21개 패턴을 원서 목차 순서 그대로** 놓고, 각각 Spring AI로 어떻게 쓰는지를 코드로 봅니다. 원서의 예제는 전부 파이썬(Google ADK · LangChain · CrewAI)이고 Spring AI는 한 번도 나오지 않아서, **이 대응은 이 문서에서 처음 만든 것입니다.**
 
+## 21 개 패턴을 한 눈에
+
+| 장      | 패턴                                                                                            |
+| ------ | --------------------------------------------------------------------------------------------- |
+| 1      | [프롬프트 체이닝 (Prompt Chaining)](#1장-프롬프트-체이닝-prompt-chaining)                                    |
+| 2      | [라우팅 (Routing)](#2장-라우팅-routing)                                                              |
+| 3      | [병렬화 (Parallelization)](#3장-병렬화-parallelization)                                              |
+| 4      | [자기 검토 (Reflection)](#4장-자기-검토-reflection)                                                    |
+| **5**  | **[도구 사용 (Tool Use)](#5장-도구-사용-tool-use)**                                                    |
+| 6      | [계획 수립 (Planning)](#6장-계획-수립-planning)                                                        |
+| 7      | [멀티 에이전트 (Multi-Agent)](#7장-멀티-에이전트-multi-agent)                                              |
+| **8**  | **[대화 기억 (Memory Management)](#8장-대화-기억-memory-management)**                                  |
+| 9      | [학습과 적응 (Learning and Adaptation)](#9장-학습과-적응-learning-and-adaptation)                        |
+| **10** | **[MCP (Model Context Protocol)](#10장-mcp-model-context-protocol)**                           |
+| 11     | [목표 설정과 모니터링 (Goal Setting and Monitoring)](#11장-목표-설정과-모니터링-goal-setting-and-monitoring)     |
+| 12     | [예외 처리와 복구 (Exception Handling and Recovery)](#12장-예외-처리와-복구-exception-handling-and-recovery) |
+| 13     | [사람 개입 (Human-in-the-Loop)](#13장-사람-개입-human-in-the-loop)                                     |
+| **14** | **[지식 검색 (RAG)](#14장-지식-검색-rag)**                                                             |
+| 15     | [에이전트 간 통신 (Inter-Agent Communication)](#15장-에이전트-간-통신-inter-agent-communication)             |
+| 16     | [자원 최적화 (Resource-Aware Optimization)](#16장-자원-최적화-resource-aware-optimization)               |
+| 17     | [추론 기법 (Reasoning Techniques)](#17장-추론-기법-reasoning-techniques)                               |
+| 18     | [가드레일 (Guardrails)](#18장-가드레일-guardrails)                                                     |
+| **19** | **[평가와 모니터링 (Evaluation and Monitoring)](#19장-평가와-모니터링-evaluation-and-monitoring)**           |
+| 20     | [우선순위 결정 (Prioritization)](#20장-우선순위-결정-prioritization)                                       |
+| 21     | [탐색과 발견 (Exploration and Discovery)](#21장-탐색과-발견-exploration-and-discovery)                   |
 ## 이 패턴들은 무엇으로 만드나
 
 | 이름            | 역할                                                     |
@@ -13,39 +38,10 @@ LLM에 질문을 던지고 답을 받는 것만으로는 서비스가 되지 않
 | `@Tool`       | 함수에 붙이면 모델이 부를 수 있는 도구가 됩니다                            |
 | `.entity()`   | 응답을 문자열 대신 타입 객체로 받습니다(구조화 출력)                         |
 | `VectorStore` | 문서를 벡터로 저장하고 의미가 가까운 것을 찾아 주는 저장소                      |
-| `Evaluator`   | 모델의 답을 다시 모델로 채점해 통과 여부와 점수를 돌려줍니다                  |
-
-## 21개 패턴을 한눈에
-
-| 장      | 패턴                                                                                            | 무엇으로 만드나                             |
-| ------ | --------------------------------------------------------------------------------------------- | ------------------------------------ |
-| 1      | [프롬프트 체이닝 (Prompt Chaining)](#1장-프롬프트-체이닝-prompt-chaining)                                    | `.entity()` 로 중간 결과를 넘김              |
-| 2      | [라우팅 (Routing)](#2장-라우팅-routing)                                                              | `.entity()` + `when`                 |
-| 3      | [병렬화 (Parallelization)](#3장-병렬화-parallelization)                                              | 코루틴                                  |
-| 4      | [자기 검토 (Reflection)](#4장-자기-검토-reflection)                                                    | `.entity()` + 피드백 루프                 |
-| **5**  | **[도구 사용 (Tool Use)](#5장-도구-사용-tool-use)**                                                    | **`@Tool`**                          |
-| 6      | [계획 수립 (Planning)](#6장-계획-수립-planning)                                                        | 작업 설명 하나                             |
-| 7      | [멀티 에이전트 (Multi-Agent)](#7장-멀티-에이전트-multi-agent)                                              | `defaultSystem` 이 다른 `ChatClient` 여럿 |
-| **8**  | **[대화 기억 (Memory Management)](#8장-대화-기억-memory-management)**                                  | **`ChatMemory`** + 저장소 6종            |
-| 9      | [학습과 적응 (Learning and Adaptation)](#9장-학습과-적응-learning-and-adaptation)                        | `VectorStore` 에 축적                   |
-| **10** | **[MCP (Model Context Protocol)](#10장-mcp-model-context-protocol)**                           | **`@McpTool`**                       |
-| 11     | [목표 설정과 모니터링 (Goal Setting and Monitoring)](#11장-목표-설정과-모니터링-goal-setting-and-monitoring)     | `.entity()` + `Evaluator`            |
-| 12     | [예외 처리와 복구 (Exception Handling and Recovery)](#12장-예외-처리와-복구-exception-handling-and-recovery) | `spring.ai.retry` + 폴백               |
-| 13     | [사람 개입 (Human-in-the-Loop)](#13장-사람-개입-human-in-the-loop)                                     | 상태를 안 바꾸는 `@Tool`                    |
-| **14** | **[지식 검색 (RAG)](#14장-지식-검색-rag)**                                                             | **`QuestionAnswerAdvisor`**          |
-| 15     | [에이전트 간 통신 (Inter-Agent Communication)](#15장-에이전트-간-통신-inter-agent-communication)             | `@McpTool` 양방향                       |
-| 16     | [자원 최적화 (Resource-Aware Optimization)](#16장-자원-최적화-resource-aware-optimization)               | `ChatOptions` + 지표                   |
-| 17     | [추론 기법 (Reasoning Techniques)](#17장-추론-기법-reasoning-techniques)                               | 시스템 프롬프트                             |
-| 18     | [가드레일 (Guardrails)](#18장-가드레일-guardrails)                                                     | `Advisor`                            |
-| **19** | **[평가와 모니터링 (Evaluation and Monitoring)](#19장-평가와-모니터링-evaluation-and-monitoring)**           | **`Evaluator`**                      |
-| 20     | [우선순위 결정 (Prioritization)](#20장-우선순위-결정-prioritization)                                       | `.entity()` + 정렬                     |
-| 21     | [탐색과 발견 (Exploration and Discovery)](#21장-탐색과-발견-exploration-and-discovery)                   | 병렬 생성 + 심사위원 셋 + `.entity()`         |
-
-굵게 표시한 다섯 장에만 전용 타입이 있습니다. 나머지 열여섯은 범용 기능을 조합합니다. 그래서 오른쪽 열에 `.entity()` · `Evaluator` · `@Tool` · `@McpTool` 이 되풀이해 나옵니다.
-
+| `Evaluator`   | 모델의 답을 다시 모델로 채점해 통과 여부와 점수를 돌려줍니다                     |
 ### 그림 읽는 법
 
-장마다 맨 앞에 그 패턴의 모양을 그려 두었습니다. 기호는 다섯뿐입니다.
+장마다 맨 앞에 그 패턴의 모양을 그려 두었습니다. 
 
 | 기호  | 뜻                                         |
 | --- | ----------------------------------------- |
@@ -405,7 +401,7 @@ chatClient.prompt()
     .call().content()
 ```
 
-위의 `chatMemory` 는 몇 개를 기억할지 정하는 **정책**이고, 실제 저장은 기본이 인메모리라 재시작하면 사라집니다. 대화를 남겨야 하면 **저장소만 갈아 끼웁니다.** JDBC · Redis · MongoDB · Neo4j · Cassandra 중에서 고르는데, 코드는 그대로고 의존성과 설정 한 줄이 바뀝니다.
+위의 `chatMemory` 는 몇 개를 기억할지 정하는 **정책**이고, 실제 저장은 기본이 인메모리라 재시작하면 사라집니다. 대화를 남겨야 하면 **저장소만 갈아 끼웁니다.** JDBC · PostgreSQL · Redis · MongoDB · Neo4j · Cassandra 중에서 고르는데, 코드는 그대로고 의존성과 설정 한 줄이 바뀝니다.
 
 ```kotlin
 implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
