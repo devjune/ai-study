@@ -10,17 +10,17 @@
 
 | 장   | 주제                                               |
 | --- | ------------------------------------------------ |
-| 1   | Koog는 무엇이고 왜 — 손조립과 무엇이 다른가                      |
-| 2   | 연결 — 기존 `ChatModel` 빈이 `PromptExecutor`가 되기까지    |
-| 3   | 단일 에이전트 — `AIAgent` 기본형                          |
-| 4   | 그래프 전략 — 노드·엣지로 흐름 짜기                            |
-| 5   | 도구 — 실행은 Koog가 하고 Spring AI는 스키마만 받는다            |
-| 6   | 메모리 — `ChatMemoryRepository` 어댑터와 제약, 히스토리 압축    |
-| 7   | RAG — `EmbeddingModel` · `VectorStore` 어댑터       |
-| 8   | MCP 연동                                           |
-| 9   | 마무리 — 손으로 만든 것이 Koog에선 무엇이 되나                    |
+| 1   | [Koog는 무엇이고 왜 — 손조립과 무엇이 다른가](#1장-koog는-무엇이고-왜--손조립과-무엇이-다른가) |
+| 2   | [연결 — 기존 `ChatModel` 빈이 `PromptExecutor`가 되기까지](#2장-연결--기존-chatmodel-빈이-promptexecutor가-되기까지) |
+| 3   | [단일 에이전트 — `AIAgent` 기본형](#3장-단일-에이전트--aiagent-기본형) |
+| 4   | [그래프 전략 — 노드·엣지로 흐름 짜기](#4장-그래프-전략--노드엣지로-흐름-짜기) |
+| 5   | [도구 — 실행은 Koog가 하고 Spring AI는 스키마만 받는다](#5장-도구--실행은-koog가-하고-spring-ai는-스키마만-받는다) |
+| 6   | [메모리 — `ChatMemoryRepository` 어댑터와 제약, 히스토리 압축](#6장-메모리--chatmemoryrepository-어댑터와-제약-히스토리-압축) |
+| 7   | [RAG — `EmbeddingModel` · `VectorStore` 어댑터](#7장-rag--embeddingmodel--vectorstore-어댑터) |
+| 8   | [MCP 연동 — 앞 편에서 만든 서버에 클라이언트로 붙기](#8장-mcp-연동--앞-편에서-만든-서버에-클라이언트로-붙기) |
+| 9   | [마무리 — 손으로 만든 것이 Koog에선 무엇이 되나](#9장-마무리--손으로-만든-것이-koog에선-무엇이-되나) |
 
-## 1장 Koog는 무엇이고 왜
+## 1장 Koog는 무엇이고 왜 — 손조립과 무엇이 다른가
 
 Koog는 JetBrains가 만든 Kotlin 에이전트 프레임워크입니다. 에이전트를 굴리는 데 필요한 부품이 이미 타입으로 들어 있습니다. 모델을 부르는 실행기, 도구 목록, 대화 이력, 흐름을 그리는 그래프, 그 위에 얹는 관측 기능까지 프레임워크가 들고 있습니다.
 
@@ -52,9 +52,9 @@ implementation(libs.koog.agents.jvm)
 
 좌표는 `ai.koog:koog-spring-ai-starter-model-chat`과 `ai.koog:koog-agents-jvm`입니다. 두 가지를 짚어 둡니다.
 
-**브리지 스타터는 1.0.0부터 정식 릴리스가 없습니다.** Maven Central의 이 아티팩트 이력은 `0.7.x` · `0.8.0`까지 정식으로 올라오다가, `1.0.0-beta` 계열부터 최신 `1.2.0-beta`까지 전부 beta입니다. 1.x 라인에는 아직 정식 버전이 없습니다.
+**브리지 스타터는 1.0.0부터 정식 릴리스가 없습니다.** Maven Central의 이 아티팩트 이력은 `0.7.x` · `0.8.0`까지 정식으로 올라오다가, `1.0.0-beta` 계열부터 최신 `1.2.0-beta`까지 전부 beta입니다.
 
-**`AIAgent`는 스타터가 끌어오지 않습니다.** 브리지 스타터의 POM이 데려오는 것은 `koog-spring-ai-common` · `prompt-executor-clients-jvm` · `prompt-executor-model-jvm`까지입니다. 3장부터 쓰는 `AIAgent`는 `ai.koog.agents.core.agent` 패키지에 있고, 이 패키지가 든 `koog-agents-jvm`은 전이 의존성에 없습니다. 직접 넣어야 합니다. 브리지는 실행기까지만 놔 주고 에이전트는 별도라는 뜻입니다.
+**`AIAgent`는 스타터가 끌어오지 않습니다.** 브리지 스타터의 POM이 데려오는 것은 `koog-spring-ai-common` · `prompt-executor-clients-jvm` · `prompt-executor-model-jvm`까지입니다. 3장부터 쓰는 `AIAgent`는 `ai.koog.agents.core.agent` 패키지, 곧 `agents-core-jvm` 모듈에 있습니다. 위에 적은 `koog-agents-jvm`은 그 모듈을 끌어오는 상위 아티팩트입니다. 어느 쪽이든 브리지 스타터의 전이 의존성에는 없어 직접 넣어야 합니다. 브리지는 실행기까지만 놔 주고 에이전트는 별도라는 뜻입니다.
 
 ### 버전 — 브리지가 겨냥한 스택을 따라가야 합니다
 
@@ -73,7 +73,7 @@ ai.koog.prompt.executor.clients.LLMClientException: Error from client: SpringAiL
 ChatModel.call() failed: class org.springframework.ai.chat.prompt.DefaultChatOptions cannot be cast to class org.springframework.ai.ollama.api.OllamaChatOptions
 ```
 
-Koog의 `SpringAiLLMClient`는 벤더 중립 옵션인 `DefaultChatOptions`를 만들어 `chatModel.call(prompt)`에 그대로 넘깁니다. Spring AI 2.0.1의 `OllamaChatModel`은 넘어온 옵션을 곧바로 `OllamaChatOptions`로 캐스트합니다. 1.1.x에서는 이 경계에서 포터블 옵션을 벤더 옵션으로 변환해 주던 관용이 2.0 계열에서 사라졌습니다. Koog 버전을 `1.1.1-beta`로 낮춰도 같은 자리에서 같은 예외가 납니다. 두 버전이 선언한 Spring AI 타깃이 똑같기 때문입니다. Spring AI 2.x를 겨냥한 Koog 릴리스는 아직 없습니다.
+Koog의 `SpringAiLLMClient`는 벤더 중립 옵션인 `DefaultChatOptions`를 만들어 `chatModel.call(prompt)`에 그대로 넘깁니다. Spring AI 2.0.1의 `OllamaChatModel`은 넘어온 옵션을 곧바로 `OllamaChatOptions`로 캐스트합니다. 1.1.x에서는 이 경계가 문제되지 않습니다. Koog 버전을 `1.1.1-beta`로 낮춰도 같은 자리에서 같은 예외가 납니다. 두 버전이 선언한 Spring AI 타깃이 똑같기 때문입니다. Spring AI 2.x를 겨냥한 Koog 릴리스는 아직 없습니다.
 
 Kotlin은 손대지 않았습니다. Koog 문서는 2.3.10 이상을 적어 두지만 2.2.21로 컴파일도 테스트도 그대로 통과합니다.
 
@@ -86,7 +86,7 @@ spring.ai.ollama.base-url=http://localhost:11434
 spring.ai.ollama.chat.model=qwen3:4b-instruct
 ```
 
-Koog 전용 프로퍼티는 없습니다. 브리지는 Spring AI가 이미 만들어 둔 `ChatModel` 빈을 집어 갈 뿐이라 모델 지정도 접속 주소도 Spring AI 쪽 키를 그대로 씁니다. 두 키 모두 1.1.6에 그대로 있습니다.
+Koog 전용 프로퍼티는 없습니다 — 6장에서 하나 만나게 됩니다. 브리지는 Spring AI가 이미 만들어 둔 `ChatModel` 빈을 집어 갈 뿐이라 모델 지정도 접속 주소도 Spring AI 쪽 키를 그대로 씁니다. 두 키 모두 1.1.6에 그대로 있습니다.
 
 ### 조립 구조
 
@@ -131,7 +131,7 @@ object KoogModels {
 
 `capabilities`가 이 타입의 핵심입니다. 이 모델에 도구를 붙여도 되는지, 온도를 조절할 수 있는지, 구조화 출력을 요구해도 되는지를 값으로 적어 둡니다. Spring AI가 문자열 모델 이름 하나로 끝내던 자리에 능력 선언이 들어온 셈입니다. `contextLength`와 `maxOutputTokens`도 인자로 있지만 기본값이 있어 생략됩니다.
 
-`provider`는 `LLMProvider.Ollama`입니다. 다만 이 값은 프롬프트를 어떤 규약으로 직렬화할지 정하는 표시일 뿐, 실제 접속은 브리지 뒤의 Spring AI `OllamaChatModel`이 합니다. Ollama 주소를 Koog에 알려 줄 필요가 없는 이유입니다.
+`provider`는 `LLMProvider.Ollama`입니다. 다만 이 값은 모델을 어느 제공자 것으로 식별하는 표시일 뿐, 실제 접속은 브리지 뒤의 Spring AI `OllamaChatModel`이 합니다. Ollama 주소를 Koog에 알려 줄 필요가 없는 이유입니다.
 
 이제 실행기와 모델이 준비됐습니다. 다음 장에서 이 둘로 에이전트 하나를 돌립니다.
 
@@ -344,7 +344,7 @@ Please, consider increasing `maxAgentIterations` value in agent's configuration
 
 세 장 모두 우리 코드에서 사라진 것은 제어문이고, 대신 생긴 것은 그래프 선언입니다. 흐름이 코드가 아니라 값이 되면 실행기가 그것을 읽을 수 있습니다. 어느 노드에서 몇 번 돌았는지 세는 관측성이 프레임워크 기능으로 있는 이유입니다.
 
-노드가 더 커지면 `subgraph("이름") { }`로 그래프 안에 그래프를 넣습니다. 하위 그래프는 자기만의 도구 목록과 모델을 가질 수 있어서, 앞 편 7장 멀티 에이전트가 서비스 클래스를 나누던 자리에 옵니다.
+노드가 더 커지면 `subgraph("이름") { }`로 그래프 안에 그래프를 넣습니다. 시그니처를 찍어 보면 하위 그래프는 자기 도구 목록과 모델을 인자로 받습니다. 앞 편 7장 멀티 에이전트가 서비스 클래스를 나누던 자리인데, 여기까지가 시그니처로 확인한 것이고 돌려 보지는 않았습니다.
 
 여기까지는 도구 없이 모델만 불렀습니다. 다음 장에서 이 그래프에 도구를 붙입니다.
 
@@ -376,7 +376,7 @@ class ExchangeToolSet : ToolSet {
 
 `calls`는 도구가 실제로 돌았는지 보려고 넣은 것이고, 나머지가 도구 정의의 전부입니다. 읽을 것이 셋 있습니다.
 
-`ToolSet`은 멤버가 없는 마커 인터페이스입니다. 구현할 것이 없고, 대신 기본 구현으로 `asTools()`를 얻습니다. 이 함수가 리플렉션으로 클래스를 훑어 `@Tool`이 붙은 함수를 모읍니다. 리플렉션으로 도는 만큼 `kotlin-reflect`가 런타임에 있어야 합니다.
+`ToolSet`은 멤버가 없는 마커 인터페이스입니다. 구현할 것이 없고, 대신 기본 구현으로 `asTools()`를 얻습니다. 이 함수가 리플렉션으로 클래스를 훑어 `@Tool`이 붙은 함수를 모읍니다. 리플렉션으로 도는 만큼 `kotlin-reflect`를 의존성에 직접 넣어 두었습니다.
 
 `@Tool`은 표시만 하는 애노테이션입니다. 도구 이름은 함수 이름이 그대로 쓰이고, 바꾸려면 `@Tool(customName = "...")`입니다. 앞 편의 `@Tool`이 설명까지 같이 받던 것과 다릅니다.
 
@@ -418,7 +418,7 @@ descriptor.requiredParameters.single().description shouldBe "통화 코드, 예:
 
 이름 하나, 설명 하나, 파라미터마다 이름과 설명. 애노테이션에 적은 문자열이 그대로 옮겨져 있습니다. 모델에게 도구란 이 몇 줄이 전부이고, 함수 본문은 모델 쪽으로 넘어가지 않습니다. `@LLMDescription`을 대충 쓰면 도구를 안 부르는 이유가 여기 있습니다.
 
-브리지가 이 서술자를 Spring AI의 도구 표현으로 옮겨 Ollama 요청에 싣습니다. 거기까지가 Spring AI 몫입니다. 모델이 "이 도구를 이런 인자로 부르겠다"고 답한 다음부터 — 호출을 받아 함수를 돌리고, 결과를 대화 이력에 넣고, 모델을 다시 부르는 왕복 — 은 전부 Koog입니다. 앞 편에서 `ChatClient`가 그 왕복까지 대신 돌려주던 것과 다릅니다.
+이 서술자가 브리지를 지나 Ollama 요청에 실립니다. 거기까지가 Spring AI 몫입니다. 모델이 "이 도구를 이런 인자로 부르겠다"고 답한 다음부터 — 호출을 받아 함수를 돌리고, 결과를 대화 이력에 넣고, 모델을 다시 부르는 왕복 — 은 전부 Koog입니다. 앞의 `calls`에 `[USD]`가 남은 것이 그 왕복이 돌았다는 증거입니다. 앞 편에서 `ChatClient`가 왕복까지 대신 돌려주던 것과 자리가 다릅니다.
 
 ### 왕복을 그래프로 직접 그리면
 
@@ -507,7 +507,7 @@ Spring AI ChatMemoryRepository 빈  →  SpringAiChatHistoryProvider  =  ChatHis
 implementation(libs.koog.spring.ai.starter.chat.memory)
 ```
 
-좌표는 `ai.koog:koog-spring-ai-starter-chat-memory`이고 버전은 2장의 브리지와 같은 `1.2.0-beta`입니다. 저장소 쪽은 따로 넣을 것이 없습니다. Spring AI의 Ollama 스타터가 `spring-ai-autoconfigure-model-chat-memory`를 이미 끌고 오고, 거기서 `InMemoryChatMemoryRepository`가 `chatMemoryRepository`라는 이름으로 올라옵니다.
+좌표는 `ai.koog:koog-spring-ai-starter-chat-memory`이고 버전은 2장의 브리지와 같은 `1.2.0-beta`입니다. 저장소 쪽은 따로 넣을 것이 없습니다. Spring AI의 Ollama 스타터가 `spring-ai-autoconfigure-model-chat-memory`를 이미 끌고 옵니다. 거기서 `InMemoryChatMemoryRepository`가 `chatMemoryRepository`라는 이름으로 올라옵니다.
 
 ### 그런데 빈이 만들어지지 않습니다
 
@@ -700,7 +700,7 @@ fun vectorStore(embeddingModel: EmbeddingModel): VectorStore =
     SimpleVectorStore.builder(embeddingModel).build()
 ```
 
-이 빈만 있으면 벡터 저장소 쪽은 끝입니다. 6장처럼 프로퍼티로 이름을 적어 줄 일도 없습니다. `SpringAiVectorStoreAutoConfiguration`은 `@AutoConfiguration(afterName = …)`에 벤더 벡터 저장소 오토컨피규레이션들을 적어 두는데, 우리 빈은 컴포넌트 스캔으로 먼저 올라오므로 `@ConditionalOnSingleCandidate`가 평가될 때 이미 후보로 잡힙니다.
+이 빈만 있으면 벡터 저장소 쪽은 끝입니다. 6장처럼 프로퍼티로 이름을 적어 줄 일도 없습니다. `SpringAiVectorStoreAutoConfiguration`도 `@AutoConfiguration(afterName = …)`에 벤더 벡터 저장소 오토컨피규레이션들을 적어 둡니다. 다만 우리 빈은 컴포넌트 스캔으로 먼저 올라옵니다. `@ConditionalOnSingleCandidate`가 평가될 때 이미 후보로 잡혀 있는 셈입니다.
 
 임베딩 쪽에서 다시 걸립니다.
 
@@ -723,7 +723,7 @@ LLMEmbeddingProvider beans: [springAiChatModelLLMClient]
 
 `ollamaEmbeddingModel`은 멀쩡히 올라와 있는데 임베딩 어댑터 빈이 아예 없습니다. 6장과 증상이 같고 원인은 다릅니다. 순서가 아니라 **타입 계층**입니다.
 
-Koog의 `LLMClient`는 `LLMEmbeddingProvider`를 상속합니다. 채팅 클라이언트도 임베딩 제공자인 셈입니다. 그리고 임베딩 스타터의 빈 선언에는 이것이 붙어 있습니다.
+Koog의 `LLMClient`는 `LLMEmbeddingProvider`를 상속합니다. 채팅 클라이언트도 임베딩 제공자인 셈입니다. 그리고 임베딩 스타터의 오토컨피규레이션을 찍어 보면 빈 선언에 이것이 붙어 있습니다.
 
 ```
 @Bean
@@ -797,7 +797,7 @@ val BGE_M3 = LLModel(
 
 ### 어댑터가 옮기지 않는 것
 
-`KoogVectorStore`가 구현한다고 선언한 인터페이스는 셋입니다.
+`KoogVectorStore`를 찍어 보면 구현한다고 선언한 인터페이스가 셋입니다.
 
 ```kotlin
 interface KoogVectorStore :
@@ -910,17 +910,18 @@ implementation(libs.koog.agents.mcp.jvm)
 ```
 java.lang.IllegalStateException: Error connecting to transport:
 'kotlinx.serialization.KSerializer[] kotlinx.serialization.internal.GeneratedSerializer.typeParametersSerializers()'
-	at io.modelcontextprotocol.kotlin.sdk.client.Client.connect(Client.kt:223)
+	at io.modelcontextprotocol.kotlin.sdk.client.Client.connect$suspendImpl(Client.kt:223)
 	at ai.koog.agents.mcp.McpToolRegistryProvider.streamableHttp(McpToolRegistryProvider.kt:111)
+Caused by: java.lang.AbstractMethodError
 ```
 
-`AbstractMethodError`가 원인입니다. 클래스패스를 찍어 보면 나옵니다.
+`Caused by` 줄의 `AbstractMethodError`가 원인입니다. 없는 메서드를 부른 것이니 컴파일할 때와 실행할 때의 클래스가 다르다는 뜻입니다. 클래스패스를 찍어 보면 나옵니다.
 
 ```
 org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 -> 1.6.3
 ```
 
-MCP SDK는 `1.10.0`으로 컴파일됐는데 실행에 올라오는 것은 `1.6.3`입니다. 낮추는 쪽은 Spring Boot입니다. `spring-boot-dependencies:3.5.14`가 `<kotlin-serialization.version>1.6.3</kotlin-serialization.version>`을 들고 있고, 우리는 이 BOM을 `io.spring.dependency-management`로 적용하고 있습니다. 관리 버전이 전이 버전을 덮으므로 `1.10.0`을 요구한 쪽이 집니다.
+MCP SDK는 `1.10.0`으로 컴파일됐는데 실행에 올라오는 것은 `1.6.3`입니다. 낮추는 쪽은 Spring Boot입니다. `spring-boot-dependencies:3.5.14`가 `<kotlin-serialization.version>1.6.3</kotlin-serialization.version>`을 들고 있습니다. 이 BOM을 `io.spring.dependency-management`로 적용하고 있으니 관리 버전이 전이 버전을 덮습니다. `1.10.0`을 요구한 쪽이 집니다.
 
 BOM 프로퍼티를 덮어씁니다.
 
@@ -1017,12 +1018,11 @@ A-1024 · 무선 키보드 · 배송중 · 2026-09-02 발송 · 09-05 도착 예
 레지스트리에서 도구를 꺼내 손으로 실행해 보려 하면 컴파일이 막습니다.
 
 ```
-e: Ch08McpTest.kt:41:57 This declaration needs opt-in. Its usage must be marked with
+e: This declaration needs opt-in. Its usage must be marked with
 '@ai.koog.agents.core.annotation.InternalAgentsApi' or '@OptIn(ai.koog.agents.core.annotation.InternalAgentsApi::class)'
-e: Ch08McpTest.kt:43:22 This declaration needs opt-in. …
 ```
 
-41행은 `registry.getTool("lookupOrder") as McpTool`이고 43행은 그 `execute` 호출입니다. `McpTool` 클래스 자체에 `@InternalAgentsApi`가 붙어 있습니다. 도구를 돌리는 정규 경로는 하나 — 레지스트리를 에이전트에 넘기는 것 — 이라는 뜻입니다.
+`registry.getTool("lookupOrder") as McpTool`과 거기서 이어지는 `execute` 호출이 함께 걸립니다. `McpTool` 클래스 자체에 `@InternalAgentsApi`가 붙어 있습니다. 도구를 돌리는 정규 경로는 하나 — 레지스트리를 에이전트에 넘기는 것 — 이라는 뜻입니다.
 
 프로토콜 왕복만 따로 확인하고 싶을 때는 걸리는 제약입니다. 앞 편에서는 `/mcp`에 JSON-RPC를 직접 던져 `tools/list` 응답을 눈으로 봤습니다. Koog 쪽에서 같은 것을 하려면 옵트인을 적어 넣어야 합니다. 프레임워크가 아래층을 가린다는 1장의 문장이 여기서는 애노테이션 하나로 나타납니다.
 
