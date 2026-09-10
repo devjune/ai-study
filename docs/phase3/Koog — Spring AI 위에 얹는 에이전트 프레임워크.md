@@ -351,3 +351,136 @@ Please, consider increasing `maxAgentIterations` value in agent's configuration
 노드가 더 커지면 `subgraph("이름") { }`로 그래프 안에 그래프를 넣습니다. 하위 그래프는 자기만의 도구 목록과 모델을 가질 수 있어서, 앞 편 7장 멀티 에이전트가 서비스 클래스를 나누던 자리에 옵니다.
 
 여기까지는 도구 없이 모델만 불렀습니다. 다음 장에서 이 그래프에 도구를 붙입니다.
+
+## 5장 도구 — 실행은 Koog가 하고 Spring AI는 스키마만 받는다
+
+2장 끝에서 경계를 하나 예고했습니다. 도구를 실제로 실행하는 쪽은 Koog이고 Spring AI는 스키마만 실어 보낸다는 것입니다. 이번 장에서 그 문장이 코드로 어떻게 생겼는지 봅니다.
+
+### 도구는 클래스 하나에 모아 붙입니다
+
+환율을 돌려주는 도구 하나짜리 예제입니다.
+
+```kotlin
+@LLMDescription("환율 조회 도구")
+class ExchangeToolSet : ToolSet {
+    val calls = mutableListOf<String>()
+
+    @Tool
+    @LLMDescription("통화 코드의 원화 환율을 돌려준다")
+    fun exchangeRate(@LLMDescription("통화 코드, 예: USD") code: String): String {
+        calls += code
+        return when (code.uppercase()) {
+            "USD" -> "1385"
+            "JPY" -> "9.2"
+            else -> "미지원 통화"
+        }
+    }
+}
+```
+
+`calls`는 도구가 실제로 돌았는지 보려고 넣은 것이고, 나머지가 도구 정의의 전부입니다. 읽을 것이 셋 있습니다.
+
+`ToolSet`은 멤버가 없는 마커 인터페이스입니다. 구현할 것이 없고, 대신 기본 구현으로 `asTools()`를 얻습니다. 이 함수가 리플렉션으로 클래스를 훑어 `@Tool`이 붙은 함수를 모읍니다. 리플렉션으로 도는 만큼 `kotlin-reflect`가 런타임에 있어야 합니다.
+
+`@Tool`은 표시만 하는 애노테이션입니다. 도구 이름은 함수 이름이 그대로 쓰이고, 바꾸려면 `@Tool(customName = "...")`입니다. 앞 편의 `@Tool`이 설명까지 같이 받던 것과 다릅니다.
+
+`@LLMDescription`이 설명을 맡습니다. 클래스·함수·파라미터 세 자리에 붙고, 붙은 자리에 따라 무엇의 설명인지가 정해집니다. 모델이 읽는 문서가 이것뿐이라 여기 쓴 문장이 도구를 부를지 말지를 가릅니다.
+
+### 레지스트리에 담아 에이전트에 넘깁니다
+
+```kotlin
+val tools = ExchangeToolSet()
+val agent = AIAgent(
+    promptExecutor = promptExecutor,
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = "환율 질문에는 반드시 exchangeRate 도구를 호출한다. " +
+        "도구가 돌려준 숫자를 그대로 답에 싣고, 직접 계산하거나 추측하지 않는다.",
+    temperature = 0.0,
+    toolRegistry = ToolRegistry { tools(tools) },
+)
+val result = agent.run("1달러는 몇 원이야?")
+```
+
+`"1달러는 1385원입니다."`가 나오고, `tools.calls`에는 `[USD]`가 남습니다. 모델이 지어낸 숫자가 아니라 Kotlin 함수가 이 JVM에서 돌아 돌려준 값이라는 증거입니다.
+
+`ToolRegistry { }`는 람다를 받는 생성자입니다. 람다 안이 `ToolRegistryBuilder`이고, `tools(ToolSet)` 말고도 도구 객체 하나를 넣는 `tool(ToolBase)`, 함수 참조 하나만 도구로 만드는 `tool(KFunction)`이 있습니다. 클래스로 묶기 애매한 한 개짜리는 마지막 것으로 끝냅니다.
+
+에이전트 쪽에서는 `toolRegistry`가 생성자 인자 하나로 끝입니다. 3장에서 `systemPrompt`와 `temperature`가 그랬듯 도구도 **에이전트를 만들 때 박히는 설정**입니다. 앞 편에서 `.tools(...)`가 호출할 때마다 체인에 끼는 값이던 것과 갈리는 자리입니다.
+
+### 그 스키마가 무엇인지
+
+Spring AI가 받아 가는 "스키마"의 실체는 `ToolDescriptor`입니다. 모델을 부르지 않고 꺼내 볼 수 있습니다.
+
+```kotlin
+val descriptor = ExchangeToolSet().asTools().single().descriptor
+
+assertEquals("exchangeRate", descriptor.name)
+assertEquals("통화 코드의 원화 환율을 돌려준다", descriptor.description)
+assertEquals(listOf("code"), descriptor.requiredParameters.map { it.name })
+assertEquals("통화 코드, 예: USD", descriptor.requiredParameters.single().description)
+```
+
+이름 하나, 설명 하나, 파라미터마다 이름과 설명. 애노테이션에 적은 문자열이 그대로 옮겨져 있습니다. 모델에게 도구란 이 몇 줄이 전부이고, 함수 본문은 모델 쪽으로 넘어가지 않습니다. `@LLMDescription`을 대충 쓰면 도구를 안 부르는 이유가 여기 있습니다.
+
+브리지가 이 서술자를 Spring AI의 도구 표현으로 옮겨 Ollama 요청에 싣습니다. 거기까지가 Spring AI 몫입니다. 모델이 "이 도구를 이런 인자로 부르겠다"고 답한 다음부터 — 호출을 받아 함수를 돌리고, 결과를 대화 이력에 넣고, 모델을 다시 부르는 왕복 — 은 전부 Koog입니다. 앞 편에서 `ChatClient`가 그 왕복까지 대신 돌려주던 것과 다릅니다.
+
+### 왕복을 그래프로 직접 그리면
+
+위 코드에는 전략이 없으니 3장의 기본 그래프가 그 왕복을 돌린 것입니다. 4장에서 미뤄 둔 `onToolCalls`로 같은 왕복을 펼쳐 놓으면 이렇게 됩니다.
+
+```kotlin
+val toolLoop = strategy<String, String>("tool-loop") {
+    val request by nodeLLMRequest()
+    val execute by nodeExecuteTools()
+    val report by nodeLLMSendToolResults()
+
+    edge(nodeStart forwardTo request)
+    edge(request forwardTo execute onToolCalls { true })
+    edge(request forwardTo nodeFinish onTextMessage { true })
+    edge(execute forwardTo report)
+    edge(report forwardTo nodeFinish onTextMessage { true })
+}
+```
+
+`"1엔은 몇 원이야?"`를 넣으면 `calls`에 `[JPY]`가 남습니다.
+
+노드 두 개가 새로 나왔습니다. `nodeExecuteTools()`는 `ToolCalls`를 받아 `ReceivedToolResults`를 내놓습니다 — 도구를 실제로 돌리는 자리입니다. `nodeLLMSendToolResults()`는 그 결과를 받아 대화에 넣고 모델을 다시 불러 `Message.Assistant`를 돌려줍니다.
+
+`onToolCalls { }`는 4장의 `onTextMessage { }`와 같은 자리에 있습니다. 응답을 도구 호출인 경우로 좁히고, 통과한 값을 `ToolCalls`로 바꿔 넘깁니다. 그래서 `request` 노드에서 엣지가 둘 나갑니다. 모델이 도구를 부르겠다고 하면 `execute`로, 그냥 텍스트로 답하면 곧장 끝으로 갑니다. 도구를 붙였다고 매번 부르는 것은 아니라는 사실이 엣지 두 개로 드러나 있습니다.
+
+펼쳐 두면 노드 사이에 다른 것을 끼울 수 있습니다. 앞 편 13장에서 취소 도구를 실행하지 않고 사람 승인을 기다리게 했던 것이 여기서는 `execute` 앞에 승인 노드 하나가 됩니다. 손조립에서 도구 함수 안에 심어야 했던 조건이 그래프에서는 노드 사이 간격으로 옮겨 갑니다.
+
+### 같은 이름, 다른 타입
+
+여기까지 나온 `@Tool`은 앞 편의 `@Tool`과 이름만 같고 다른 애노테이션입니다. 둘 다 클래스패스에 올라와 있으니 대조해 둡니다.
+
+|          | 앞 편 (Spring AI)                                 | 이 편 (Koog)                                     |
+| -------- | ---------------------------------------------- | ---------------------------------------------- |
+| 도구 표시    | `org.springframework.ai.tool.annotation.Tool`  | `ai.koog.agents.core.tools.annotations.Tool`   |
+| 도구 설명    | `@Tool(description = "…")`                     | 함수에 붙인 `@LLMDescription("…")`                  |
+| 파라미터 설명  | `@ToolParam(description = "…")`                | 파라미터에 붙인 `@LLMDescription("…")`                |
+| 묶는 자리    | 아무 클래스나 가능                                     | `ToolSet` 구현 클래스                               |
+| 붙이는 자리   | 호출할 때 `.tools(SupportTools(orderService))`      | 만들 때 `toolRegistry = ToolRegistry { tools(…) }` |
+
+`@LLMDescription`도 Koog 전용이라 `ai.koog.agents.core.tools.annotations.LLMDescription`을 임포트합니다. Koog 쪽 애노테이션 둘은 같은 패키지에 있습니다.
+
+임포트를 잘못 골라도 컴파일은 통과합니다. Spring AI의 `@Tool`은 메서드에 붙일 수 있고 Kotlin 함수도 메서드니까요. 대신 실행하면 이렇게 끊깁니다.
+
+```
+java.lang.IllegalArgumentException: No tools found in class com.example.phase3.WrongToolSet
+	at ai.koog.agents.core.tools.reflect.ToolFromCallableExtensionsKt.asTools(ToolFromCallableExtensions.kt:71)
+	at ai.koog.agents.core.tools.ToolRegistryBuilder.tools(ToolRegistryBuilder.kt:42)
+	at ai.koog.agents.core.tools.ToolRegistry.<init>(ToolRegistry.kt:39)
+```
+
+리플렉션이 Koog의 `@Tool`만 찾으므로 도구가 하나도 안 잡힙니다. 다행인 것은 터지는 자리입니다. 스택 맨 아래가 `ToolRegistry.<init>`이니 레지스트리를 만드는 순간, 곧 에이전트를 조립하는 순간 끊깁니다. 모델을 부르다가 조용히 도구 없이 답하는 쪽이 아닙니다.
+
+### 작은 모델이 도구를 부르게 하려면
+
+qwen3:4b는 도구 호출을 건너뛰기 쉬운 크기입니다. 위 예제들은 다섯 번씩 돌려 모두 같은 결과가 나왔지만, 그렇게 되기까지 붙인 조건이 있습니다.
+
+시스템 프롬프트에 도구 이름을 그대로 박았습니다. `"환율 질문에는 반드시 exchangeRate 도구를 호출한다"`처럼 무엇을 부를지까지 적습니다. 온도는 `0.0`으로 내렸습니다. 그리고 도구가 하나뿐이고 질문이 그 도구와 정확히 맞아떨어집니다.
+
+도구를 여럿 붙이면 "부를지 말지"에 "무엇을 부를지"가 더해집니다. 앞 편에서 작은 모델의 판정이 흔들리던 것과 같은 자리이고, 프레임워크를 갈아도 모델 크기에서 오는 문제는 그대로 남습니다. Koog가 가져간 것은 왕복을 도는 코드이지 부를지 말지의 판단이 아닙니다.
+
+도구까지 붙었으니 대화가 길어집니다. 다음 장은 그 이력을 어디에 두고 어떻게 접는지입니다.
