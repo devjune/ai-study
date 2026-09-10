@@ -31,6 +31,8 @@ dependencies {
     implementation(libs.kotlin.reflect)
     // Spring AI의 ChatModel을 Koog의 PromptExecutor로 감싸는 공식 브리지 스타터
     implementation(libs.koog.spring.ai.starter.model.chat)
+    // AIAgent는 브리지 스타터가 아니라 이 아티팩트에 있다
+    implementation(libs.koog.agents.jvm)
     testImplementation(libs.spring.boot.starter.test)
 }
 

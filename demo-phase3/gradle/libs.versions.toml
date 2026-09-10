@@ -1,11 +1,15 @@
 [versions]
-# 스프링 부트 BOM의 kotlin.version과 일치. 최신(2.4.x)으로 올리면 stdlib이 어긋난다.
+# Kotlin은 phase1·phase2와 같은 2.2.21 유지 — 컴파일에는 문제 없었다(docs/phase3/decisions.md).
 kotlin = "2.2.21"
-springBoot = "4.0.0"
+# Koog 1.2.0-beta의 Spring AI 브리지가 실제로 겨냥하는 조합(koog-spring-ai-common POM 고정값)으로 낮췄다.
+# phase1·phase2의 Spring Boot 4.0.0 / Spring AI 2.0.1과 다르다 — Koog가 아직 2.x를 지원하지 않기 때문(런타임 ClassCastException).
+springBoot = "3.5.14"
 springDependencyManagement = "1.1.7"
-springAi = "2.0.1"
+springAi = "1.1.6"
 # Maven Central 릴리스 태그가 1.2.0-beta다 (koog-spring-ai-starter-model-chat/maven-metadata.xml).
 koogSpringAi = "1.2.0-beta"
+# AIAgent는 스타터가 아니라 이 아티팩트에 있다. 스타터가 끌어오는 prompt-executor-*-jvm과 같은 1.2.0(비-beta) 계열.
+koogAgents = "1.2.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -22,3 +26,4 @@ spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-st
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 koog-spring-ai-starter-model-chat = { module = "ai.koog:koog-spring-ai-starter-model-chat", version.ref = "koogSpringAi" }
+koog-agents-jvm = { module = "ai.koog:koog-agents-jvm", version.ref = "koogAgents" }
