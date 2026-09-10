@@ -136,3 +136,82 @@ object KoogModels {
 `provider`는 `LLMProvider.Ollama`입니다. 다만 이 값은 프롬프트를 어떤 규약으로 직렬화할지 정하는 표시일 뿐, 실제 접속은 브리지 뒤의 Spring AI `OllamaChatModel`이 합니다. Ollama 주소를 Koog에 알려 줄 필요가 없는 이유입니다.
 
 이제 실행기와 모델이 준비됐습니다. 다음 장에서 이 둘로 에이전트 하나를 돌립니다.
+
+## 3장 단일 에이전트 — `AIAgent` 기본형
+
+실행기와 모델을 그대로 받아 에이전트 하나를 만듭니다. 최소형은 이만큼입니다.
+
+```kotlin
+@SpringBootTest
+class Ch03SingleAgentTest {
+    @Autowired
+    lateinit var promptExecutor: PromptExecutor
+
+    @Test
+    fun `AIAgent 한 개가 Ollama로 답한다`() = runBlocking {
+        val agent = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            systemPrompt = "한 문장으로만 답한다.",
+        )
+        val result = agent.run("Spring AI가 무엇인지 한 문장으로")
+        assertTrue(result.isNotBlank())
+    }
+}
+```
+
+주입받는 것은 스타터가 만들어 준 `PromptExecutor` 하나입니다. 모델은 `LLModel` 값으로 따로 넘깁니다. 실행기와 모델이 따로 놀기 때문에 같은 실행기에 다른 모델을 물려 에이전트를 여러 개 만들 수 있습니다.
+
+### `AIAgent`는 클래스가 아니라 팩토리 함수입니다
+
+생성자 호출처럼 보이지만 아닙니다. `ai.koog.agents.core.agent.AIAgent`는 추상 클래스이고, 위에서 부른 `AIAgent(...)`는 같은 패키지의 최상위 함수입니다. 돌려주는 것은 `GraphAIAgent`입니다.
+
+전략을 한 줄도 쓰지 않았는데 이미 그래프라는 뜻입니다. 오버로드 중에 `AIAgentGraphStrategy`를 받는 것이 따로 있고, 그 자리를 비우면 기본 그래프가 들어갑니다. 4장에서 그 자리를 직접 채웁니다.
+
+### 파라미터
+
+온도와 반복 상한을 지정하면 이렇게 됩니다.
+
+```kotlin
+val agent = AIAgent(
+    promptExecutor = promptExecutor,
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = "숫자만 답한다. 다른 말은 붙이지 않는다.",
+    temperature = 0.2,
+    maxIterations = 5,
+)
+```
+
+`temperature`는 `Double?`, `maxIterations`는 `Int`이고 둘 다 기본값이 있습니다. 앞 편에서 온도는 호출할 때 `ChatOptions`에 실어 보내는 값이었습니다. 여기서는 에이전트를 만들 때 박히는 설정입니다.
+
+눈에 띄는 쪽은 `maxIterations`입니다. 1장에서 손조립의 위험으로 적었던 것 — 루프 상한을 빠뜨리면 거기서 무한히 돈다 — 이 프레임워크에서는 생성자 인자 자리에 있습니다. 모델을 부르고 도구를 돌리고 다시 부르는 왕복의 상한이고, 안 쓰면 기본값이 들어갑니다. 빠뜨릴 수 있는 자리에서 빠뜨릴 수 없는 자리로 옮긴 셈입니다.
+
+### `run()`은 suspend입니다
+
+코루틴 밖에서 부르면 컴파일이 거부합니다.
+
+```
+Suspend function 'suspend fun run(agentInput: String, sessionId: String? = null): String'
+can only be called from a coroutine or another suspend function.
+```
+
+에러 메시지에 시그니처가 그대로 나옵니다. 입력은 `String`, 둘째 인자 `sessionId`는 생략 가능, 반환도 `String`입니다. 그래서 테스트는 `runBlocking`으로 감쌉니다.
+
+```kotlin
+fun `temperature와 maxIterations를 지정한다`() = runBlocking {
+```
+
+Kotlin 코루틴을 쓰는 코드에서는 자연스럽습니다. 다만 앞 편처럼 블로킹 호출이 기본인 자리에 얹으면 경계가 하나 생깁니다. 부르는 쪽도 `suspend`가 되거나, 아니면 `runBlocking`으로 막아야 합니다.
+
+### 앞 편과 한 줄 대조
+
+```kotlin
+chatClient.prompt().user(질문).call().content()  // phase2
+agent.run(질문)                                  // phase3
+```
+
+빌더 체인이 사라지고 호출 하나가 남았습니다. 대신 체인의 각 칸에 넣던 것 — 시스템 프롬프트, 옵션, 도구 — 이 전부 에이전트를 만드는 시점으로 옮겨 갔습니다. `ChatClient`는 부를 때 조립하고, `AIAgent`는 만들 때 조립합니다.
+
+한 가지 더 있습니다. 왼쪽은 모델을 한 번 부르고 끝납니다. 오른쪽은 `maxIterations`가 인자로 있다는 데서 드러나듯, 한 번으로 끝난다는 보장이 없습니다. 겉보기에 같은 한 줄이지만 안에서 도는 횟수가 다릅니다.
+
+다음 장에서 그 안을 열어 노드와 엣지로 직접 그립니다.

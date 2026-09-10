@@ -24,4 +24,18 @@ class Ch03SingleAgentTest {
         println("Ch03SingleAgentTest 응답: $result")
         assertTrue(result.isNotBlank())
     }
+
+    @Test
+    fun `temperature와 maxIterations를 지정한다`() = runBlocking {
+        val agent = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            systemPrompt = "숫자만 답한다. 다른 말은 붙이지 않는다.",
+            temperature = 0.2,
+            maxIterations = 5,
+        )
+        val result = agent.run("2 더하기 3은?")
+        println("Ch03SingleAgentTest 파라미터 지정 응답: $result")
+        assertTrue(result.contains("5"))
+    }
 }
