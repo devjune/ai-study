@@ -870,3 +870,183 @@ val rag = strategy<String, String>("rag") {
 | 검색을 부르는 쪽 | `QuestionAnswerAdvisor`가 자동으로              | 전략 노드에서 직접                             | —             |
 
 문서까지 밖에 두었으니 이제 남은 것은 도구입니다. 5장의 도구는 우리 코드 안에 있었고, 다음 장은 그것을 프로세스 밖에 두는 쪽입니다.
+
+## 8장 MCP 연동 — 앞 편에서 만든 서버에 클라이언트로 붙기
+
+앞 편 10장에서 `@McpTool` 두 개를 선언해 애플리케이션을 MCP 서버로 만들었습니다. 거기서 붙는 쪽은 "다른 언어로 짠 에이전트"라고만 적고 넘어갔습니다. 이번 장이 그 자리입니다. 서버는 그때 만든 것을 그대로 쓰고, 클라이언트로 Koog가 옵니다.
+
+5장의 도구는 우리 프로세스 안의 함수였습니다. MCP 도구는 프로세스 밖에 있습니다. 바뀌는 것은 도구를 **얻는 경로**뿐이고, 얻은 다음은 5장과 같습니다.
+
+### 서버 쪽은 손댈 것이 없습니다
+
+앞 편 설정 두 줄이 전부입니다.
+
+```properties
+spring.ai.mcp.server.name=spring-ai-pattern-demo
+spring.ai.mcp.server.protocol=STATELESS
+```
+
+`STATELESS`는 세션을 잡지 않는다는 뜻입니다. 엔드포인트는 `/mcp` 하나이고, 요청마다 독립된 POST입니다. 이 선택이 뒤에서 클라이언트 쪽 트랜스포트를 결정합니다.
+
+### 의존성은 하나인데 좌표 규칙이 다릅니다
+
+```toml
+koogAgentsMcp = "1.2.0-beta"
+```
+
+```kotlin
+// MCP 서버의 도구 목록을 ToolRegistry로 가져오는 클라이언트 — 8장
+implementation(libs.koog.agents.mcp.jvm)
+```
+
+좌표는 `ai.koog:agents-mcp-jvm`입니다. 2장·6장·7장에서 붙인 것들이 모두 `koog-` 로 시작했는데 이 모듈에는 그 접두사가 없습니다. Maven Central의 `ai.koog` 아래에는 `koog-agents-jvm`과 `agents-core-jvm`이 따로 있고, 앞쪽이 여러 모듈을 묶어 내놓는 우산 아티팩트, 뒤쪽이 개별 모듈입니다. MCP는 개별 모듈 쪽입니다.
+
+버전도 어긋나 있습니다. `agents-*` 계열은 `1.2.0`이 정식으로 올라와 있는데 이 모듈만 `1.2.0-beta`가 최신입니다. 그래도 코어와 갈라지지는 않습니다. `agents-mcp-jvm-1.2.0-beta.pom`이 데려오는 것은 `agents-core-jvm:1.2.0` · `agents-tools-jvm:1.2.0`이고, 여기에 MCP 프로토콜 구현으로 `io.modelcontextprotocol:kotlin-sdk-client:0.11.1`이 붙습니다.
+
+### 붙이는 순간 직렬화에서 걸립니다
+
+의존성을 넣고 서버에 접속하면 첫 요청 전에 죽습니다.
+
+```
+java.lang.IllegalStateException: Error connecting to transport:
+'kotlinx.serialization.KSerializer[] kotlinx.serialization.internal.GeneratedSerializer.typeParametersSerializers()'
+	at io.modelcontextprotocol.kotlin.sdk.client.Client.connect(Client.kt:223)
+	at ai.koog.agents.mcp.McpToolRegistryProvider.streamableHttp(McpToolRegistryProvider.kt:111)
+```
+
+`AbstractMethodError`가 원인입니다. 클래스패스를 찍어 보면 나옵니다.
+
+```
+org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0 -> 1.6.3
+```
+
+MCP SDK는 `1.10.0`으로 컴파일됐는데 실행에 올라오는 것은 `1.6.3`입니다. 낮추는 쪽은 Spring Boot입니다. `spring-boot-dependencies:3.5.14`가 `<kotlin-serialization.version>1.6.3</kotlin-serialization.version>`을 들고 있고, 우리는 이 BOM을 `io.spring.dependency-management`로 적용하고 있습니다. 관리 버전이 전이 버전을 덮으므로 `1.10.0`을 요구한 쪽이 집니다.
+
+BOM 프로퍼티를 덮어씁니다.
+
+```kotlin
+extra["kotlin-serialization.version"] = libs.versions.kotlinxSerialization.get()
+```
+
+앞 일곱 장은 `1.6.3`에서 전부 통과했습니다. 이 충돌이 처음 드러나는 자리가 MCP SDK입니다. **2장의 버전 제약이 다시 나온 셈인데 방향이 반대입니다.** 그때는 Koog 브리지에 맞추려고 Spring Boot를 내려야 했고, 이번에는 MCP SDK에 맞추려고 Spring Boot가 고정한 값을 올려야 합니다. 어느 쪽이든 버전을 정하는 주체가 우리가 아닙니다.
+
+### 트랜스포트 — 문서에 없는 쪽을 써야 합니다
+
+Koog 문서가 적어 둔 트랜스포트는 stdio와 SSE 둘입니다. 그런데 앞 편 서버는 `STATELESS`라 SSE 스트림을 열지 않습니다. `McpToolRegistryProvider`를 찍어 보면 문서에 없는 것이 하나 더 있습니다.
+
+```
+public final Object streamableHttp(Function1<StreamableHttpConfig, Unit>, Continuation<? super ToolRegistry>)
+public final SseClientTransport defaultSseTransport(String, HttpClient)
+public final Object fromSseUrl(String, Implementation, McpToolDescriptorParser, Continuation<? super ToolRegistry>)
+public final Object fromTransport(Transport, McpServerInfo, McpToolDescriptorParser, String, String, Continuation<? super ToolRegistry>)
+```
+
+`streamableHttp`가 우리가 쓸 쪽입니다. MCP가 SSE를 대체하려고 도입한 트랜스포트이고, Spring AI 서버 스타터가 여는 것도 이쪽입니다. 문서보다 구현이 앞서 있는 자리라 클래스를 직접 열어 보지 않으면 SSE로 붙이려다 막힙니다.
+
+`fromTransport`는 트랜스포트를 만들어 넘기는 쪽, `fromSseUrl`은 URL만 넘기는 쪽입니다. `streamableHttp`까지 셋이 돌려주는 것은 같습니다 — `ToolRegistry`입니다. 5장에서 `ToolRegistry { tools(...) }`로 손수 담았던 그 타입입니다.
+
+### 도구 목록을 레지스트리로 받습니다
+
+```kotlin
+private const val PHASE2_MCP_ENDPOINT = "http://localhost:8080/mcp"
+
+val registry = McpToolRegistryProvider.streamableHttp { url = PHASE2_MCP_ENDPOINT }
+```
+
+호출 한 번입니다. 그 안에서 클라이언트를 만들고, 접속하고, `tools/list`를 보내고, 돌아온 스키마를 Koog 도구로 감싸는 일까지 끝납니다. 서버가 선언해 둔 둘이 그대로 올라옵니다.
+
+```
+businessHours — 고객센터 영업시간을 조회한다
+lookupOrder — 주문 번호로 주문 상태와 배송 정보를 조회한다
+```
+
+접속 과정에서 로그 한 줄이 눈에 걸립니다.
+
+```
+i.m.k.s.c.StreamableHttpClientTransport : Server returned 405 for GET/SSE, stream disabled.
+```
+
+Streamable HTTP는 POST 말고 GET으로 서버가 먼저 말을 걸어오는 스트림도 규격에 있습니다. `STATELESS` 서버는 그 GET에 405를 돌려줍니다. SDK가 스트림만 끄고 나머지를 진행합니다. 서버 쪽 설정 한 줄이 클라이언트 로그에 이렇게 비칩니다.
+
+### 스키마는 5장과 같은 타입으로 들어옵니다
+
+레지스트리에 담긴 것을 열어 보면 5장의 서술자와 구분되지 않습니다.
+
+```kotlin
+val lookup = registry.getTool("lookupOrder").descriptor
+
+lookup.description shouldBe "주문 번호로 주문 상태와 배송 정보를 조회한다"
+lookup.requiredParameters.map { it.name } shouldBe listOf("orderId")
+lookup.requiredParameters.single().description shouldBe "주문 번호. 예: A-1024"
+```
+
+`@McpToolParam`에 적어 둔 설명까지 그대로 건너옵니다. 5장에서 `ToolSet`의 함수 하나가 `ToolDescriptor`가 됐고, 여기서는 프로토콜로 받은 JSON 스키마가 같은 `ToolDescriptor`가 됩니다. 인자가 없는 도구는 빈 목록입니다.
+
+```kotlin
+registry.getTool("businessHours").descriptor.requiredParameters.shouldBeEmpty()
+```
+
+MCP를 붙이는 값이 여기 있습니다. 도구가 우리 코드에 있는지 남의 프로세스에 있는지가 에이전트 쪽에서 보이지 않습니다.
+
+### 붙이는 자리는 5장 그대로입니다
+
+```kotlin
+val agent = AIAgent(
+    promptExecutor = promptExecutor,
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = "주문 문의에는 반드시 lookupOrder 도구를 호출한다. " +
+        "도구가 돌려준 문장을 그대로 답에 싣고, 추측하지 않는다.",
+    temperature = 0.0,
+    toolRegistry = McpToolRegistryProvider.streamableHttp { url = PHASE2_MCP_ENDPOINT },
+)
+
+val result = agent.run("A-1024 주문 어떻게 됐어?")
+```
+
+`toolRegistry` 인자는 5장과 한 글자도 다르지 않습니다. 오른쪽 값만 바뀌었습니다.
+
+```
+Executing tool (name: lookupOrder, args: {"orderId":"A-1024"}
+A-1024 · 무선 키보드 · 배송중 · 2026-09-02 발송 · 09-05 도착 예정
+```
+
+모델은 질문에서 `A-1024`를 뽑아 인자로 실었고, 그 호출이 HTTP를 건너 다른 프로세스의 `OrderService`까지 닿았습니다. 5장의 왕복 — 모델이 도구를 부르겠다고 답하면 Koog가 실행하고 결과를 이력에 넣어 다시 부르는 것 — 이 그대로 돕니다. 달라진 것은 실행 자리에서 함수 대신 `tools/call` 요청이 나간다는 것뿐입니다.
+
+### 도구를 직접 부르는 문은 닫혀 있습니다
+
+레지스트리에서 도구를 꺼내 손으로 실행해 보려 하면 컴파일이 막습니다.
+
+```
+e: Ch08McpTest.kt:41:57 This declaration needs opt-in. Its usage must be marked with
+'@ai.koog.agents.core.annotation.InternalAgentsApi' or '@OptIn(ai.koog.agents.core.annotation.InternalAgentsApi::class)'
+e: Ch08McpTest.kt:43:22 This declaration needs opt-in. …
+```
+
+41행은 `registry.getTool("lookupOrder") as McpTool`이고 43행은 그 `execute` 호출입니다. `McpTool` 클래스 자체에 `@InternalAgentsApi`가 붙어 있습니다. 도구를 돌리는 정규 경로는 하나 — 레지스트리를 에이전트에 넘기는 것 — 이라는 뜻입니다.
+
+프로토콜 왕복만 따로 확인하고 싶을 때는 걸리는 제약입니다. 앞 편에서는 `/mcp`에 JSON-RPC를 직접 던져 `tools/list` 응답을 눈으로 봤습니다. Koog 쪽에서 같은 것을 하려면 옵트인을 적어 넣어야 합니다. 프레임워크가 아래층을 가린다는 1장의 문장이 여기서는 애노테이션 하나로 나타납니다.
+
+### 서버가 없으면 건너뜁니다
+
+이 장의 테스트는 다른 프로세스가 떠 있어야 돕니다. 없을 때 실패로 잡으면 나머지 열일곱 개까지 같이 빨간불이 되므로, 엔드포인트를 먼저 찔러 보고 응답이 없으면 두 테스트를 건너뜁니다.
+
+```kotlin
+val serverUp = phase2ServerUp()
+
+test("서버가 선언한 도구가 ToolRegistry로 들어온다").config(enabled = serverUp) {
+```
+
+`enabled`는 Kotest가 테스트마다 받는 설정입니다. `false`면 실패가 아니라 skip으로 집계됩니다. 서버를 내리고 돌리면 `tests="2" skipped="2" failures="0"`이 나오고 빌드는 초록입니다.
+
+### 이 장에서 갈린 것
+
+| 축         | 앞 편 10장 (서버 쪽)                | 이 장 (클라이언트 쪽)                          |
+| --------- | ----------------------------- | ------------------------------------- |
+| 선언        | `@McpTool` · `@McpToolParam`  | 선언 없음, 받아 온 스키마가 서술자가 된다              |
+| 스타터       | `spring-ai-starter-mcp-server-webmvc` | `ai.koog:agents-mcp-jvm`              |
+| 프로토콜 구현   | Spring AI 내장                  | `io.modelcontextprotocol:kotlin-sdk-client` |
+| 트랜스포트     | `protocol=STATELESS`, `/mcp`  | `streamableHttp`                      |
+| 도구 실행     | 함수 호출                         | `tools/call` 요청                       |
+| 도구를 쥐는 타입 | —                             | `ToolRegistry` — 5장과 같음               |
+
+여덟 장에 걸쳐 모델·흐름·도구·기억·문서·프로세스 밖의 도구까지 Koog 쪽으로 옮겼습니다. 다음 장에서 앞 편 21개 패턴이 이 프레임워크에서 무엇이 됐는지 표로 회수합니다.
