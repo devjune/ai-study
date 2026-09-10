@@ -36,6 +36,8 @@ dependencies {
     // Spring AI의 ChatMemoryRepository를 Koog의 ChatHistoryProvider로 감싸는 스타터
     implementation(libs.koog.spring.ai.starter.chat.memory)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.extensions.spring)
 }
 
 tasks.withType<Test> {

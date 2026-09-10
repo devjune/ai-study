@@ -10,28 +10,24 @@ import ai.koog.agents.core.dsl.extension.nodeLLMRequest
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.message.Message
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.springframework.ai.chat.memory.ChatMemoryRepository
 import org.springframework.ai.chat.messages.MessageType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch06MemoryTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class Ch06MemoryTest(
+    @Autowired val promptExecutor: PromptExecutor,
+    @Autowired val historyProvider: ChatHistoryProvider,
+    @Autowired val chatMemoryRepository: ChatMemoryRepository,
+) : FunSpec({
+    extensions(SpringExtension)
 
-    @Autowired
-    lateinit var historyProvider: ChatHistoryProvider
-
-    @Autowired
-    lateinit var chatMemoryRepository: ChatMemoryRepository
-
-    @Test
-    fun `이전 대화를 기억한다`() = runBlocking {
+    test("이전 대화를 기억한다") {
         val agent = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
@@ -48,11 +44,10 @@ class Ch06MemoryTest {
         val result = agent.run("내 이름이 뭐라고 했지?", sessionId)
 
         println("Ch06MemoryTest 응답: $result")
-        assertTrue(result.contains("준"))
+        result shouldContain "준"
     }
 
-    @Test
-    fun `저장된 것은 평문뿐이고 도구 호출은 남지 않는다`() = runBlocking {
+    test("저장된 것은 평문뿐이고 도구 호출은 남지 않는다") {
         val tools = ExchangeToolSet()
         val agent = AIAgent(
             promptExecutor = promptExecutor,
@@ -73,16 +68,12 @@ class Ch06MemoryTest {
         val stored = chatMemoryRepository.findByConversationId(sessionId)
         stored.forEach { println("Ch06MemoryTest 저장된 행: ${it.messageType} | ${it.text}") }
 
-        assertEquals(listOf("USD"), tools.calls)
-        assertEquals(
-            listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT),
-            stored.map { it.messageType },
-        )
-        assertTrue("1385" in stored.last().text)
+        tools.calls shouldBe listOf("USD")
+        stored.map { it.messageType } shouldBe listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT)
+        stored.last().text shouldContain "1385"
     }
 
-    @Test
-    fun `압축 노드가 이력을 접고 대화는 이어진다`() = runBlocking {
+    test("압축 노드가 이력을 접고 대화는 이어진다") {
         val compressing = strategy<String, String>("compress") {
             val ask by nodeLLMRequest()
             val compress by nodeLLMCompressHistory<Message.Assistant>()
@@ -104,11 +95,10 @@ class Ch06MemoryTest {
         val result = agent.run("내 이름은 준이야")
 
         println("Ch06MemoryTest 압축 후 응답: $result")
-        assertTrue(result.contains("준"))
+        result shouldContain "준"
     }
 
-    @Test
-    fun `접는 방식은 인자로 고른다`() = runBlocking {
+    test("접는 방식은 인자로 고른다") {
         val compressing = strategy<String, String>("compress-window") {
             val ask by nodeLLMRequest()
             val compress by nodeLLMCompressHistory<Message.Assistant>(
@@ -132,6 +122,6 @@ class Ch06MemoryTest {
         val result = agent.run("내 이름은 준이야")
 
         println("Ch06MemoryTest 최근 3개만 남긴 응답: $result")
-        assertTrue(result.contains("준"))
+        result shouldContain "준"
     }
-}
+})

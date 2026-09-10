@@ -12,20 +12,20 @@ import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
 import ai.koog.prompt.executor.model.PromptExecutor
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.or
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.contain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch05ToolsTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class Ch05ToolsTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+    extensions(SpringExtension)
 
-    @Test
-    fun `에이전트가 도구를 호출해 답한다`() = runBlocking {
+    test("에이전트가 도구를 호출해 답한다") {
         val tools = ExchangeToolSet()
         val agent = AIAgent(
             promptExecutor = promptExecutor,
@@ -38,11 +38,10 @@ class Ch05ToolsTest {
         val result = agent.run("1달러는 몇 원이야?")
         println("Ch05ToolsTest 응답: $result")
         println("Ch05ToolsTest 도구 호출: ${tools.calls}")
-        assertTrue(result.contains("1385") || result.contains("1,385"))
+        result should (contain("1385") or contain("1,385"))
     }
 
-    @Test
-    fun `도구 호출 왕복을 그래프로 직접 그린다`() = runBlocking {
+    test("도구 호출 왕복을 그래프로 직접 그린다") {
         val toolLoop = strategy<String, String>("tool-loop") {
             val request by nodeLLMRequest()
             val execute by nodeExecuteTools()
@@ -65,19 +64,18 @@ class Ch05ToolsTest {
         )
         val result = agent.run("1엔은 몇 원이야?")
         println("Ch05ToolsTest 그래프 응답: $result")
-        assertEquals(listOf("JPY"), tools.calls)
+        tools.calls shouldBe listOf("JPY")
     }
 
-    @Test
-    fun `ToolSet이 함수 하나를 도구 스키마로 바꾼다`() {
+    test("ToolSet이 함수 하나를 도구 스키마로 바꾼다") {
         val descriptor = ExchangeToolSet().asTools().single().descriptor
 
-        assertEquals("exchangeRate", descriptor.name)
-        assertEquals("통화 코드의 원화 환율을 돌려준다", descriptor.description)
-        assertEquals(listOf("code"), descriptor.requiredParameters.map { it.name })
-        assertEquals("통화 코드, 예: USD", descriptor.requiredParameters.single().description)
+        descriptor.name shouldBe "exchangeRate"
+        descriptor.description shouldBe "통화 코드의 원화 환율을 돌려준다"
+        descriptor.requiredParameters.map { it.name } shouldBe listOf("code")
+        descriptor.requiredParameters.single().description shouldBe "통화 코드, 예: USD"
     }
-}
+})
 
 @LLMDescription("환율 조회 도구")
 class ExchangeToolSet : ToolSet {

@@ -2,19 +2,18 @@ package com.example.phase3
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.prompt.executor.model.PromptExecutor
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotBeBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch03SingleAgentTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class Ch03SingleAgentTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+    extensions(SpringExtension)
 
-    @Test
-    fun `AIAgent 한 개가 Ollama로 답한다`() = runBlocking {
+    test("AIAgent 한 개가 Ollama로 답한다") {
         val agent = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
@@ -22,11 +21,10 @@ class Ch03SingleAgentTest {
         )
         val result = agent.run("Spring AI가 무엇인지 한 문장으로")
         println("Ch03SingleAgentTest 응답: $result")
-        assertTrue(result.isNotBlank())
+        result.shouldNotBeBlank()
     }
 
-    @Test
-    fun `temperature와 maxIterations를 지정한다`() = runBlocking {
+    test("temperature와 maxIterations를 지정한다") {
         val agent = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
@@ -36,6 +34,6 @@ class Ch03SingleAgentTest {
         )
         val result = agent.run("2 더하기 3은?")
         println("Ch03SingleAgentTest 파라미터 지정 응답: $result")
-        assertTrue(result.contains("5"))
+        result shouldContain "5"
     }
-}
+})

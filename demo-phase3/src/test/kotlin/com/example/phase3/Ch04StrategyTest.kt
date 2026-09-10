@@ -6,20 +6,18 @@ import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequest
 import ai.koog.agents.core.dsl.extension.onTextMessage
 import ai.koog.prompt.executor.model.PromptExecutor
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch04StrategyTest {
-    @Autowired
-    lateinit var promptExecutor: PromptExecutor
+class Ch04StrategyTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+    extensions(SpringExtension)
 
-    @Test
-    fun `두 노드를 잇는 커스텀 전략이 돈다`() = runBlocking {
+    test("두 노드를 잇는 커스텀 전략이 돈다") {
         val chain = strategy<String, String>("two-step") {
             val draft by nodeLLMRequest()
             val polish by nodeLLMRequest()
@@ -37,11 +35,10 @@ class Ch04StrategyTest {
         )
         val result = agent.run("2 더하기 3은?")
         println("Ch04StrategyTest 체인 응답: $result")
-        assertTrue(result.contains("15"))
+        result shouldContain "15"
     }
 
-    @Test
-    fun `조건 엣지가 분기를 고른다`() = runBlocking {
+    test("조건 엣지가 분기를 고른다") {
         val router = strategy<String, String>("route") {
             val classify by nodeLLMRequest()
             val math by node<String, String>("math") { "수학 경로" }
@@ -62,11 +59,10 @@ class Ch04StrategyTest {
         )
         val result = agent.run("2 더하기 3은?")
         println("Ch04StrategyTest 라우팅 응답: $result")
-        assertEquals("수학 경로", result)
+        result shouldBe "수학 경로"
     }
 
-    @Test
-    fun `자기 자신으로 돌아오는 엣지가 루프가 된다`() = runBlocking {
+    test("자기 자신으로 돌아오는 엣지가 루프가 된다") {
         val loop = strategy<String, String>("loop") {
             val step by node<String, String>("step") { "$it." }
 
@@ -80,6 +76,6 @@ class Ch04StrategyTest {
             strategy = loop,
             maxIterations = 5,
         )
-        assertEquals("...", agent.run(""))
+        agent.run("") shouldBe "..."
     }
-}
+})
