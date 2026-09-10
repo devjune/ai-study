@@ -21,6 +21,13 @@ class Exploration : PatternRunner {
             // 심사위원 한 명의 한 표. 점수를 매기는 대신 둘 중 하나를 고른다
             data class Vote(val label: String, val winner: Int, val weakness: String)
 
+            // 심사위원 셋을 세운다. 하나면 그 한 사람의 취향이 정답이 된다
+            val JUDGE = ${'"'}""
+                심사위원 셋이 후보 1 과 2 를 비교해 항목 세 개를 낸다 — 심사위원마다 하나씩.
+                엄격은 근거가 분명한 쪽, 파급력은 고객에게 도움이 되는 쪽, 새로움은 덜 뻔한 쪽.
+                winner 는 고른 번호, weakness 는 진 쪽의 약점 한 줄.
+            ${'"'}"".trimIndent()
+
             // ① 만들고 — 온도를 올려 서로 다른 후보를 동시에 뽑는다 (3장)
             val 후보 = (1..2).map { async { chatClient.prompt().user(질문)
                 .options(ChatOptions.builder().temperature(0.9)).call().content() } }.awaitAll()
