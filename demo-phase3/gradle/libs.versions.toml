@@ -1,0 +1,24 @@
+[versions]
+# 스프링 부트 BOM의 kotlin.version과 일치. 최신(2.4.x)으로 올리면 stdlib이 어긋난다.
+kotlin = "2.2.21"
+springBoot = "4.0.0"
+springDependencyManagement = "1.1.7"
+springAi = "2.0.1"
+# Maven Central 릴리스 태그가 1.2.0-beta다 (koog-spring-ai-starter-model-chat/maven-metadata.xml).
+koogSpringAi = "1.2.0-beta"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+
+[libraries]
+# 버전은 spring-ai-bom / 플러그인이 관리하므로 좌표(module)만 선언한다.
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "springAi" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-starter-model-ollama" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
+koog-spring-ai-starter-model-chat = { module = "ai.koog:koog-spring-ai-starter-model-chat", version.ref = "koogSpringAi" }
