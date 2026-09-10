@@ -4,6 +4,7 @@ import ai.koog.agents.chatMemory.feature.ChatHistoryProvider
 import ai.koog.agents.chatMemory.feature.ChatMemory
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.dsl.builder.strategy
+import ai.koog.agents.core.dsl.extension.HistoryCompressionStrategy
 import ai.koog.agents.core.dsl.extension.nodeLLMCompressHistory
 import ai.koog.agents.core.dsl.extension.nodeLLMRequest
 import ai.koog.agents.core.tools.ToolRegistry
@@ -103,6 +104,34 @@ class Ch06MemoryTest {
         val result = agent.run("내 이름은 준이야")
 
         println("Ch06MemoryTest 압축 후 응답: $result")
+        assertTrue(result.contains("준"))
+    }
+
+    @Test
+    fun `접는 방식은 인자로 고른다`() = runBlocking {
+        val compressing = strategy<String, String>("compress-window") {
+            val ask by nodeLLMRequest()
+            val compress by nodeLLMCompressHistory<Message.Assistant>(
+                strategy = HistoryCompressionStrategy.FromLastNMessages(3),
+            )
+            val recall by nodeLLMRequest()
+
+            edge(nodeStart forwardTo ask)
+            edge(ask forwardTo compress)
+            edge(compress forwardTo recall transformed { "내 이름이 뭐라고 했지?" })
+            edge(recall forwardTo nodeFinish transformed { it.textContent() })
+        }
+        val agent = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            strategy = compressing,
+            systemPrompt = "한 문장으로만 답한다.",
+            temperature = 0.0,
+        )
+
+        val result = agent.run("내 이름은 준이야")
+
+        println("Ch06MemoryTest 최근 3개만 남긴 응답: $result")
         assertTrue(result.contains("준"))
     }
 }

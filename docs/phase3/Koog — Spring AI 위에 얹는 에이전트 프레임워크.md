@@ -640,10 +640,10 @@ val compressing = strategy<String, String>("compress") {
 
 `nodeLLMCompressHistory<T>()`의 타입 인자가 하나뿐인 것이 이 노드의 성격입니다. 입력을 그대로 출력으로 흘려보내고, 손대는 것은 값이 아니라 옆에 있는 대화 이력입니다. 그래서 엣지에 `transformed`가 필요 없습니다.
 
-접는 방식은 인자로 고릅니다.
+접는 방식은 인자로 고릅니다. 노드 선언만 바꾸면 됩니다.
 
 ```kotlin
-nodeLLMCompressHistory<Message.Assistant>(
+val compress by nodeLLMCompressHistory<Message.Assistant>(
     strategy = HistoryCompressionStrategy.FromLastNMessages(3),
 )
 ```
