@@ -484,3 +484,182 @@ qwen3:4b는 도구 호출을 건너뛰기 쉬운 크기입니다. 위 예제들�
 도구를 여럿 붙이면 "부를지 말지"에 "무엇을 부를지"가 더해집니다. 앞 편에서 작은 모델의 판정이 흔들리던 것과 같은 자리이고, 프레임워크를 갈아도 모델 크기에서 오는 문제는 그대로 남습니다. Koog가 가져간 것은 왕복을 도는 코드이지 부를지 말지의 판단이 아닙니다.
 
 도구까지 붙었으니 대화가 길어집니다. 다음 장은 그 이력을 어디에 두고 어떻게 접는지입니다.
+
+## 6장 메모리 — `ChatMemoryRepository` 어댑터와 제약, 히스토리 압축
+
+4장에서 노드들이 같은 대화 이력을 공유한다고 했습니다. 그 이력의 수명은 `run()` 한 번입니다. 호출이 끝나면 사라지고, 다음 `run()`은 빈 이력에서 시작합니다. 이 장은 그 사이를 잇습니다.
+
+Koog에서 이력을 밖에 내놓는 자리는 `ChatHistoryProvider`입니다. 인터페이스에 함수가 둘뿐입니다.
+
+```kotlin
+suspend fun store(conversationId: String, messages: List<Message>)
+suspend fun load(conversationId: String): List<Message>
+```
+
+Spring AI에서 그 자리에 있던 것이 `ChatMemoryRepository`입니다. 브리지가 하는 일은 2장과 같은 모양입니다.
+
+```
+Spring AI ChatMemoryRepository 빈  →  SpringAiChatHistoryProvider  =  ChatHistoryProvider 빈
+```
+
+2장의 그림보다 칸이 하나 적습니다. 실행기 쪽은 `SpringAiLLMClient`를 다시 `PromptExecutor`로 감쌌지만, 여기서는 어댑터 자체가 곧 인터페이스 구현이라 그대로 빈이 됩니다.
+
+### 의존성 하나가 더 붙습니다
+
+```kotlin
+// Spring AI의 ChatMemoryRepository를 Koog의 ChatHistoryProvider로 감싸는 스타터
+implementation(libs.koog.spring.ai.starter.chat.memory)
+```
+
+좌표는 `ai.koog:koog-spring-ai-starter-chat-memory`이고 버전은 2장의 브리지와 같은 `1.2.0-beta`입니다. 저장소 쪽은 따로 넣을 것이 없습니다. Spring AI의 Ollama 스타터가 `spring-ai-autoconfigure-model-chat-memory`를 이미 끌고 오고, 거기서 `InMemoryChatMemoryRepository`가 `chatMemoryRepository`라는 이름으로 올라옵니다.
+
+### 그런데 빈이 만들어지지 않습니다
+
+의존성만 넣고 `ChatHistoryProvider`를 주입받으면 컨텍스트가 뜨지 않습니다.
+
+```
+No qualifying bean of type 'ai.koog.agents.chatMemory.feature.ChatHistoryProvider' available:
+expected at least 1 bean which qualifies as autowire candidate
+```
+
+저장소 빈이 없어서가 아닙니다. `chatMemoryRepository`는 컨텍스트에 멀쩡히 올라와 있습니다. 조건 평가 보고서를 열어 보면 어댑터 쪽 조건만 어긋나 있습니다.
+
+```
+SpringAiChatMemoryAutoConfiguration$SingleChatMemoryRepositoryConfiguration
+   @ConditionalOnSingleCandidate (types: org.springframework.ai.chat.memory.ChatMemoryRepository;
+   SearchStrategy: all) did not find any beans
+```
+
+순서 문제입니다. Koog의 오토컨피규레이션은 `@AutoConfiguration(afterName = …)`에 Cassandra · CosmosDB · JDBC · Neo4j · Mongo 저장소 오토컨피규레이션을 적어 두고 그 뒤에 서겠다고 선언합니다. 정작 기본 인메모리 저장소를 만드는 Spring AI의 `ChatMemoryAutoConfiguration`은 그 목록에 없습니다. 그래서 `@ConditionalOnSingleCandidate`가 저장소 빈이 등록되기 전에 평가되고, 후보를 못 찾은 채 어댑터를 건너뜁니다. 별도 저장소를 붙인 사람은 겪지 않고 기본값으로 시작한 사람만 겪습니다.
+
+빠져나갈 문은 스타터가 들고 있습니다. 저장소를 타입이 아니라 **이름으로** 찾는 설정이 따로 있습니다.
+
+```properties
+koog.spring.ai.chat-memory.chat-memory-repository-bean-name=chatMemoryRepository
+```
+
+이 값이 비어 있지 않으면 `NamedChatMemoryRepositoryConfiguration` 쪽이 성립합니다. 이쪽은 조건을 평가할 때 빈을 찾지 않고, 어댑터를 만드는 시점에 `BeanFactory`에서 이름으로 꺼냅니다. 그때는 저장소 정의가 이미 등록돼 있으니 걸리지 않습니다. 프로퍼티 한 줄로 끝나지만, 프레임워크가 알아서 해 주기로 한 자리에 Spring AI 내부 빈 이름을 우리가 적어 넣은 셈입니다.
+
+### 붙이는 자리는 `install`
+
+3장부터 쓰던 `AIAgent(...)` 뒤에 블록이 하나 더 붙습니다. 기능을 설치하는 자리입니다.
+
+```kotlin
+@Autowired
+lateinit var historyProvider: ChatHistoryProvider
+
+val agent = AIAgent(
+    promptExecutor = promptExecutor,
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = "한 문장으로만 답한다.",
+    temperature = 0.0,
+) {
+    install(ChatMemory) {
+        chatHistoryProvider = historyProvider
+    }
+}
+val sessionId = "ch06-이름"
+
+agent.run("내 이름은 준이야", sessionId)
+val result = agent.run("내 이름이 뭐라고 했지?", sessionId)
+```
+
+`"당신의 이름은 준이에요."`가 나옵니다. 두 번의 `run()`이 이어졌다는 뜻입니다.
+
+3장에서 생략 가능하다고만 적어 둔 `run()`의 둘째 인자가 여기서 쓰입니다. `sessionId`가 그대로 저장소의 `conversationId`가 되고, 같은 값을 넣으면 같은 대화, 다른 값을 넣으면 다른 대화입니다. 이름이 경계에서 한 번 바뀔 뿐 값은 같은 것입니다.
+
+`install(ChatMemory)`는 전략이 시작할 때 `load`를, 끝날 때 `store`를 겁니다. 그 사이의 이력 관리는 4장에서 보던 그대로입니다. 즉 메모리는 그래프를 바꾸지 않고 그래프의 앞뒤에 붙습니다.
+
+### 저장되는 것은 평문뿐입니다
+
+여기가 이 장의 핵심입니다. 어댑터가 옮기는 것은 두 쪽의 교집합이고, 대화 이력에서 그 교집합은 **텍스트**입니다.
+
+5장의 환율 도구를 그대로 붙이고, 메모리까지 켜서 한 번 돌린 다음 저장소를 직접 열어 봤습니다.
+
+```kotlin
+agent.run("1달러는 몇 원이야?", sessionId)
+
+val stored = chatMemoryRepository.findByConversationId(sessionId)
+
+assertEquals(listOf("USD"), tools.calls)
+assertEquals(
+    listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT),
+    stored.map { it.messageType },
+)
+assertTrue("1385" in stored.last().text)
+```
+
+남은 행은 셋입니다.
+
+```
+SYSTEM    | 환율 질문에는 반드시 exchangeRate 도구를 호출한다. …
+USER      | 1달러는 몇 원이야?
+ASSISTANT | 1달러는 1385원입니다.
+```
+
+`tools.calls`에 `[USD]`가 있으니 도구는 분명히 돌았습니다. Koog 쪽 이력에는 "이 도구를 이 인자로 부르겠다"는 어시스턴트 메시지와 "결과는 1385"라는 도구 결과 메시지가 있었습니다. 저장소에는 그 둘이 없습니다. 예외도 경고도 없이 사라집니다.
+
+이유는 두 메시지 모델이 다른 층위에서 갈리기 때문입니다. Koog의 `Message`는 `System` · `User` · `Assistant` 셋뿐이고, 도구 호출도 도구 결과도 추론도 그 안에 담기는 `MessagePart`입니다.
+
+```
+Message      = System | User | Assistant
+MessagePart  = Text | Reasoning | Attachment | Tool.Call | Tool.Result | …
+```
+
+어댑터는 각 메시지에서 `MessagePart.Text`만 골라 Spring AI 메시지로 옮깁니다. 나머지 파트는 옮길 자리가 없어 버려집니다. 텍스트 파트가 하나도 없는 메시지 — 도구를 부르겠다는 응답이 딱 이것입니다 — 는 통째로 사라집니다. 첨부가 붙은 메시지는 아예 걸러 내고 디버그 로그 한 줄을 남깁니다.
+
+```
+Dropping Koog message with attachments (type={}); not persistable via Spring AI ChatMemoryRepository
+Skipping Spring AI TOOL message on load; not mappable to a Koog message type
+```
+
+반대 방향도 대칭입니다. 저장소에 다른 경로로 들어온 `TOOL` 타입 행은 읽어 올 때 건너뜁니다. 타임스탬프 · 토큰 수 · 종료 이유 같은 메타데이터도 마찬가지로 남지 않습니다.
+
+**1장에서 예고한 어댑터 제약의 두 번째 사례입니다.** 2장은 버전이 맞아야 한다는 조건이었고, 이번 것은 기능의 일부만 건너간다는 쪽입니다. 저장된 대화를 다시 불러오면 무엇을 물었고 무엇을 답했는지는 남지만, 그 답을 **어떻게 알아냈는지는 없던 일이 됩니다.** 도구를 붙인 에이전트를 재시작 너머로 이어 붙이려면 이 손실을 감수하거나, `ChatHistoryProvider`를 직접 구현해야 합니다. 인터페이스가 함수 두 개뿐이라는 것이 여기서는 다행입니다.
+
+세션 안에서만 도는 동안에는 이 문제가 없습니다. 도구 왕복은 그 `run()`의 이력에 온전히 있고, 잘리는 자리는 저장소로 나갔다 들어오는 경계입니다.
+
+### 히스토리 압축은 노드 하나입니다
+
+4장에서 이력이 계속 자란다는 이야기를 하고 6장으로 미뤄 뒀습니다. 접는 자리는 그래프 안의 노드입니다.
+
+```kotlin
+val compressing = strategy<String, String>("compress") {
+    val ask by nodeLLMRequest()
+    val compress by nodeLLMCompressHistory<Message.Assistant>()
+    val recall by nodeLLMRequest()
+
+    edge(nodeStart forwardTo ask)
+    edge(ask forwardTo compress)
+    edge(compress forwardTo recall transformed { "내 이름이 뭐라고 했지?" })
+    edge(recall forwardTo nodeFinish transformed { it.textContent() })
+}
+```
+
+`"내 이름은 준이야"`를 넣으면 `"당신의 이름은 준이야."`가 나옵니다. 가운데서 이력이 한 번 접혔는데도 이름이 살아남았습니다.
+
+`nodeLLMCompressHistory<T>()`의 타입 인자가 하나뿐인 것이 이 노드의 성격입니다. 입력을 그대로 출력으로 흘려보내고, 손대는 것은 값이 아니라 옆에 있는 대화 이력입니다. 그래서 엣지에 `transformed`가 필요 없습니다.
+
+접는 방식은 인자로 고릅니다.
+
+```kotlin
+nodeLLMCompressHistory<Message.Assistant>(
+    strategy = HistoryCompressionStrategy.FromLastNMessages(3),
+)
+```
+
+기본값은 `WholeHistory`입니다. 이력 전체를 모델에게 요약시켜 그 요약문으로 갈아 끼웁니다. `FromLastNMessages(n)`은 최근 n개만 두고, `Chunked(n)`은 덩어리로 나눠 각각 요약하고, `FromTimestamp(t)`는 그 시각 이후만 남기고, `FactRetrieval(concepts)`는 미리 적어 둔 개념에 해당하는 사실만 뽑아냅니다. 시스템 메시지가 여러 개인 이력을 위한 `WholeHistoryMultipleSystemMessages`도 따로 있습니다.
+
+이것이 1장에서 "프레임워크가 이미 만들어 둔 물건"이라고 적은 쪽의 표본입니다. 손으로 짜면 요약 프롬프트를 쓰고, 언제 접을지 정하고, 접은 결과로 이력을 갈아 끼우고, 시스템 메시지는 남기는 일을 전부 우리 코드에 둬야 합니다. 여기서는 노드 이름 하나입니다. 대신 요약 품질은 모델 몫이라 5장 끝과 같은 자리로 돌아옵니다 — 프레임워크가 가져간 것은 접는 절차이지 무엇을 남길지의 판단이 아닙니다.
+
+### 이 장에서 갈린 것
+
+| 축         | Spring AI 쪽                     | Koog 쪽                       | 어댑터가 옮기는 것        |
+| --------- | ------------------------------- | ---------------------------- | ----------------- |
+| 저장소       | `ChatMemoryRepository`          | `ChatHistoryProvider`        | 전부                |
+| 대화 키      | `conversationId`                | `run()`의 `sessionId`         | 전부                |
+| 메시지       | `SYSTEM` · `USER` · `ASSISTANT` | `System` · `User` · `Assistant` | 텍스트만              |
+| 도구 호출·결과  | `TOOL` 행                        | `MessagePart.Tool.*`         | 없음                |
+| 추론 · 첨부   | 담을 행이 없음                        | `MessagePart.Reasoning` 등    | 없음                |
+
+이력은 이제 `run()` 밖에서도 남고 길어져도 접힙니다. 다음 장은 대화가 아니라 **문서**를 밖에 두는 쪽입니다.

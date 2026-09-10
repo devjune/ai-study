@@ -27,3 +27,4 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 koog-spring-ai-starter-model-chat = { module = "ai.koog:koog-spring-ai-starter-model-chat", version.ref = "koogSpringAi" }
 koog-agents-jvm = { module = "ai.koog:koog-agents-jvm", version.ref = "koogAgents" }
+koog-spring-ai-starter-chat-memory = { module = "ai.koog:koog-spring-ai-starter-chat-memory", version.ref = "koogSpringAi" }
