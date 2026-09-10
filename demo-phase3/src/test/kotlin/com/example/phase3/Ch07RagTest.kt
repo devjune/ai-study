@@ -16,14 +16,13 @@ import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class Ch07RagTest(
-    @Autowired val vectorStore: KoogVectorStore,
-    @Autowired val embeddingProvider: SpringAiLLMEmbeddingProvider,
-    @Autowired val promptExecutor: PromptExecutor,
+    val vectorStore: KoogVectorStore,
+    val embeddingProvider: SpringAiLLMEmbeddingProvider,
+    val promptExecutor: PromptExecutor,
 ) : FunSpec({
     extensions(SpringExtension)
 

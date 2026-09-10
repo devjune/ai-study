@@ -6,11 +6,10 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch03SingleAgentTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("AIAgent 한 개가 Ollama로 답한다") {

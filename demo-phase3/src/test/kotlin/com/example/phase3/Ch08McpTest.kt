@@ -11,13 +11,12 @@ import io.kotest.matchers.or
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.contain
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.net.HttpURLConnection
 import java.net.URI
 
 @SpringBootTest
-class Ch08McpTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class Ch08McpTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     val serverUp = phase2ServerUp()

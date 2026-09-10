@@ -10,11 +10,10 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch04StrategyTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class Ch04StrategyTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("두 노드를 잇는 커스텀 전략이 돈다") {

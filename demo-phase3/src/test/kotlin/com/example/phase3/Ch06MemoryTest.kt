@@ -16,14 +16,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.springframework.ai.chat.memory.ChatMemoryRepository
 import org.springframework.ai.chat.messages.MessageType
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class Ch06MemoryTest(
-    @Autowired val promptExecutor: PromptExecutor,
-    @Autowired val historyProvider: ChatHistoryProvider,
-    @Autowired val chatMemoryRepository: ChatMemoryRepository,
+    val promptExecutor: PromptExecutor,
+    val historyProvider: ChatHistoryProvider,
+    val chatMemoryRepository: ChatMemoryRepository,
 ) : FunSpec({
     extensions(SpringExtension)
 

@@ -18,11 +18,10 @@ import io.kotest.matchers.or
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.contain
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch05ToolsTest(@Autowired val promptExecutor: PromptExecutor) : FunSpec({
+class Ch05ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("에이전트가 도구를 호출해 답한다") {
