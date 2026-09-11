@@ -40,7 +40,7 @@ phase2에서 손으로 만든 Reflection · Planning · Multi-Agent가 프레임
 
 ## 기술 전제
 
-- ~~Spring Boot 4.0.0 · Spring AI 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0-beta** (2026-09-10 스파이크 수정 — 아래 참조)
+- ~~Spring Boot 4.0.0 · Spring AI 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0** (본체는 정식, Spring AI 브리지·MCP 모듈만 `1.2.0-beta` 트랙) (2026-09-10 스파이크 수정 — 아래 참조)
 - 모델은 phase2와 동일: Ollama의 qwen3:4b-instruct · granite4:micro · bge-m3. API 키 불필요 원칙 유지
 - `demo-phase3`는 `demo-phase2`와 별개의 Gradle 프로젝트
 

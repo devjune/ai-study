@@ -6,7 +6,7 @@
 
 **Architecture:** `demo-phase3`는 UI 없는 Spring Boot 프로젝트로, 장별 예제를 `@SpringBootTest` 통합 테스트로 담는다(로컬 Ollama 필요). 문서는 `docs/phase3/`에 한 편, 각 장은 "예제를 먼저 돌려 보고 → 그 코드로 집필" 순서를 지킨다.
 
-**Tech Stack:** Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0-beta (`koog-spring-ai-starter-*`) · Kotlin 2.2.21 · Kotest 5.9.1 · Ollama (qwen3:4b-instruct, bge-m3) — 실행 중 판정으로 수정됨, Global Constraints 참조
+**Tech Stack:** Spring Boot 3.5.14 · Spring AI 1.1.6 · Koog 1.2.0 (브리지·MCP 모듈은 `1.2.0-beta`) · Kotlin 2.2.21 · Kotest 5.9.1 · Ollama (qwen3:4b-instruct, bge-m3) — 실행 중 판정으로 수정됨, Global Constraints 참조
 
 **Spec:** `docs/superpowers/specs/2026-09-10-phase3-koog-design.md`
 
@@ -14,7 +14,7 @@
 
 - Kotlin **2.2.21**로 먼저 시도(저장소 고정 버전). 실패 시에만 demo-phase3 한정 2.3.x — Task 1이 판정한다
 - JDK 툴체인 21 (demo-phase2와 동일)
-- ~~Spring Boot 4.0.0 · Spring AI BOM 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI BOM 1.1.6 · Koog 1.2.0-beta** (Task 2 스파이크 판정: 브리지가 Spring AI 2.x 미지원 — 스펙의 "2026-09-10 스파이크 수정" 참조)
+- ~~Spring Boot 4.0.0 · Spring AI BOM 2.0.1~~ → **Spring Boot 3.5.14 · Spring AI BOM 1.1.6 · Koog 1.2.0 (브리지 스타터는 1.2.0-beta)** (Task 2 스파이크 판정: 브리지가 Spring AI 2.x 미지원 — 스펙의 "2026-09-10 스파이크 수정" 참조)
 - 모델: Ollama `qwen3:4b-instruct`(채팅) · `bge-m3`(임베딩). API 키 불필요 원칙
 - demo-phase1 · docs/phase1은 불가침. 위키도 손대지 않는다
 - 문서 문체: 담백하게, 각주(`[^x]`) 금지, "이 데모는…" 식 데모 지목 서술 금지, 이름만 봐도 아는 주석 금지
