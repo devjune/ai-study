@@ -1,0 +1,549 @@
+<title>Koog 발표 덱</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FFFFFF; --ink:#141414; --muted:#6E6B63; --faint:#B9B5AA;
+    --passed:#E9E7DF; --panel:#FCFBF8; --ok:#0B7A3B; --okbg:#EAF3EC;
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); margin:0;
+    padding-inline:clamp(16px,4vw,56px); padding-block:0 40px;}
+  .slide{min-height:88vh; max-width:1000px; margin:0 auto; display:flex; flex-direction:column;
+    justify-content:center; gap:14px; padding-block:56px 28px; border-bottom:1.5px solid var(--passed);
+    scroll-margin-top:8px;}
+  .slide:last-child{border-bottom:none;}
+  .eyebrow{font:600 11px/1 var(--mono); letter-spacing:.16em; color:var(--muted); text-transform:uppercase;}
+  .eyebrow b{color:var(--ok);}
+  h1{font-size:clamp(26px,4.6vw,44px); font-weight:700; margin:0; letter-spacing:-.015em; text-wrap:balance;}
+  h2{font-size:clamp(20px,3vw,30px); font-weight:700; margin:0; letter-spacing:-.01em; text-wrap:balance;}
+  p{margin:0; max-width:66ch; line-height:1.75; font-size:15.5px;}
+  .lead{font-size:17px;}
+  .qopen{font:500 14px var(--mono); color:var(--ok);}
+  figure{margin:6px 0 0;}
+  figure svg{display:block; width:100%; height:auto; max-width:880px;}
+  figcaption{font-size:12.5px; color:var(--muted); margin-top:8px; max-width:70ch;}
+  blockquote{margin:4px 0 0; padding:14px 18px; border-left:3px solid var(--ink); background:var(--panel);
+    max-width:72ch;}
+  blockquote em{font-style:italic; display:block; line-height:1.6;}
+  blockquote span{display:block; margin-top:6px; color:var(--muted); font-size:14px;}
+  .src{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:4px;
+    font:400 12px/1.6 var(--mono); color:var(--muted);}
+  .src b{font-weight:600; color:var(--ink);}
+  .src a{color:var(--muted); text-underline-offset:3px;}
+  .badge{display:inline-block; font:600 11px/1 var(--mono); letter-spacing:.06em; color:#fff;
+    background:var(--ok); padding:5px 9px; border-radius:2px; vertical-align:2px;}
+  .chips{display:flex; gap:10px; flex-wrap:wrap;}
+  .chip{border:1.5px solid var(--ink); padding:8px 12px; font:500 13px var(--sans); border-radius:2px; background:var(--panel);}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:760px){.cols{grid-template-columns:1fr;}}
+  pre{margin:0; background:var(--panel); border:1.5px solid var(--ink); border-radius:2px;
+    padding:14px 16px; font:400 12.5px/1.7 var(--mono); overflow-x:auto;}
+  pre b{font-weight:600; color:var(--ok);}
+  table{border-collapse:collapse; font-size:14px; width:100%; max-width:880px;}
+  th,td{border:1.5px solid var(--ink); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--passed); font-weight:700; font-size:13px;}
+  td code, p code, li code{font:400 .92em var(--mono); background:var(--passed); padding:1px 5px; border-radius:2px;}
+  ul.plain{margin:0; padding-left:20px; line-height:1.9; font-size:15px; max-width:70ch;}
+  /* 21-pattern grid */
+  .pgrid{display:grid; grid-template-columns:repeat(7,minmax(72px,1fr)); gap:8px; max-width:880px;}
+  @media (max-width:700px){.pgrid{grid-template-columns:repeat(3,1fr);}}
+  .pcell{border:1.5px solid var(--ink); border-radius:2px; padding:8px 9px; min-height:58px;}
+  .pcell i{display:block; font:600 10px var(--mono); color:var(--muted); font-style:normal;}
+  .pcell span{font-size:12px; font-weight:500; line-height:1.35; display:block; margin-top:3px;}
+  .b-direct{background:var(--ink);} .b-direct i,.b-direct span{color:#fff;}
+  .b-bridge{background:var(--okbg); border-color:var(--ok);} .b-bridge i{color:var(--ok);}
+  .b-hand{background:var(--passed);}
+  .b-unknown{background:var(--paper); border-style:dashed; border-color:var(--faint);}
+  .b-unknown span,.b-unknown i{color:var(--muted);}
+  .plegend{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .plegend i{display:inline-block; width:11px; height:11px; border:1.5px solid var(--ink); margin-right:5px; vertical-align:-1px; font-style:normal;}
+  /* svg shared */
+  .nrect{fill:var(--paper); stroke:var(--ink); stroke-width:1.5;}
+  .nfill{fill:var(--passed); stroke:var(--ink); stroke-width:1.5;}
+  .nact{fill:var(--ink); stroke:var(--ink);}
+  .nok{fill:var(--okbg); stroke:var(--ok); stroke-width:1.5;}
+  svg text{font:500 12.5px var(--mono); fill:var(--ink);}
+  svg .tw{fill:#fff;} svg .tm{fill:var(--muted); font-size:10.5px;} svg .tg{fill:var(--ok);}
+  svg .ed{stroke:var(--ink); stroke-width:1.5; fill:none;}
+  svg .edm{stroke:var(--faint); stroke-width:1.5; fill:none;}
+  svg .edx{stroke:var(--faint); stroke-width:1.5; fill:none; stroke-dasharray:5 4;}
+  svg .edg{stroke:var(--ok); stroke-width:2.2; fill:none;}
+  .counter{position:fixed; right:14px; bottom:12px; font:500 11.5px var(--mono); color:var(--muted);
+    background:var(--paper); border:1.5px solid var(--passed); padding:5px 9px; border-radius:2px;}
+  .hint{font:400 12px var(--mono); color:var(--muted);}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--ok); outline-offset:2px;}
+</style>
+
+<!-- ───────── 1. 표지 ───────── -->
+<section class="slide" id="s1">
+  <p class="eyebrow">스터디 phase3 · 2026-09-11 · 30분</p>
+  <h1>Koog — Spring AI 위에 얹는<br>에이전트 프레임워크</h1>
+  <p class="lead">phase2에서 21개 패턴을 손으로 조립했다.<br>이번엔 전용 프레임워크가 그걸 어떻게 주는지, 실물로 확인한 기록.</p>
+  <div class="chips">
+    <span class="chip">0부 왜 · 4분</span><span class="chip">1부 구조 · 7분</span>
+    <span class="chip">2부 실행 · 9분 <b style="color:var(--ok)">＋시연</b></span>
+    <span class="chip">3부 경계 · 7분</span><span class="chip">4부 판단 · 3분</span>
+  </div>
+  <p class="hint">→ / ↓ 키로 넘김 · 모든 코드는 demo-phase3 테스트로 실행 검증됨</p>
+  <div class="src"><span><b>본편</b> docs/phase3/「Koog — Spring AI 위에 얹는 에이전트 프레임워크」 · demo-phase3 (테스트 19개)</span></div>
+</section>
+
+<!-- ───────── 2. 0부: 손조립의 비용 ───────── -->
+<section class="slide" id="s2">
+  <p class="eyebrow"><b>0부 왜</b> · 에이전트 프레임워크는 무슨 문제를 푸나</p>
+  <h2>phase2의 교훈 — 패턴 21개 중 16개는 범용 재료의 조합이었다</h2>
+  <p>조합은 된다. 대신 분기·루프·재시도 같은 <b>제어 흐름이 전부 내 코드에</b> 남는다.
+  프레임워크는 그 제어 흐름을 선언으로 옮기겠다는 제안이다.</p>
+  <figure>
+    <svg viewBox="0 0 880 240" role="img" aria-label="손조립은 분기가 내 코드의 when에 있고, Koog는 분기가 그래프 엣지 선언에 있다">
+      <defs><marker id="a1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker>
+      <marker id="a1g" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#0B7A3B"/></marker></defs>
+      <text x="20" y="28" style="font-weight:600">phase2 — 손조립</text>
+      <rect class="nrect" x="20" y="48" width="96" height="38" rx="3"/><text x="68" y="72" text-anchor="middle">질문</text>
+      <path class="ed" d="M116,67 L156,67" marker-end="url(#a1)"/>
+      <rect class="nrect" x="156" y="48" width="120" height="38" rx="3"/><text x="216" y="72" text-anchor="middle">.entity()</text>
+      <path class="ed" d="M276,67 L316,67" marker-end="url(#a1)"/>
+      <rect class="nok" x="316" y="42" width="112" height="50" rx="3"/>
+      <text x="372" y="63" text-anchor="middle" class="tg">when(...)</text>
+      <text x="372" y="80" text-anchor="middle" class="tm">내 코드가 분기</text>
+      <path class="ed" d="M428,55 L472,42" marker-end="url(#a1)"/>
+      <path class="ed" d="M428,79 L472,92" marker-end="url(#a1)"/>
+      <rect class="nfill" x="472" y="24" width="84" height="32" rx="3"/><text x="514" y="44" text-anchor="middle">수학</text>
+      <rect class="nfill" x="472" y="82" width="84" height="32" rx="3"/><text x="514" y="102" text-anchor="middle">일반</text>
+
+      <text x="20" y="152" style="font-weight:600">Koog — 그래프 선언</text>
+      <rect class="nrect" x="20" y="172" width="96" height="38" rx="3"/><text x="68" y="196" text-anchor="middle">질문</text>
+      <path class="ed" d="M116,191 L156,191" marker-end="url(#a1)"/>
+      <rect class="nrect" x="156" y="172" width="120" height="38" rx="3"/><text x="216" y="196" text-anchor="middle">classify</text>
+      <path class="edg" d="M276,182 C330,164 360,158 404,152" marker-end="url(#a1g)"/>
+      <text x="290" y="150" class="tg" style="font-size:11px">onTextMessage { "MATH" in it }</text>
+      <path class="edm" d="M276,200 C330,214 360,218 404,222" marker-end="url(#a1)"/>
+      <text x="322" y="234" class="tm">else</text>
+      <rect class="nfill" x="404" y="136" width="84" height="32" rx="3"/><text x="446" y="156" text-anchor="middle">math</text>
+      <rect class="nfill" x="404" y="206" width="84" height="32" rx="3"/><text x="446" y="226" text-anchor="middle">other</text>
+      <text x="560" y="196" class="tg" style="font-size:12px">분기가 코드가 아니라</text>
+      <text x="560" y="214" class="tg" style="font-size:12px">엣지 라벨에 있다</text>
+    </svg>
+    <figcaption>같은 라우팅. 위는 판정 결과를 내 <code>when</code>이 받아 분기하고, 아래는 조건이 엣지 선언에 붙는다.</figcaption>
+  </figure>
+  <div class="src">
+    <span><b>근거</b> docs/phase2 문서 — "굵게 표시한 다섯 장에만 전용 타입이 있습니다. 나머지 열여섯은 범용 기능을 조합합니다"</span>
+    <span><b>실측</b> phase3 문서 4장 · Ch04StrategyTest("조건 엣지가 분기를 고른다")</span>
+  </div>
+</section>
+
+<!-- ───────── 3. 0부: Koog란 ───────── -->
+<section class="slide" id="s3">
+  <p class="eyebrow"><b>0부 왜</b> · JetBrains는 왜 만들었나</p>
+  <h2>Koog — JVM 생태계를 위한 Kotlin 네이티브 에이전트 프레임워크</h2>
+  <blockquote>
+    <em>"an open-source JetBrains framework for building AI agents designed specifically for the JVM ecosystem"</em>
+    <span>— JVM 생태계를 위해 설계된 오픈소스 에이전트 프레임워크 (공식 문서 첫 문장)</span>
+  </blockquote>
+  <blockquote>
+    <em>"Kotlin developers deserve an AI framework that's as powerful and flexible as Kotlin itself."</em>
+    <span>— Kotlin 개발자에게는 Kotlin만큼 강력하고 유연한 AI 프레임워크가 있어야 한다 (출시 발표, 2025.05)</span>
+  </blockquote>
+  <figure>
+    <svg viewBox="0 0 880 170" role="img" aria-label="파이썬 진영의 에이전트 프레임워크, JVM의 Spring AI, 그 사이 Kotlin 네이티브 자리에 Koog가 있고 이 스터디는 Spring AI 빈 위에 Koog를 얹는다">
+      <defs><marker id="a2g" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#0B7A3B"/></marker></defs>
+      <rect class="nfill" x="16" y="24" width="240" height="96" rx="3"/>
+      <text x="136" y="52" text-anchor="middle" style="font-weight:600">Python 진영</text>
+      <text x="136" y="76" text-anchor="middle" class="tm">LangGraph · CrewAI · ADK</text>
+      <text x="136" y="94" text-anchor="middle" class="tm">원서 예제가 전부 여기</text>
+      <rect class="nrect" x="304" y="24" width="240" height="96" rx="3"/>
+      <text x="424" y="52" text-anchor="middle" style="font-weight:600">Spring AI (Java)</text>
+      <text x="424" y="76" text-anchor="middle" class="tm">모델 접근 · 이식성 · 어드바이저</text>
+      <text x="424" y="94" text-anchor="middle" class="tm">에이전트 전용 프레임워크는 아님</text>
+      <rect class="nok" x="592" y="24" width="272" height="96" rx="3"/>
+      <text x="728" y="52" text-anchor="middle" style="font-weight:600" class="tg">Koog (Kotlin)</text>
+      <text x="728" y="76" text-anchor="middle" class="tm">그래프 전략 · 도구 · 기능 설치</text>
+      <text x="728" y="94" text-anchor="middle" class="tm">JVM + JS · Wasm · Android · iOS</text>
+      <path class="edg" d="M424,120 C424,152 600,152 700,124" marker-end="url(#a2g)"/>
+      <text x="470" y="160" class="tg" style="font-size:12px">이 스터디: Spring AI 빈을 그대로 Koog에 꽂는다 (koog-spring-ai 브리지)</text>
+    </svg>
+    <figcaption>에이전트 프레임워크는 파이썬 독무대였다. Koog는 그 빈자리에 대한 JVM 진영의 답이고, 우리는 브리지로 두 세계를 잇는다.</figcaption>
+  </figure>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> · <a href="https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/" target="_blank" rel="noopener">blog.jetbrains.com — Meet Koog</a> · <a href="https://github.com/JetBrains/koog" target="_blank" rel="noopener">github.com/JetBrains/koog</a> (4.6k★)</span>
+  </div>
+</section>
+
+<!-- ───────── 4. 1부: 코어 개념 맵 ───────── -->
+<section class="slide" id="s4">
+  <p class="eyebrow"><b>1부 구조</b> · Koog는 무엇으로 이뤄지나</p>
+  <h2>네 가지가 에이전트를 이룬다</h2>
+  <figure>
+    <svg viewBox="0 0 880 260" role="img" aria-label="AIAgent를 중심으로 PromptExecutor가 모델 호출을 맡고, Strategy가 흐름을 선언하고, ToolRegistry가 바깥과 연결하고, Features가 install로 확장한다">
+      <defs><marker id="a3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker></defs>
+      <rect class="nact" x="360" y="104" width="160" height="52" rx="3"/>
+      <text x="440" y="135" text-anchor="middle" class="tw" style="font-weight:600">AIAgent</text>
+      <rect class="nrect" x="60" y="30" width="200" height="46" rx="3"/>
+      <text x="160" y="50" text-anchor="middle">PromptExecutor</text><text x="160" y="66" text-anchor="middle" class="tm">모델을 부르는 입구</text>
+      <path class="ed" d="M260,62 C310,80 330,94 360,108" marker-end="url(#a3)"/><text x="272" y="94" class="tm">모델 호출 위임</text>
+      <rect class="nrect" x="620" y="30" width="200" height="46" rx="3"/>
+      <text x="720" y="50" text-anchor="middle">Strategy</text><text x="720" y="66" text-anchor="middle" class="tm">노드·엣지 그래프</text>
+      <path class="ed" d="M620,62 C570,80 550,94 520,108" marker-end="url(#a3)"/><text x="540" y="94" class="tm" text-anchor="end">흐름을 선언</text>
+      <rect class="nrect" x="60" y="184" width="200" height="46" rx="3"/>
+      <text x="160" y="204" text-anchor="middle">ToolRegistry</text><text x="160" y="220" text-anchor="middle" class="tm">@Tool · ToolSet · MCP</text>
+      <path class="ed" d="M260,198 C310,180 330,166 360,152" marker-end="url(#a3)"/><text x="272" y="178" class="tm">바깥과 연결</text>
+      <rect class="nrect" x="620" y="184" width="200" height="46" rx="3"/>
+      <text x="720" y="204" text-anchor="middle">Features</text><text x="720" y="220" text-anchor="middle" class="tm">ChatMemory · EventHandler…</text>
+      <path class="ed" d="M620,198 C570,180 550,166 520,152" marker-end="url(#a3)"/><text x="540" y="178" class="tm" text-anchor="end">install()로 확장</text>
+    </svg>
+    <figcaption>공식 문서의 핵심 구성: 프롬프트 실행기 · 전략 그래프 · 도구 · 기능. 넷 다 이 발표에서 실물로 등장한다.</figcaption>
+  </figure>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai — Key concepts</a> (Prompts · Strategy graphs · Tools · Features)</span>
+    <span><b>실측</b> 3장(AIAgent) · 4장(strategy) · 5장(ToolRegistry) · 6장(install(ChatMemory))</span>
+  </div>
+</section>
+
+<!-- ───────── 5. 1부: 에이전트 유형 스펙트럼 ───────── -->
+<section class="slide" id="s5">
+  <p class="eyebrow"><b>1부 구조</b> · 어디까지 손에 쥘 수 있나</p>
+  <h2>제어를 얼마나 가져올지 고르는 스펙트럼</h2>
+  <figure>
+    <svg viewBox="0 0 880 190" role="img" aria-label="basic, functional, graph-based, planner 순으로 제어 커스텀 정도가 커지는 축. 이 발표는 basic과 graph-based를 다룬다">
+      <defs><marker id="a4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker></defs>
+      <path class="ed" d="M40,120 L840,120" marker-end="url(#a4)"/>
+      <text x="840" y="146" text-anchor="end" class="tm">흐름을 직접 설계하는 정도 →</text>
+      <rect class="nok" x="60" y="52" width="150" height="46" rx="3"/>
+      <text x="135" y="72" text-anchor="middle">basic</text><text x="135" y="88" text-anchor="middle" class="tm">기본 전략으로 run()</text>
+      <rect class="nrect" x="252" y="52" width="150" height="46" rx="3"/>
+      <text x="327" y="72" text-anchor="middle">functional</text><text x="327" y="88" text-anchor="middle" class="tm">람다 로직</text>
+      <rect class="nok" x="444" y="52" width="170" height="46" rx="3"/>
+      <text x="529" y="72" text-anchor="middle">graph-based</text><text x="529" y="88" text-anchor="middle" class="tm">strategy = 커스텀 그래프</text>
+      <rect class="nrect" x="656" y="52" width="150" height="46" rx="3"/>
+      <text x="731" y="72" text-anchor="middle">planner β</text><text x="731" y="88" text-anchor="middle" class="tm">계획을 만들며 실행</text>
+      <line x1="135" y1="98" x2="135" y2="120" class="edm"/><line x1="327" y1="98" x2="327" y2="120" class="edm"/>
+      <line x1="529" y1="98" x2="529" y2="120" class="edm"/><line x1="731" y1="98" x2="731" y2="120" class="edm"/>
+      <path class="edg" d="M60,34 L614,34"/>
+      <text x="60" y="24" class="tg" style="font-size:11.5px">이 발표의 범위 — 기본형으로 시작해 그래프까지</text>
+    </svg>
+    <figcaption>같은 <code>AIAgent</code> 팩토리에서 <code>strategy</code> 인자 하나로 basic ↔ graph를 오간다. planner는 beta라 범위 밖.</figcaption>
+  </figure>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai — Agent types</a> (basic · functional · graph-based · planner(beta))</span>
+    <span><b>실측</b> Ch03(기본형) → Ch04(strategy 인자) — 파라미터명 <code>strategy</code>는 컴파일로 확정</span>
+  </div>
+</section>
+
+<!-- ───────── 6. 1부: 브리지 조립 ───────── -->
+<section class="slide" id="s6">
+  <p class="eyebrow"><b>1부 구조</b> · 기존 Spring AI 설정을 버리지 않는다</p>
+  <h2>브리지 — ChatModel 빈이 PromptExecutor가 되기까지</h2>
+  <figure>
+    <svg viewBox="0 0 880 210" role="img" aria-label="Spring AI의 ChatModel 빈을 SpringAiLLMClient가 감싸고 PromptExecutor로 조립되어 AIAgent가 쓴다. 도구 실행은 Koog가 하고 Spring AI는 스키마만 받는다">
+      <defs><marker id="a5" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker>
+      <marker id="a5m" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#B9B5AA"/></marker></defs>
+      <rect class="nfill" x="16" y="40" width="196" height="60" rx="3"/>
+      <text x="114" y="64" text-anchor="middle">ChatModel 빈</text>
+      <text x="114" y="82" text-anchor="middle" class="tm">Spring AI · Ollama qwen3:4b</text>
+      <path class="ed" d="M212,70 L268,70" marker-end="url(#a5)"/><text x="214" y="58" class="tm">감싼다</text>
+      <rect class="nrect" x="268" y="40" width="200" height="60" rx="3"/>
+      <text x="368" y="64" text-anchor="middle">SpringAiLLMClient</text>
+      <text x="368" y="82" text-anchor="middle" class="tm">koog-spring-ai-starter</text>
+      <path class="ed" d="M468,70 L524,70" marker-end="url(#a5)"/><text x="470" y="58" class="tm">조립</text>
+      <rect class="nrect" x="524" y="40" width="176" height="60" rx="3"/>
+      <text x="612" y="64" text-anchor="middle">PromptExecutor</text>
+      <text x="612" y="82" text-anchor="middle" class="tm">빈으로 주입됨</text>
+      <path class="ed" d="M700,70 L756,70" marker-end="url(#a5)"/>
+      <rect class="nact" x="756" y="40" width="108" height="60" rx="3"/>
+      <text x="810" y="76" text-anchor="middle" class="tw" style="font-weight:600">AIAgent</text>
+      <path class="edx" d="M810,100 C810,160 300,175 130,104" marker-end="url(#a5m)"/>
+      <text x="330" y="186" class="tm">도구는 정의(스키마)만 Spring AI로 내려간다 — 실행은 Koog가 한다</text>
+    </svg>
+    <figcaption>설정 파일도 모델 서빙도 그대로. 기동 로그가 이 조립을 그대로 보여준다.</figcaption>
+  </figure>
+  <pre>Koog Spring AI Chat: resolved LLMProvider: id='ollama', display='Ollama'
+Koog Spring AI Chat: creating <b>MultiLLMPromptExecutor</b> with 1 LLMClient(s)</pre>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">docs.koog.ai — Spring AI integration</a> ("tools are always executed by the Koog agent framework")</span>
+    <span><b>실측</b> demo-phase3 기동 로그 (위 원문) · 2장 · ContextLoadsTest</span>
+  </div>
+</section>
+
+<!-- ───────── 7. 2부: 단일 에이전트 ───────── -->
+<section class="slide" id="s7">
+  <p class="eyebrow"><b>2부 실행</b> · 가장 작은 에이전트</p>
+  <h2>AIAgent 해부 — 다섯 줄이면 돈다 <span class="badge">공식 문서와 다름</span></h2>
+  <div class="cols">
+    <pre>val agent = AIAgent(
+    promptExecutor = promptExecutor,  // 브리지가 준 빈
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = "한 문장으로만 답한다.",
+    temperature = 0.2,
+    maxIterations = 5,
+)
+val result = agent.run("2 더하기 3은?")   // suspend
+<b>// 실측 응답: "5"</b></pre>
+    <div>
+      <ul class="plain">
+        <li><code>AIAgent(...)</code>는 생성자가 아니라 <b>팩토리 함수</b> — <code>GraphAIAgent</code>를 돌려준다 (문서엔 없고, 컴파일 오류로 확인)</li>
+        <li><code>run()</code>은 <code>suspend fun run(agentInput, sessionId = null)</code> — 코루틴 밖에서 부르면 컴파일이 거부</li>
+        <li>qwen3:4b는 프리셋이 없어 <code>LLModel(provider, id, capabilities)</code>로 직접 정의</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/agents/basic-agents/" target="_blank" rel="noopener">docs.koog.ai — Basic agents</a></span>
+    <span><b>실측</b> Ch03SingleAgentTest (2회 독립 실행 동일 출력) · 3장 — 시그니처는 컴파일러 오류 원문으로 채증</span>
+  </div>
+</section>
+
+<!-- ───────── 8. 2부: 전략 그래프 ───────── -->
+<section class="slide" id="s8">
+  <p class="eyebrow"><b>2부 실행</b> · Koog의 정체성</p>
+  <h2>전략 그래프 — 흐름이 선언이 된다 <span class="badge">공식 예제는 컴파일 안 됨</span></h2>
+  <div class="cols">
+    <pre>val router = strategy&lt;String, String&gt;("route") {
+    val classify by nodeLLMRequest()
+    val math  by node("math")  { "수학 경로" }
+    val other by node("other") { "일반 경로" }
+
+    edge(nodeStart forwardTo classify)
+    edge(classify forwardTo math
+        <b>onTextMessage</b> { "MATH" in it.text })
+    edge(classify forwardTo other
+        onTextMessage { true })
+    edge(math forwardTo nodeFinish)
+    edge(other forwardTo nodeFinish)
+}</pre>
+    <div>
+      <ul class="plain">
+        <li>엣지는 <b>선언 순서대로</b> 검사, 첫 매치가 이긴다 — 라우팅 테스트가 실증</li>
+        <li>공식 문서 예제는 그대로 컴파일되지 않는다 — <code>nodeLLMRequest</code> 출력은 <code>Message.Assistant</code>라서 <code>textContent()</code> 변환이 필요</li>
+        <li>루프 상한을 넘기면 멈추는 게 아니라 <code>MaxNumberOfIterationsReached</code> 예외</li>
+      </ul>
+      <p style="margin-top:14px" class="qopen">▶ 여기서 화면 전환 — 전략 그래프 러너 라이브 시연 (라우팅 → 도구 루프 → MCP)</p>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">docs.koog.ai — Custom strategy graphs</a></span>
+    <span><b>실측</b> Ch04StrategyTest 3개(체인 "15" · 라우팅 "수학 경로" · 루프 "...") · 4장 — 타입 어긋남 전부 기록</span>
+  </div>
+</section>
+
+<!-- ───────── 9. 2부: 도구 ───────── -->
+<section class="slide" id="s9">
+  <p class="eyebrow"><b>2부 실행</b> · 바깥과 연결</p>
+  <h2>도구 — 이름은 같고 세계는 다르다</h2>
+  <p>phase2에서 쓰던 <code>@Tool</code>과 <b>동명이인</b>이다. 임포트를 보기 전까지 같은 코드처럼 읽힌다.</p>
+  <table>
+    <tr><th></th><th>Spring AI (phase2)</th><th>Koog (phase3)</th></tr>
+    <tr><td>임포트</td><td><code>org.springframework.ai.tool.annotation.Tool</code></td><td><code>ai.koog.agents.core.tools.annotations.Tool</code></td></tr>
+    <tr><td>설명 위치</td><td><code>@Tool(description = …)</code></td><td><code>@LLMDescription(…)</code> 별도 — <code>@Tool</code>엔 description 속성이 없음</td></tr>
+    <tr><td>담는 그릇</td><td>빈 아무 객체나 <code>.tools(obj)</code></td><td><code>ToolSet</code> 인터페이스 구현 → <code>ToolRegistry { tools(…) }</code></td></tr>
+    <tr><td>실행 주체</td><td>Spring AI</td><td><b>항상 Koog</b> — 브리지에선 스키마만 Spring AI로</td></tr>
+  </table>
+  <p>실측: 도구 이름을 시스템 프롬프트에 박고 <code>temperature 0.0</code>이면 qwen3:4b도 <b>15/15</b> 안정 호출.</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/tools/annotation-based-tools/" target="_blank" rel="noopener">docs.koog.ai — Annotation-based tools</a></span>
+    <span><b>실측</b> Ch05ToolsTest 3개 (호출 인자 <code>[USD]</code>·<code>[JPY]</code> 기록 검증) · 5장 임포트 대조 표</span>
+  </div>
+</section>
+
+<!-- ───────── 10. 3부: 메모리 ───────── -->
+<section class="slide" id="s10">
+  <p class="eyebrow"><b>3부 경계</b> · 어댑터가 가리는 것 ①</p>
+  <h2>메모리 — 저장소를 통과하면 도구 호출이 증발한다</h2>
+  <figure>
+    <svg viewBox="0 0 880 220" role="img" aria-label="대화의 메시지 파트 중 텍스트만 어댑터 필터를 통과해 저장소에 남고 도구 호출과 결과 파트는 걸러진다">
+      <defs><marker id="a6" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker></defs>
+      <text x="16" y="26" style="font-weight:600">실행 중의 대화</text>
+      <rect class="nrect" x="16" y="40" width="240" height="30" rx="3"/><text x="28" y="60">System · Text</text>
+      <rect class="nrect" x="16" y="78" width="240" height="30" rx="3"/><text x="28" y="98">User · Text "1달러는 몇 원?"</text>
+      <rect class="nfill" x="16" y="116" width="240" height="30" rx="3"/><text x="28" y="136" class="tm">Assistant · Tool.Call(USD)</text>
+      <rect class="nfill" x="16" y="154" width="240" height="30" rx="3"/><text x="28" y="174" class="tm">Tool.Result "1385"</text>
+      <rect class="nrect" x="16" y="192" width="240" height="30" rx="3"/><text x="28" y="212">Assistant · Text "1385원입니다"</text>
+      <rect class="nok" x="336" y="88" width="200" height="66" rx="3"/>
+      <text x="436" y="115" text-anchor="middle" class="tg">어댑터 필터</text>
+      <text x="436" y="134" text-anchor="middle" class="tm">MessagePart.Text만 통과</text>
+      <path class="ed" d="M256,55 C300,66 310,88 336,100" marker-end="url(#a6)"/>
+      <path class="ed" d="M256,93 L336,110" marker-end="url(#a6)"/>
+      <path class="edx" d="M256,131 L326,124"/><text x="300" y="144" class="tm">✕</text>
+      <path class="edx" d="M256,169 L326,138"/><text x="316" y="166" class="tm">✕</text>
+      <path class="ed" d="M256,207 C300,196 310,160 336,142" marker-end="url(#a6)"/>
+      <path class="ed" d="M536,121 L616,121" marker-end="url(#a6)"/>
+      <text x="624" y="26" style="font-weight:600">저장소에 남은 것 (실측)</text>
+      <rect class="nrect" x="616" y="72" width="248" height="30" rx="3"/><text x="628" y="92">SYSTEM</text>
+      <rect class="nrect" x="616" y="110" width="248" height="30" rx="3"/><text x="628" y="130">USER  1달러는 몇 원이야?</text>
+      <rect class="nrect" x="616" y="148" width="248" height="30" rx="3"/><text x="628" y="168">ASSISTANT  1385원입니다</text>
+      <text x="616" y="200" class="tm">도구를 썼다는 사실은 어디에도 없다</text>
+    </svg>
+    <figcaption>도구 호출 뒤 저장소를 열어 보면 평문 3행뿐. 감사 로그가 필요하면 이 어댑터로는 안 된다는 뜻이다.</figcaption>
+  </figure>
+  <p>덤으로: 의존성만 넣으면 빈이 안 뜬다 — 오토컨피규 순서 문제. <code>chat-memory-repository-bean-name</code> 프로퍼티 한 줄이 해법.</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">docs.koog.ai — Spring AI integration</a> ("tool calls … are silently dropped")</span>
+    <span><b>실측</b> Ch06MemoryTest("저장된 것은 평문뿐이고 도구 호출은 남지 않는다") — 저장 행 직접 검사 · 6장</span>
+  </div>
+</section>
+
+<!-- ───────── 11. 3부: RAG 빈 충돌 ───────── -->
+<section class="slide" id="s11">
+  <p class="eyebrow"><b>3부 경계</b> · 어댑터가 가리는 것 ②</p>
+  <h2>RAG — 채팅 브리지가 임베딩 빈을 가로챈다 <span class="badge">공식 문서에 없음</span></h2>
+  <figure>
+    <svg viewBox="0 0 880 230" role="img" aria-label="임베딩 스타터의 조건부 빈이, 임베딩을 못 하는 채팅 브리지 LLMClient 때문에 만들어지지 않는다. 해법은 RagConfig에서 구현 타입으로 직접 빈 선언">
+      <defs><marker id="a7" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#141414"/></marker>
+      <marker id="a7g" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="#0B7A3B"/></marker></defs>
+      <rect class="nrect" x="16" y="30" width="264" height="62" rx="3"/>
+      <text x="148" y="54" text-anchor="middle">임베딩 스타터</text>
+      <text x="148" y="72" text-anchor="middle" class="tm">@ConditionalOnMissingBean(LLMEmbeddingProvider)</text>
+      <path class="edx" d="M280,61 L392,61"/><text x="322" y="50" class="tm">생성 포기 ✕</text>
+      <rect class="nfill" x="392" y="30" width="216" height="62" rx="3"/>
+      <text x="500" y="54" text-anchor="middle" class="tm">임베딩 어댑터 빈</text>
+      <text x="500" y="72" text-anchor="middle" class="tm">만들어지지 않음</text>
+      <rect class="nrect" x="16" y="140" width="264" height="62" rx="3"/>
+      <text x="148" y="164" text-anchor="middle">채팅 브리지의 LLMClient</text>
+      <text x="148" y="182" text-anchor="middle" class="tm">타입은 LLMEmbeddingProvider인데 embed()는 예외</text>
+      <path class="ed" d="M148,140 L148,96" marker-end="url(#a7)"/>
+      <text x="158" y="120" class="tm">"이미 있네" — 조건을 먼저 충족해 버림</text>
+      <rect class="nok" x="392" y="140" width="216" height="62" rx="3"/>
+      <text x="500" y="164" text-anchor="middle" class="tg">RagConfig @Bean</text>
+      <text x="500" y="182" text-anchor="middle" class="tm">구현 타입으로 직접 선언</text>
+      <path class="edg" d="M500,140 L500,96" marker-end="url(#a7g)"/>
+      <text x="512" y="120" class="tg" style="font-size:11.5px">해법 — 조건을 우회해 손으로 등록</text>
+      <text x="648" y="166" class="tm">벡터 저장소 쪽은 반대로</text>
+      <text x="648" y="184" class="tm">프로퍼티 0줄로 그냥 붙는다</text>
+    </svg>
+    <figcaption>타입 시스템의 우연(<code>LLMClient extends LLMEmbeddingProvider</code>)이 오토컨피규 조건을 오염시킨다. 두 스타터를 같이 쓰면 항상 재현.</figcaption>
+  </figure>
+  <p>어댑터 제약도 실측: update는 delete+add(비트랜잭션), 유사도 외 검색은 <code>IllegalArgumentException</code>으로 거절. 검색 자체는 정확 — VPN 문서 0.648 vs 법인카드 0.398.</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">docs.koog.ai — vector store 절</a> (update·LookupStorage 제약)</span>
+    <span><b>실측</b> Ch07RagTest 4개 · RagConfig.kt · 7장 — 빈 충돌은 문서에 없는 신규 발견</span>
+  </div>
+</section>
+
+<!-- ───────── 12. 3부: MCP + 버전 지형 ───────── -->
+<section class="slide" id="s12">
+  <p class="eyebrow"><b>3부 경계</b> · 문서 밖에서 찾은 것들</p>
+  <h2>MCP는 됐다 — 문서에 없는 길로 <span class="badge">javap로 발굴</span></h2>
+  <p>phase2 데모가 MCP 서버가 되고, Koog 에이전트가 클라이언트로 붙어 <code>lookupOrder</code>를 실제 호출했다.
+  단, 공식 문서는 stdio·SSE만 적어 두었고 — STATELESS 서버에 붙는 <code>streamableHttp</code>는 jar 안에만 있었다.</p>
+  <table>
+    <tr><th>아티팩트</th><th>최신</th><th>성격</th></tr>
+    <tr><td><code>koog-agents</code> (본체)</td><td><b>1.2.0</b></td><td>정식 — GitHub 릴리스 태그와 일치</td></tr>
+    <tr><td><code>koog-spring-ai-starter-*</code> (브리지)</td><td>1.2.0-beta</td><td>1.x 라인에 정식 없음 · 타깃은 <b>Spring AI 1.1.6 / Boot 3.5.14</b></td></tr>
+    <tr><td><code>agents-mcp</code></td><td>1.2.0-beta</td><td>MCP SDK가 kotlinx-serialization 1.10 요구 → Boot BOM(1.6.3)과 충돌, 버전 덮어쓰기 필요</td></tr>
+  </table>
+  <p><b>그리고 가장 큰 경계</b>: Spring AI 2.x를 겨냥한 Koog 릴리스는 아직 없다.
+  2.0.1 위에서는 컴파일은 다 되고 <b>첫 Ollama 호출에서 죽는다</b>(ClassCastException) — 그래서 demo-phase3만 1.1.6으로 내렸다.</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/model-context-protocol/" target="_blank" rel="noopener">docs.koog.ai — MCP</a> · <a href="https://github.com/JetBrains/koog/releases/tag/1.2.0" target="_blank" rel="noopener">github — release 1.2.0</a> · repo1.maven.org maven-metadata(브리지 &lt;release&gt;1.2.0-beta&gt;)</span>
+    <span><b>실측</b> Ch08McpTest(도구 목록+실호출) · decisions.md 스파이크 기록 · 8장 · 2장</span>
+  </div>
+</section>
+
+<!-- ───────── 13. 4부: 21패턴 대응표 ───────── -->
+<section class="slide" id="s13">
+  <p class="eyebrow"><b>4부 판단</b> · phase2의 21개 패턴은 어떻게 됐나</p>
+  <h2>대응표 — 넷으로 갈린다</h2>
+  <div class="pgrid">
+    <div class="pcell b-direct"><i>1</i><span>프롬프트 체이닝</span></div>
+    <div class="pcell b-direct"><i>2</i><span>라우팅</span></div>
+    <div class="pcell b-unknown"><i>3</i><span>병렬화</span></div>
+    <div class="pcell b-direct"><i>4</i><span>자기 검토</span></div>
+    <div class="pcell b-direct"><i>5</i><span>도구 사용</span></div>
+    <div class="pcell b-hand"><i>6</i><span>계획 수립</span></div>
+    <div class="pcell b-direct"><i>7</i><span>멀티 에이전트</span></div>
+    <div class="pcell b-bridge"><i>8</i><span>대화 기억</span></div>
+    <div class="pcell b-bridge"><i>9</i><span>학습과 적응</span></div>
+    <div class="pcell b-direct"><i>10</i><span>MCP</span></div>
+    <div class="pcell b-unknown"><i>11</i><span>목표·모니터링</span></div>
+    <div class="pcell b-unknown"><i>12</i><span>예외 처리</span></div>
+    <div class="pcell b-hand"><i>13</i><span>사람 개입</span></div>
+    <div class="pcell b-bridge"><i>14</i><span>지식 검색 RAG</span></div>
+    <div class="pcell b-unknown"><i>15</i><span>에이전트 간 통신</span></div>
+    <div class="pcell b-hand"><i>16</i><span>자원 최적화</span></div>
+    <div class="pcell b-hand"><i>17</i><span>추론 기법</span></div>
+    <div class="pcell b-unknown"><i>18</i><span>가드레일</span></div>
+    <div class="pcell b-unknown"><i>19</i><span>평가·모니터링</span></div>
+    <div class="pcell b-unknown"><i>20</i><span>우선순위 결정</span></div>
+    <div class="pcell b-unknown"><i>21</i><span>탐색과 발견</span></div>
+  </div>
+  <div class="plegend">
+    <span><i style="background:var(--ink)"></i>직접 지원 6 — 전략 DSL·도구·압축이 대신함</span>
+    <span><i style="background:var(--okbg); border-color:var(--ok)"></i>브리지로 재사용 3</span>
+    <span><i style="background:var(--passed)"></i>여전히 손조립 4</span>
+    <span><i style="border-style:dashed; border-color:var(--faint)"></i>확인 안 함 8</span>
+  </div>
+  <p>미확인 8개 중 4개(11·18·20·21)는 한 원인으로 묶인다 — <code>.entity()</code>(구조화 출력)의 Koog 대체물을 아직 안 봤다.</p>
+  <div class="src"><span><b>근거</b> phase3 문서 9장 — 1~8장에서 실증한 것만 버킷에 넣고, 나머지는 "확인 안 함"으로 정직하게 남김</span></div>
+</section>
+
+<!-- ───────── 14. 4부: 판단 ───────── -->
+<section class="slide" id="s14">
+  <p class="eyebrow"><b>4부 판단</b> · 그래서 쓸 것인가</p>
+  <h2>손익 — 공짜로 받는 것과 떠안는 것</h2>
+  <div class="cols">
+    <div>
+      <p style="font-weight:700; margin-bottom:8px">받는 것</p>
+      <ul class="plain">
+        <li>흐름이 <b>그래프 선언</b>이 된다 — 분기·루프·도구 왕복이 코드 밖으로</li>
+        <li>히스토리 압축·재시도·상태 복원·관측성이 설치형 기능</li>
+        <li>기존 Spring AI 빈·Ollama 설정 재사용 — 서빙 인프라 무변경</li>
+        <li>Kotlin 네이티브: suspend·타입 안전 DSL</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-weight:700; margin-bottom:8px">떠안는 것</p>
+      <ul class="plain">
+        <li><b>Spring AI 2.x 미지원</b> — 브리지 쓰려면 1.1.6/Boot 3.5로</li>
+        <li>브리지·MCP 모듈은 아직 beta 트랙</li>
+        <li>메모리 어댑터의 평문-only — 도구 이력 감사는 불가</li>
+        <li>문서와 실물의 간극 — 예제 미컴파일, 미기재 API, 빈 충돌</li>
+      </ul>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:6px"><b>운영 기준의 결론</b>: 신규 Kotlin 서비스엔 지금도 매력적, Spring AI 2.x 기반 기존 서비스엔 브리지 정식화까지 관망. 미확인 8개 — 특히 구조화 출력 — 이 다음 스터디다.</p>
+  <div class="src"><span><b>근거</b> 9장 대응표 · decisions.md — 판정 전부 실행 근거와 함께 기록됨</span></div>
+</section>
+
+<!-- ───────── 15. 자습 경로 ───────── -->
+<section class="slide" id="s15">
+  <p class="eyebrow">부록 · 발표 준비가 곧 예습이 되도록</p>
+  <h2>자습 경로 — 읽고, 대조하고, 돌린다</h2>
+  <table>
+    <tr><th>부</th><th>공식 문서 (읽기)</th><th>우리 문서 (대조)</th><th>직접 돌리기</th></tr>
+    <tr><td>0 왜</td><td><a href="https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/" target="_blank" rel="noopener">Meet Koog (블로그)</a></td><td>1장</td><td>—</td></tr>
+    <tr><td>1 구조</td><td><a href="https://docs.koog.ai/" target="_blank" rel="noopener">Overview</a> · <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">Spring AI integration</a></td><td>2장</td><td><code>./gradlew test --tests ContextLoadsTest</code></td></tr>
+    <tr><td>2 실행</td><td><a href="https://docs.koog.ai/agents/basic-agents/" target="_blank" rel="noopener">Basic agents</a> · <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Strategy graphs</a> · <a href="https://docs.koog.ai/tools/annotation-based-tools/" target="_blank" rel="noopener">Tools</a></td><td>3·4·5장</td><td><code>--tests "Ch0[345]*"</code></td></tr>
+    <tr><td>3 경계</td><td><a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">integration 제약 절</a> · <a href="https://docs.koog.ai/model-context-protocol/" target="_blank" rel="noopener">MCP</a></td><td>6·7·8장 + decisions.md</td><td><code>--tests "Ch0[678]*"</code> (8장은 phase2 서버 기동 후)</td></tr>
+    <tr><td>4 판단</td><td>—</td><td>9장 대응표</td><td>전체: <code>./gradlew test</code> (19개)</td></tr>
+  </table>
+  <p>전제: 로컬 Ollama에 <code>qwen3:4b-instruct</code>·<code>bge-m3</code>. API 키는 하나도 필요 없다.</p>
+  <div class="src">
+    <span><b>저장소</b> github.com/devjune/spring-ai-study — docs/phase3 · demo-phase3</span>
+    <span><b>시연</b> 전략 그래프 러너 (별도 화면) — 2부에서 사용</span>
+  </div>
+</section>
+
+<div class="counter" id="counter">1 / 15</div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const counter=document.getElementById('counter');
+  let idx=0;
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ idx=slides.indexOf(e.target);
+      counter.textContent=(idx+1)+' / '+slides.length; }});
+  },{threshold:.5});
+  slides.forEach(s=>io.observe(s));
+  addEventListener('keydown',e=>{
+    if(e.target.closest('input,textarea'))return;
+    const next=(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ');
+    const prev=(e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp');
+    if(!next&&!prev)return;
+    e.preventDefault();
+    const to=Math.min(Math.max(idx+(next?1:-1),0),slides.length-1);
+    slides[to].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  });
+})();
+</script>
