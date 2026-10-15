@@ -1,0 +1,576 @@
+<title>Koog 세미나</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --paper:#FFFFFF; --ink:#111111; --mid:#6F6F6F; --faint:#D6D6D6; --wash:#F4F4F4;
+    --kw:#0033B3; --str:#067D17;
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E0E0E; --ink:#F2F2F2; --mid:#9A9A9A; --faint:#3A3A3A; --wash:#1A1A1A;
+      --kw:#CC7832; --str:#6A8759;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E0E0E; --ink:#F2F2F2; --mid:#9A9A9A; --faint:#3A3A3A; --wash:#1A1A1A;
+    --kw:#CC7832; --str:#6A8759;
+  }
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); margin:0;
+    padding-inline:clamp(16px,5vw,64px); padding-block:0 48px;}
+  .slide{max-width:940px; margin:0 auto; min-height:88vh; display:flex; flex-direction:column;
+    justify-content:center; gap:13px; padding-block:44px 24px; border-bottom:1px solid var(--faint);}
+  .slide:last-child{border-bottom:none;}
+  .sec{font:500 11px/1 var(--mono); letter-spacing:.16em; color:var(--mid);}
+  h1{font-size:clamp(32px,6vw,58px); font-weight:700; letter-spacing:-.02em; margin:0;}
+  h2{font-size:clamp(21px,3vw,31px); font-weight:700; letter-spacing:-.012em; margin:0;}
+  h3{font-size:15px; font-weight:700; margin:0 0 7px;}
+  p{margin:0; line-height:1.72; font-size:15px; max-width:64ch;}
+  .lead{font-size:17px;}
+  .mid{color:var(--mid);}
+  figure{margin:0;}
+  figure svg{display:block; width:100%; height:auto; max-width:900px;}
+  figcaption{font-size:12.5px; color:var(--mid); margin-top:8px; max-width:68ch; line-height:1.55;}
+  pre{margin:0; border:1px solid var(--ink); padding:13px 15px; overflow-x:auto;
+    font:400 12.5px/1.7 var(--mono); background:var(--paper);}
+  pre.err{border-style:dashed; color:var(--mid); background:var(--wash);}
+  pre .hi{font-weight:500; border-bottom:1px solid var(--ink);}
+  pre .cm{color:var(--mid);}
+  pre .k{color:var(--kw);}
+  pre .s{color:var(--str);}
+  pre .inf{font-style:italic;}
+  code{font:400 .92em var(--mono); background:var(--wash); padding:1px 5px;}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;}
+  .cols.w{grid-template-columns:1.15fr .85fr;}
+  @media (max-width:740px){.cols,.cols.w{grid-template-columns:1fr;}}
+  ul{margin:0; padding-left:18px; line-height:1.75; font-size:14.5px; max-width:64ch;}
+  li+li{margin-top:5px;}
+  .invert{background:var(--ink); color:var(--paper); padding:13px 17px;}
+  table{border-collapse:collapse; width:100%; max-width:900px; font-size:14px;}
+  th,td{border:1px solid var(--faint); padding:8px 11px; text-align:left; vertical-align:top;}
+  th{border-color:var(--ink); border-bottom-width:2px; font:500 12.5px var(--mono);}
+  td.k{font:400 12.5px var(--mono);}
+  /* 목차 */
+  .toc{display:flex; flex-direction:column; gap:0;}
+  .toc div{display:grid; grid-template-columns:40px 1fr 60px; gap:14px; align-items:baseline;
+    padding:13px 0; border-bottom:1px solid var(--faint); font-size:17px;}
+  .toc div:first-child{border-top:1px solid var(--faint);}
+  .toc .n{font:500 13px var(--mono); color:var(--mid);}
+  .toc .t{font:400 11.5px var(--mono); color:var(--mid); text-align:right;}
+  .toc div.cur{font-weight:700;}
+  /* 지도 */
+  .map{display:flex; flex-direction:column; gap:5px;}
+  .row{display:grid; grid-template-columns:84px 1fr; gap:10px; align-items:start;}
+  .row > .cat{font:500 11.5px/1.9 var(--mono); color:var(--mid); text-align:right;}
+  .chips{display:flex; gap:5px; flex-wrap:wrap;}
+  .chip{font:400 11.5px/1 var(--sans); border:1px solid var(--faint); color:var(--mid); padding:4px 7px; white-space:nowrap; position:relative; cursor:default;}
+  .chip.on{background:var(--ink); color:var(--paper); border-color:var(--ink); font-weight:500;}
+  @media (hover:hover){
+    .chip[data-tip]:hover::after{content:attr(data-tip); position:absolute; left:0; bottom:calc(100% + 7px);
+      background:var(--paper); color:var(--ink); border:1px solid var(--ink); font:400 12px/1.55 var(--sans);
+      padding:8px 11px; width:max-content; max-width:300px; white-space:normal; z-index:5; pointer-events:none;
+      box-shadow:0 2px 10px rgba(0,0,0,.10);}
+    .chip[data-tip]:hover{border-color:var(--ink); color:var(--ink);}
+    .chip.on[data-tip]:hover{color:var(--paper);}
+  }
+  .row.focus{position:relative; padding:6px 9px 6px 9px; margin-left:-9px;}
+  .row.focus::before{content:""; position:absolute; inset:0; border:1.5px dashed var(--ink);
+    animation:fade 2.4s ease-in-out infinite; pointer-events:none;}
+  .maplegend{display:flex; gap:14px; flex-wrap:wrap; font:400 11.5px var(--mono); color:var(--mid);}
+  .maplegend i{display:inline-block; width:10px; height:10px; vertical-align:-1px; margin-right:5px; border:1px solid var(--faint);}
+  /* 빈칸 */
+  .blank{border:1.5px dashed var(--faint); padding:15px 17px; display:flex; flex-direction:column; gap:11px;}
+  .blankline{border-bottom:1px solid var(--faint); padding-bottom:8px; font:400 14px var(--mono); color:var(--mid);}
+  .src{margin-top:auto; padding-top:15px; border-top:1px solid var(--faint);
+    display:flex; flex-direction:column; gap:4px; font:400 11.5px/1.55 var(--mono); color:var(--mid);}
+  .src b{display:inline-block; min-width:50px; color:var(--paper); background:var(--ink); padding:1px 6px; font-weight:500; margin-right:7px;}
+  .src a{color:var(--mid); text-underline-offset:3px;}
+  svg text{font:500 12.5px var(--mono); fill:var(--ink);}
+  svg .sm{font-size:10.5px; fill:var(--mid);}
+  svg .bx{fill:none; stroke:var(--ink); stroke-width:1.25;}
+  svg .bxf{fill:var(--wash); stroke:var(--ink); stroke-width:1.25;}
+  svg .gap{fill:none; stroke:var(--ink); stroke-width:1.25; stroke-dasharray:5 5; animation:fade 2.4s ease-in-out infinite;}
+  svg .flow{stroke:var(--ink); stroke-width:1.5; fill:none; stroke-dasharray:3 7; animation:flow 1.5s linear infinite;}
+  @keyframes flow{to{stroke-dashoffset:-20;}}
+  @keyframes fade{0%,100%{opacity:.3} 50%{opacity:1}}
+  pre.mermaid{border:none; background:transparent; padding:4px 0 0; display:flex; justify-content:center;}
+  .mermaid svg{width:auto !important; max-width:100% !important; height:auto !important; max-height:300px;}
+  .mermaid svg g.edgePaths path, .mermaid svg path.transition{
+    stroke-dasharray:3 7 !important; animation:flow 1.5s linear infinite;}
+  @media (prefers-reduced-motion:reduce){ svg .flow, svg .gap, .row.focus::before,
+    .mermaid svg g.edgePaths path, .mermaid svg path.transition{animation:none;} }
+  .counter{position:fixed; right:16px; bottom:14px; font:400 11px var(--mono); color:var(--mid);
+    background:var(--paper); border:1px solid var(--faint); padding:4px 8px;}
+  .hint{font:400 12px var(--mono); color:var(--mid);}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
+</style>
+
+<!-- 1 표지 -->
+<section class="slide">
+  <p class="sec">기술 세미나 · 2026.10 · 15분</p>
+  <h1>Koog</h1>
+  <p class="lead">JVM / Kotlin AI 에이전트 프레임워크<br><span class="mid">Strategy Graph 중심으로</span></p>
+  <p class="hint">→ / ↓ 로 넘김</p>
+</section>
+
+<!-- 2 목차 -->
+<section class="slide">
+  <p class="sec">AGENDA</p>
+  <h2>목차</h2>
+  <div class="toc">
+    <div><span class="n">01</span><span>Koog 소개</span><span class="t">2분</span></div>
+    <div><span class="n">02</span><span>기능 범위</span><span class="t">2분</span></div>
+    <div><span class="n">03</span><span>Strategy Graph 딥다이브</span><span class="t">5분</span></div>
+    <div><span class="n">04</span><span>Demo</span><span class="t">3분</span></div>
+    <div><span class="n">05</span><span>적용하며 확인한 것</span><span class="t">2분</span></div>
+    <div><span class="n">06</span><span>정리</span><span class="t">1분</span></div>
+  </div>
+</section>
+
+<!-- 3 Koog 소개 -->
+<section class="slide">
+  <p class="sec">01</p>
+  <h2>Koog 소개</h2>
+  <div class="cols w">
+    <div>
+      <h3>등장 배경</h3>
+      <ul>
+        <li>에이전트 오케스트레이션 프레임워크가 <b>파이썬 생태계에만</b> 존재 (LangGraph · CrewAI · ADK)</li>
+        <li>JVM에는 모델 접근 계층(Spring AI)은 있었으나 <b>그 위 계층이 부재</b></li>
+        <li>JetBrains가 자사 AI 제품(Junie · AI Assistant)을 Kotlin으로 개발하며 축적한 것을 공개</li>
+      </ul>
+      <h3 style="margin-top:14px">연혁</h3>
+      <ul>
+        <li>2025.05 최초 공개</li>
+        <li>2026.03 Java API 추가</li>
+        <li>2026.05 <b>1.0</b>: KotlinConf 키노트에서 공개, stable 모듈에 1년 비파괴 보장</li>
+        <li>2026.09 1.3.0</li>
+      </ul>
+    </div>
+    <figure>
+      <svg viewBox="0 0 420 230" role="img" aria-label="오케스트레이션 계층은 파이썬에만 있고 JVM은 비어 있었다">
+        <text x="0" y="14" class="sm">오케스트레이션 계층</text>
+        <rect class="bxf" x="0" y="24" width="196" height="66"/>
+        <text x="98" y="52" text-anchor="middle" style="font-size:11px">LangGraph</text>
+        <text x="98" y="70" text-anchor="middle" class="sm">파이썬</text>
+        <rect class="gap" x="216" y="24" width="196" height="66"/>
+        <text x="314" y="62" text-anchor="middle" class="sm">부재</text>
+        <text x="0" y="136" class="sm">모델 접근 계층</text>
+        <rect class="bxf" x="0" y="146" width="196" height="66"/>
+        <text x="98" y="174" text-anchor="middle" style="font-size:11px">LangChain</text>
+        <text x="98" y="192" text-anchor="middle" class="sm">파이썬</text>
+        <rect class="bxf" x="216" y="146" width="196" height="66"/>
+        <text x="314" y="174" text-anchor="middle" style="font-size:11px">Spring AI</text>
+        <text x="314" y="192" text-anchor="middle" class="sm">JVM</text>
+      </svg>
+    </figure>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/" target="_blank" rel="noopener">Meet Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2025/09/the-kotlin-ai-stack-build-ai-agents-with-koog-code-smarter-with-junie-and-more/" target="_blank" rel="noopener">Kotlin AI Stack</a> · <a href="https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/" target="_blank" rel="noopener">Koog 1.0</a></span>
+  </div>
+</section>
+
+<!-- 3b 만든 이유와 사례 -->
+<section class="slide">
+  <p class="sec">01</p>
+  <h2>만든 이유와 사용 사례</h2>
+  <blockquote>
+    <em>"Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents"</em>
+    <span>예측 가능하고 장애를 견디며 기업 환경에 쓸 수 있는 에이전트</span>
+  </blockquote>
+  <div class="cols">
+    <div>
+      <h3>자기 문제에서 출발</h3>
+      <ul>
+        <li>JetBrains는 Junie(IDE 자율 코딩 에이전트)와 AI Assistant를 <b>전부 Kotlin으로</b> 개발</li>
+        <li>Koog는 그 내부 에이전트를 만들며 다듬은 방식을 프레임워크로 떼어 내 공개했다: <i>"refined internal approaches and integrated them into a Kotlin framework"</i></li>
+        <li class="mid" style="font-size:13.5px">내부 제품이 Koog 자체를 쓰는지는 공개 자료로 확인되지 않는다. 내부 경험에서 나왔다는 데까지만 확인된다</li>
+      </ul>
+    </div>
+    <div>
+      <h3>공식 예제가 다루는 문제</h3>
+      <ul>
+        <li><b>Banking</b>: 문의를 분류하고 도구를 부르는 업무 예제</li>
+        <li><b>Chess</b>: 턴마다 반복되는 대국을 전략 그래프로 구성</li>
+        <li><b>GoogleMaps · Playwright · Unity</b>: MCP로 외부 시스템 조작</li>
+        <li><b>OpenTelemetry · Langfuse · Weave</b>: 운영 관측 연동</li>
+      </ul>
+      <p class="mid" style="font-size:13.5px; margin-top:8px">분류, 반복, 외부 연동, 관측 같은 운영 문제를 다룬 예제들이다.</p>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://github.com/JetBrains/koog" target="_blank" rel="noopener">github.com/JetBrains/koog</a> README · <a href="https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/" target="_blank" rel="noopener">Meet Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2025/09/the-kotlin-ai-stack-build-ai-agents-with-koog-code-smarter-with-junie-and-more/" target="_blank" rel="noopener">Kotlin AI Stack</a> · <a href="https://docs.koog.ai/examples/" target="_blank" rel="noopener">docs.koog.ai/examples</a></span>
+  </div>
+</section>
+
+<!-- 4 기능 범위 -->
+<section class="slide">
+  <p class="sec">02</p>
+  <h2>기능 범위</h2>
+  <div class="map">
+    <div class="row"><span class="cat">에이전트</span><span class="chips">
+      <span class="chip on" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip on" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행한다. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
+    <div class="row focus"><span class="cat">전략</span><span class="chips">
+      <span class="chip on" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그린다. 오늘의 주제">커스텀 그래프</span><span class="chip on" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
+    <div class="row"><span class="cat">도구</span><span class="chips">
+      <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 된다. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
+    <div class="row"><span class="cat">기능</span><span class="chips">
+      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 훅을 건다">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 만든다">커스텀 기능</span></span></div>
+    <div class="row"><span class="cat">프롬프트</span><span class="chips">
+      <span class="chip on" data-tip="길어진 이력을 접어 토큰을 아낀다. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
+    <div class="row"><span class="cat">프로토콜</span><span class="chips">
+      <span class="chip on" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원한다. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
+    <div class="row"><span class="cat">통합</span><span class="chips">
+      <span class="chip on" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
+    <div class="row"><span class="cat">그 외</span><span class="chips">
+      <span class="chip on" data-tip="텍스트를 벡터로 바꿔 생성하고 비교">임베딩</span><span class="chip on" data-tip="벡터 저장소 검색을 에이전트 흐름에 연결">RAG</span><span class="chip" data-tip="모델 응답을 타입 있는 객체로 받기">구조화 출력</span><span class="chip" data-tip="응답을 토큰 단위로 받아 처리">스트리밍</span><span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span><span class="chip" data-tip="입출력 콘텐츠 검열">모더레이션</span><span class="chip" data-tip="전략·상태를 저장 가능한 형태로 직렬화">직렬화</span><span class="chip" data-tip="에이전트·전략 테스트 지원">테스팅</span></span></div>
+    <div class="row"><span class="cat">플랫폼</span><span class="chips">
+      <span class="chip on" data-tip="서버·백엔드. 이번 검증의 범위">JVM</span><span class="chip" data-tip="Kotlin/JS 타깃. 브라우저에서 실행">JS</span><span class="chip" data-tip="WebAssembly 타깃">WasmJS</span><span class="chip" data-tip="Kotlin Multiplatform으로 안드로이드에서 실행">Android</span><span class="chip" data-tip="Kotlin Multiplatform으로 iOS에서 실행">iOS</span></span></div>
+  </div>
+  <div class="maplegend">
+    <span><i style="background:var(--ink); border-color:var(--ink)"></i>검증 완료(48개 중 12개)</span>
+    <span><i></i>문서 확인만</span>
+    <span>점선은 오늘 다룰 범위</span>
+  </div>
+  <p class="mid" style="font-size:13.5px">오늘 들어갈 구역은 전략. Koog 설계가 가장 직접 드러나는 곳이다.</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> 목차 기준(버전 선택 없는 단일 최신판, 현재 1.3.0) · 말풍선은 문서 한 줄 요약 · <b>실측</b> 검증 완료는 테스트 19건(1.2.0)</span>
+  </div>
+</section>
+
+<!-- 03-0 왜 Strategy Graph -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH</p>
+  <h2>왜 Strategy Graph인가</h2>
+  <ul>
+    <li><b>갈리는 지점</b>: 모델 접근층은 Spring AI에도 있다. Koog를 따로 고를 이유는 이 구역에 있다</li>
+    <li><b>다른 기능의 토대</b>: 도구 왕복, 히스토리 압축, 시각화가 전부 그래프의 노드와 구조로 동작한다(이번 검증에서 확인)</li>
+    <li><b>다른 생태계도 같은 선택</b>: LangGraph도 그래프 방식을 택했다. 여기서 익힌 개념은 프레임워크를 넘어 쓸 수 있다</li>
+  </ul>
+  <h3 style="margin-top:4px">구역 지도와 오늘 다룰 범위</h3>
+  <div class="map">
+    <div class="row"><span class="cat">오늘</span><span class="chips">
+      <span class="chip on" data-tip="1/5: 연결 오류를 컴파일 시점에 받는다">노드·엣지 타입</span>
+      <span class="chip on" data-tip="2/5: 선언 순서대로 평가, 첫 매치만 성립">조건 엣지</span>
+      <span class="chip on" data-tip="3/5: 노드들이 대화를 공유한다">히스토리 공유</span>
+      <span class="chip on" data-tip="4/5: 상한은 에이전트 설정에">루프·상한</span>
+      <span class="chip on" data-tip="5/5: asMermaidDiagram()으로 전략을 그대로 그린다">시각화</span></span></div>
+    <div class="row"><span class="cat">다음에</span><span class="chips">
+      <span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span>
+      <span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span>
+      <span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span>
+      <span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span>
+      <span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span></span></div>
+  </div>
+  <div class="maplegend">
+    <span><i style="background:var(--ink); border-color:var(--ink)"></i>오늘 다섯 장(1/5~5/5)</span>
+    <span><i></i>이 구역의 나머지는 다음 기회에</span>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a>: "explicit graphs built on verified domain models" · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a>: "deterministic state management"</span>
+    <span><b>실측</b> 도구 왕복·압축·시각화가 그래프 위에서 동작(ToolsTest · ChatMemoryTest · asMermaidDiagram 출력)</span>
+  </div>
+</section>
+
+<!-- 03-1 노드와 엣지 -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH · 1/5</p>
+  <h2>노드와 엣지: 타입이 붙은 자료구조</h2>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
+<span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
+
+edge(draft <span class="inf">forwardTo</span> polish)              <span class="cm">// ✕</span>
+edge(draft <span class="inf">forwardTo</span> polish
+    <span class="inf">transformed</span> { it.textContent() })    <span class="cm">// ○</span></pre>
+      <pre class="err">None of the following candidates is applicable:
+fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(…)</pre>
+    </div>
+    <div>
+      <h3>타입 시그니처로 보는 것</h3>
+      <ul>
+        <li><code>nodeLLMRequest()</code>의 타입은<br><code>AIAgentNodeDelegate&lt;String, Message.Assistant&gt;</code>. 입력은 문자열, <b>출력은 메시지</b>다</li>
+        <li>엣지는 나가는 쪽 출력이 들어가는 쪽 입력의 <b>서브타입일 때만</b> 성립한다. 거절 사유는 시그니처에 적혀 있다</li>
+        <li><code>Message.Assistant</code>에 <code>content</code>가 없다. 응답이 <b>파트 목록</b>이라 <code>textContent()</code>를 거친다</li>
+      </ul>
+      <div class="invert" style="font-size:14px">연결 오류를 <b>컴파일 시점에</b> 받는다. 손으로 짰다면 실행해 봐야 알았다</div>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>진단</b> 컴파일러 거절 메시지 원문 · <b>실측</b> StrategyGraphTest "두 노드를 잇는 커스텀 전략이 돈다"</span>
+  </div>
+</section>
+
+<!-- 03-2 조건 엣지 -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH · 2/5</p>
+  <h2>조건 엣지: 선언 순서대로 평가</h2>
+  <div class="cols w">
+    <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
+    <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
+    <span class="k">val</span> math  <span class="k">by</span> node(<span class="s">"math"</span>)  { <span class="s">"수학 경로"</span> }
+    <span class="k">val</span> other <span class="k">by</span> node(<span class="s">"other"</span>) { <span class="s">"일반 경로"</span> }
+
+    edge(nodeStart <span class="inf">forwardTo</span> classify)
+    <span class="hi">edge(classify <span class="inf">forwardTo</span> math  <span class="inf">onTextMessage</span> { <span class="s">"MATH"</span> <span class="k">in</span> it.text })</span>
+    <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span>
+}</pre>
+    <div>
+      <h3>평가 규칙</h3>
+      <ul>
+        <li>선언 순서대로 검사, <b>먼저 통과한 하나만</b> 성립</li>
+        <li><code>{ true }</code>가 <code>when</code>의 마지막 가지 역할을 한다. 순서를 바꾸면 분기가 뒤집힌다</li>
+        <li>분기 누락은 컴파일러가 잡지 않는다. <code>when</code>의 exhaustive 검사는 이 구조와 맞바꿨다</li>
+      </ul>
+      <h3 style="margin-top:12px">조건 세 종류</h3>
+      <table>
+        <tr><td class="k">onCondition</td><td>필터</td></tr>
+        <tr><td class="k">onTextMessage</td><td>필터 + String 변환</td></tr>
+        <tr><td class="k">onToolCalls</td><td>도구 호출 응답으로 한정</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>실측</b> StrategyGraphTest "조건 엣지가 분기를 고른다" · 4회 독립 실행 동일("수학 경로")</span>
+  </div>
+</section>
+
+<!-- 03-3 히스토리 공유 -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH · 3/5</p>
+  <h2>프롬프트 히스토리: 노드들이 대화를 공유한다</h2>
+  <div class="cols w">
+    <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
+<span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
+
+edge(nodeStart <span class="inf">forwardTo</span> draft)
+edge(draft <span class="inf">forwardTo</span> polish <span class="inf">transformed</span> { <span class="s">"그 숫자에 10을 더하면?"</span> })
+edge(polish <span class="inf">forwardTo</span> nodeFinish <span class="inf">transformed</span> { it.textContent() })
+
+run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</span></pre>
+    <div>
+      <h3>왜 15가 나오는가</h3>
+      <ul>
+        <li><code>polish</code>가 받은 입력은 <b>새 질문 한 줄뿐</b>이다. 5라는 값을 넘긴 적이 없다</li>
+        <li>그런데 모델이 "그 숫자"를 안다. <code>nodeLLMRequest</code> 노드들이 <b>한 세션의 프롬프트 히스토리를 공유</b>하기 때문이다</li>
+        <li>노드 간 값 배선이 아니라 <b>대화 누적 모델</b>이다. 중간값을 손으로 나르지 않는다</li>
+        <li>대가: 이력이 계속 자란다. 압축 노드(<code>nodeLLMCompressHistory</code>)가 존재하는 이유</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>실측</b> StrategyGraphTest 체인 출력 "15"(4회 동일) · <b>진단</b> 바이트코드: 각 노드가 appendPrompt → requestLLM</span>
+  </div>
+</section>
+
+<!-- 03-4 루프와 상한 -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH · 4/5</p>
+  <h2>루프와 상한: 상한은 에이전트 설정에</h2>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">val</span> step <span class="k">by</span> node(<span class="s">"step"</span>) { <span class="s">"$it."</span> }
+
+edge(nodeStart <span class="inf">forwardTo</span> step)
+edge(step <span class="inf">forwardTo</span> step       <span class="inf">onCondition</span> { it.length &lt; 3 })
+edge(step <span class="inf">forwardTo</span> nodeFinish <span class="inf">onCondition</span> { it.length &gt;= 3 })
+
+AIAgent(…, strategy = loop, <span class="hi">maxIterations = 5</span>)
+run(<span class="s">""</span>)   <span class="cm">// → "..."</span></pre>
+      <pre class="err">// 탈출 조건을 { true }로 망가뜨리면, 무한루프 대신
+AIAgentMaxNumberOfIterationsReachedException:
+Agent couldn't finish in given number of steps (5).</pre>
+    </div>
+    <div>
+      <h3>상한의 위치</h3>
+      <ul>
+        <li>자기 자신으로 가는 엣지가 곧 루프</li>
+        <li>상한은 루프에 붙이지 않고 <b>에이전트 설정</b>에 적는다. 안 적으면 기본값이 들어간다</li>
+        <li>즉 상한을 <b>빠뜨릴 수 있는 자리가 없다</b></li>
+        <li>대가: 상한은 루프별이 아니라 <b>그래프 전체 걸음 수</b>다. 노드를 늘리면 같은 값이 더 빨리 소진된다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>실측</b> 정상 루프는 셋째 바퀴 종료("...") · <b>진단</b> 탈출 조건을 고의로 망가뜨려 받은 예외 원문</span>
+  </div>
+</section>
+
+<!-- 03-5 시각화 -->
+<section class="slide">
+  <p class="sec">03 STRATEGY GRAPH · 5/5</p>
+  <h2>시각화: 전략이 스스로 그린다</h2>
+  <div class="cols w">
+    <div>
+      <figure>
+        <pre class="mermaid">---
+config:
+  theme: neutral
+---
+stateDiagram
+    direction LR
+    state "classify" as classify
+    state "math" as math
+    state "other" as other
+
+    [*] --> classify
+    classify --> math : transformed
+    classify --> other : transformed
+    math --> [*]
+    other --> [*]</pre>
+        <figcaption>2/5의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력이다. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했으며 제목 줄은 뺐다.</figcaption>
+      </figure>
+    </div>
+    <div>
+      <h3>자기 서술</h3>
+      <ul>
+        <li><code>asMermaidDiagram()</code> 호출 한 번이면 전략의 다이어그램 텍스트가 나온다</li>
+        <li>IDE에서는 <b>Koog Strategy Graph 플러그인</b>이 거터 아이콘으로 같은 그림을 렌더링</li>
+        <li>한계: 조건 람다의 내용은 실리지 않고 변환 여부만 <code>transformed</code>로 표시된다</li>
+      </ul>
+      <div class="invert" style="font-size:14px"><b>전략이 자료구조라서</b> 그릴 수 있다. 다음 장의 러너도 같은 이유로 가능하다</div>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>실측</b> asMermaidDiagram() 출력 원문 (Koog 1.2.0에서 실행)</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs · Mermaid 절</a> · <a href="https://plugins.jetbrains.com/plugin/31989-koog-strategy-graph" target="_blank" rel="noopener">Koog Strategy Graph 플러그인</a></span>
+  </div>
+</section>
+
+<!-- 6 Demo -->
+<section class="slide">
+  <p class="sec">04</p>
+  <h2>Demo</h2>
+  <div class="invert" style="font-size:17px"><b>▶ 전략 그래프 러너</b></div>
+  <figure>
+    <svg viewBox="0 0 900 130" role="img" aria-label="실행이 start에서 classify를 거쳐 math로 흐르고 other 경로는 쉬고 있다">
+      <defs><marker id="dm" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs>
+      <rect class="bx" x="0" y="42" width="90" height="42"/><text x="45" y="68" text-anchor="middle">start</text>
+      <path class="flow" d="M94,63 L168,63"/>
+      <rect class="bx" x="172" y="42" width="140" height="42"/><text x="242" y="68" text-anchor="middle">classify</text>
+      <path class="flow" d="M316,52 C370,36 400,30 450,24"/>
+      <text x="330" y="18" class="sm">"MATH"</text>
+      <path class="lnq" d="M316,74 C370,90 400,96 450,102"/>
+      <text x="356" y="116" class="sm">else</text>
+      <rect class="bx" x="454" y="4" width="120" height="40"/><text x="514" y="29" text-anchor="middle">math</text>
+      <rect class="bx" x="454" y="84" width="120" height="40"/><text x="514" y="109" text-anchor="middle">other</text>
+      <path class="flow" d="M578,24 C640,32 670,48 716,58"/>
+      <path class="lnq" d="M578,104 C640,96 670,80 716,70"/>
+      <rect class="bx" x="720" y="42" width="90" height="42"/><text x="765" y="68" text-anchor="middle">finish</text>
+    </svg>
+    <figcaption>러너에서는 이 흐름이 실제 실행 이벤트에 맞춰 켜진다. 모델이 OTHER로 판정하면 아래 경로가 흐른다.</figcaption>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>시연 항목</h3>
+      <ul>
+        <li><b>라우팅</b>: 모델 판정에 따라 엣지가 갈린다</li>
+        <li><b>도구 왕복</b>: request → executeTools → sendResults 순환</li>
+      </ul>
+    </div>
+    <p class="mid">화면의 그래프는 앞 슬라이드 코드와 동일한 전략입니다. 따로 그리지 않았습니다. <b>전략이 자료구조라서 렌더링이 가능</b>합니다.</p>
+  </div>
+  <div class="src">
+    <span><b>실측</b> 러너가 사용하는 전략은 StrategyGraphTest · ToolsTest와 동일</span>
+  </div>
+</section>
+
+<!-- 7 적용하며 확인한 것 -->
+<section class="slide">
+  <p class="sec">05</p>
+  <h2>적용하며 확인한 것</h2>
+  <div class="blank">
+    <div class="blankline">①</div>
+    <div class="blankline">②</div>
+    <div class="blankline">③</div>
+  </div>
+  <p class="mid" style="font-size:14px">후보: 타입 불일치 검출 / 엣지 순서에 따른 분기 역전 / 분기 누락은 컴파일러가 잡지 못함 / 도구 파라미터 추가 시 스키마 자동 반영</p>
+</section>
+
+<!-- 8 정리 -->
+<section class="slide">
+  <p class="sec">06</p>
+  <h2>정리</h2>
+  <div class="cols">
+    <div>
+      <h3>도입 시 얻는 것</h3>
+      <ul>
+        <li>흐름이 타입 검사 대상인 자료구조가 됨</li>
+        <li>루프 상한 누락이 구조적으로 불가능</li>
+        <li>히스토리 압축 · 도구 스키마 · 원격 도구가 기본 제공</li>
+        <li>기존 Spring AI 빈을 그대로 사용, 점진 도입 가능</li>
+      </ul>
+    </div>
+    <div>
+      <h3>고려할 점</h3>
+      <ul>
+        <li>브리지·MCP 모듈은 <b>beta 라인</b>. 마이너 릴리스에서 API가 바뀔 수 있다</li>
+        <li>브리지가 Spring BOM을 import, <b>버전 결정권이 넘어간다</b></li>
+        <li>대화 저장소에 도구 호출 이력 미보존</li>
+      </ul>
+    </div>
+  </div>
+  <h3 style="margin-top:6px">다음 검토 대상</h3>
+  <p>구조화 출력 · 퍼시스턴스 · 이벤트 핸들러 · 병렬 노드. 기능 범위 중 아직 확인하지 못했다</p>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/module-versioning/" target="_blank" rel="noopener">Module versioning</a>: stable은 1년 비파괴, beta는 마이너에서 변경 가능</span>
+    <span><b>저장소</b> github.com/devjune/spring-ai-study (docs/phase3 · demo-phase3)</span>
+  </div>
+</section>
+
+<div class="counter" id="counter">1 / 8</div>
+
+<script>
+(function(){
+  var slides = [].slice.call(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+
+  function currentIdx(){
+    var mid = window.scrollY + window.innerHeight * 0.5;
+    var c = 0;
+    for (var i = 0; i < slides.length; i++){
+      if (slides[i].offsetTop <= mid) c = i;
+    }
+    return c;
+  }
+
+  var ticking = false;
+  function refresh(){
+    counter.textContent = (currentIdx() + 1) + ' / ' + slides.length;
+    ticking = false;
+  }
+  addEventListener('scroll', function(){
+    if (!ticking){ ticking = true; requestAnimationFrame(refresh); }
+  }, {passive:true});
+  addEventListener('resize', refresh);
+  refresh();
+
+  addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea')) return;
+    var next = (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ');
+    var prev = (e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp');
+    if (!next && !prev) return;
+    e.preventDefault();
+    var smooth = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    var i = currentIdx();
+    var cur = slides[i];
+    if (next){
+      var remain = (cur.offsetTop + cur.offsetHeight) - (window.scrollY + window.innerHeight);
+      if (remain > 40){
+        window.scrollBy({top: Math.min(window.innerHeight * 0.85, remain + 24), behavior: smooth});
+      } else if (i < slides.length - 1){
+        slides[i + 1].scrollIntoView({behavior: smooth});
+      }
+    } else {
+      if (window.scrollY > cur.offsetTop + 40){
+        window.scrollTo({top: Math.max(cur.offsetTop, window.scrollY - window.innerHeight * 0.85), behavior: smooth});
+      } else if (i > 0){
+        slides[i - 1].scrollIntoView({behavior: smooth});
+      }
+    }
+  });
+})();
+</script>
