@@ -19,7 +19,7 @@ import org.springframework.ai.chat.messages.MessageType
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch06MemoryTest(
+class ChatMemoryTest(
     val promptExecutor: PromptExecutor,
     val historyProvider: ChatHistoryProvider,
     val chatMemoryRepository: ChatMemoryRepository,
@@ -42,7 +42,7 @@ class Ch06MemoryTest(
         agent.run("내 이름은 준이야", sessionId)
         val result = agent.run("내 이름이 뭐라고 했지?", sessionId)
 
-        println("Ch06MemoryTest 응답: $result")
+        println("ChatMemoryTest 응답: $result")
         result shouldContain "준"
     }
 
@@ -65,7 +65,7 @@ class Ch06MemoryTest(
         agent.run("1달러는 몇 원이야?", sessionId)
 
         val stored = chatMemoryRepository.findByConversationId(sessionId)
-        stored.forEach { println("Ch06MemoryTest 저장된 행: ${it.messageType} | ${it.text}") }
+        stored.forEach { println("ChatMemoryTest 저장된 행: ${it.messageType} | ${it.text}") }
 
         tools.calls shouldBe listOf("USD")
         stored.map { it.messageType } shouldBe listOf(MessageType.SYSTEM, MessageType.USER, MessageType.ASSISTANT)
@@ -93,7 +93,7 @@ class Ch06MemoryTest(
 
         val result = agent.run("내 이름은 준이야")
 
-        println("Ch06MemoryTest 압축 후 응답: $result")
+        println("ChatMemoryTest 압축 후 응답: $result")
         result shouldContain "준"
     }
 
@@ -120,7 +120,7 @@ class Ch06MemoryTest(
 
         val result = agent.run("내 이름은 준이야")
 
-        println("Ch06MemoryTest 최근 3개만 남긴 응답: $result")
+        println("ChatMemoryTest 최근 3개만 남긴 응답: $result")
         result shouldContain "준"
     }
 })

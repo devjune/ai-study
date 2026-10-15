@@ -1,5 +1,11 @@
 # Koog — Spring AI 위에 얹는 에이전트 프레임워크
 
+
+
+이건 내가 읽어보고, 추후 발표자료는 슬라이드로 할지 체크 
+---
+
+
 앞 편에서는 에이전틱 패턴 21개를 Spring AI의 원시 재료로 직접 조립했습니다. `ChatClient` · `@Tool` · `.entity()` 같은 범용 기능의 조합이었고, 전용 타입이 있는 장은 다섯뿐이었습니다. 나머지 열여섯은 전부 손으로 짠 코드입니다.
 
 이 문서는 반대편을 봅니다. **같은 일을 전용 에이전트 프레임워크는 어떻게 해 주는가.** 대상은 JetBrains의 [Koog](https://github.com/JetBrains/koog)입니다. Kotlin 네이티브라 기존 코드베이스와 언어가 같고, 공식 Spring AI 브리지가 있어 앞 편에서 쓰던 Ollama 빈을 그대로 물려받습니다.
@@ -98,7 +104,7 @@ Spring AI ChatModel 빈  →  Koog SpringAiLLMClient  →  PromptExecutor 빈
 
 ```kotlin
 @SpringBootTest
-class ContextLoadsTest(val promptExecutor: PromptExecutor) : FunSpec({
+class BridgeWiringTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("Koog 스타터가 Spring AI ChatModel을 PromptExecutor로 감싼다") {
@@ -141,7 +147,7 @@ object KoogModels {
 
 ```kotlin
 @SpringBootTest
-class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
+class SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("AIAgent 한 개가 Ollama로 답한다") {

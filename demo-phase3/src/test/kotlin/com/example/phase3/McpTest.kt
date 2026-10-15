@@ -16,7 +16,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 @SpringBootTest
-class Ch08McpTest(val promptExecutor: PromptExecutor) : FunSpec({
+class McpTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     val serverUp = phase2ServerUp()
@@ -24,7 +24,7 @@ class Ch08McpTest(val promptExecutor: PromptExecutor) : FunSpec({
     test("서버가 선언한 도구가 ToolRegistry로 들어온다").config(enabled = serverUp) {
         val registry = McpToolRegistryProvider.streamableHttp { url = PHASE2_MCP_ENDPOINT }
 
-        registry.tools.forEach { println("Ch08McpTest 도구: ${it.descriptor.name} — ${it.descriptor.description}") }
+        registry.tools.forEach { println("McpTest 도구: ${it.descriptor.name} — ${it.descriptor.description}") }
         registry.tools.map { it.descriptor.name } shouldContainExactlyInAnyOrder
             listOf("lookupOrder", "businessHours")
 
@@ -47,7 +47,7 @@ class Ch08McpTest(val promptExecutor: PromptExecutor) : FunSpec({
 
         val result = agent.run("A-1024 주문 어떻게 됐어?")
 
-        println("Ch08McpTest 에이전트 응답: $result")
+        println("McpTest 에이전트 응답: $result")
         result should (contain("무선 키보드") or contain("배송중"))
     }
 })

@@ -19,7 +19,7 @@ import io.kotest.matchers.string.shouldContain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch07RagTest(
+class RagTest(
     val vectorStore: KoogVectorStore,
     val embeddingProvider: SpringAiLLMEmbeddingProvider,
     val promptExecutor: PromptExecutor,
@@ -46,7 +46,7 @@ class Ch07RagTest(
             SimilaritySearchRequest(queryText = "재택근무 네트워크 규정", limit = 2),
         )
 
-        hits.forEach { println("Ch07RagTest 검색 결과: ${it.score.value} | ${it.document.content}") }
+        hits.forEach { println("RagTest 검색 결과: ${it.score.value} | ${it.document.content}") }
         ids shouldBe listOf("policy-vpn", "policy-lunch")
         hits shouldHaveSize 2
         hits.first().document.content shouldBe "사내 VPN은 재택 시 필수"
@@ -77,7 +77,7 @@ class Ch07RagTest(
 
         val result = agent.run("재택근무할 때 뭘 켜야 하지?")
 
-        println("Ch07RagTest 전략 노드 응답: $result")
+        println("RagTest 전략 노드 응답: $result")
         result shouldContain "VPN"
     }
 
@@ -86,14 +86,14 @@ class Ch07RagTest(
             vectorStore.search(KeywordSearchRequest(queryText = "VPN"))
         }
 
-        println("Ch07RagTest 거절 메시지: ${thrown.message}")
+        println("RagTest 거절 메시지: ${thrown.message}")
         thrown.message shouldBe "Spring AI VectorStore supports only similarity search requests"
     }
 
     test("같은 임베딩 모델을 Koog 쪽 인터페이스로도 부른다") {
         val embedding = embeddingProvider.embed("사내 VPN은 재택 시 필수", KoogModels.BGE_M3)
 
-        println("Ch07RagTest 임베딩 차원: ${embedding.size}")
+        println("RagTest 임베딩 차원: ${embedding.size}")
         embedding shouldHaveSize 1024
     }
 })

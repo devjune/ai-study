@@ -7,7 +7,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class ContextLoadsTest(val promptExecutor: PromptExecutor) : FunSpec({
+class BridgeWiringTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("Koog 스타터가 Spring AI ChatModel을 PromptExecutor로 감싼다") {

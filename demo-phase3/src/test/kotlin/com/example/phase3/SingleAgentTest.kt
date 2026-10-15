@@ -9,7 +9,7 @@ import io.kotest.matchers.string.shouldNotBeBlank
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
+class SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("AIAgent 한 개가 Ollama로 답한다") {
@@ -19,7 +19,7 @@ class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
             systemPrompt = "한 문장으로만 답한다.",
         )
         val result = agent.run("Spring AI가 무엇인지 한 문장으로")
-        println("Ch03SingleAgentTest 응답: $result")
+        println("SingleAgentTest 응답: $result")
         result.shouldNotBeBlank()
     }
 
@@ -32,7 +32,7 @@ class Ch03SingleAgentTest(val promptExecutor: PromptExecutor) : FunSpec({
             maxIterations = 5,
         )
         val result = agent.run("2 더하기 3은?")
-        println("Ch03SingleAgentTest 파라미터 지정 응답: $result")
+        println("SingleAgentTest 파라미터 지정 응답: $result")
         result shouldContain "5"
     }
 })

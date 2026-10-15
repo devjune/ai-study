@@ -21,7 +21,7 @@ import io.kotest.matchers.string.contain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch05ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
+class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("에이전트가 도구를 호출해 답한다") {
@@ -35,8 +35,8 @@ class Ch05ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
             toolRegistry = ToolRegistry { tools(tools) },
         )
         val result = agent.run("1달러는 몇 원이야?")
-        println("Ch05ToolsTest 응답: $result")
-        println("Ch05ToolsTest 도구 호출: ${tools.calls}")
+        println("ToolsTest 응답: $result")
+        println("ToolsTest 도구 호출: ${tools.calls}")
         result should (contain("1385") or contain("1,385"))
     }
 
@@ -62,7 +62,7 @@ class Ch05ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
             toolRegistry = ToolRegistry { tools(tools) },
         )
         val result = agent.run("1엔은 몇 원이야?")
-        println("Ch05ToolsTest 그래프 응답: $result")
+        println("ToolsTest 그래프 응답: $result")
         tools.calls shouldBe listOf("JPY")
     }
 

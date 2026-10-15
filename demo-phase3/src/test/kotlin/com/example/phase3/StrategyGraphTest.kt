@@ -13,7 +13,7 @@ import io.kotest.matchers.string.shouldContain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Ch04StrategyTest(val promptExecutor: PromptExecutor) : FunSpec({
+class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
     test("두 노드를 잇는 커스텀 전략이 돈다") {
@@ -33,7 +33,7 @@ class Ch04StrategyTest(val promptExecutor: PromptExecutor) : FunSpec({
             temperature = 0.2,
         )
         val result = agent.run("2 더하기 3은?")
-        println("Ch04StrategyTest 체인 응답: $result")
+        println("StrategyGraphTest 체인 응답: $result")
         result shouldContain "15"
     }
 
@@ -57,7 +57,7 @@ class Ch04StrategyTest(val promptExecutor: PromptExecutor) : FunSpec({
             temperature = 0.2,
         )
         val result = agent.run("2 더하기 3은?")
-        println("Ch04StrategyTest 라우팅 응답: $result")
+        println("StrategyGraphTest 라우팅 응답: $result")
         result shouldBe "수학 경로"
     }
 
