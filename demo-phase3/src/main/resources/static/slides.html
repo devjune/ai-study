@@ -12,14 +12,15 @@
     --sans:"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
   }
   body{background:var(--paper); color:var(--ink); font-family:var(--sans); margin:0;
-    padding-inline:clamp(16px,5vw,64px); padding-block:0 48px;
-    word-break:keep-all; overflow-wrap:break-word;}
-  .slide{max-width:940px; margin:0 auto; min-height:88vh; display:flex; flex-direction:column;
-    justify-content:center; gap:13px; padding-block:44px 24px; border-bottom:1px solid var(--faint);}
-  .slide:last-child{border-bottom:none;}
+    height:100vh; overflow:hidden; word-break:keep-all; overflow-wrap:break-word;}
+  .slide{position:absolute; top:50%; left:50%; width:1280px; height:720px; box-sizing:border-box;
+    transform:translate(-50%,-50%) scale(var(--s,1));
+    display:flex; flex-direction:column; justify-content:center; gap:14px;
+    padding:52px 96px 40px; background:var(--paper); visibility:hidden;}
+  .slide.active{visibility:visible;}
   .sec{font:500 11px/1 var(--mono); letter-spacing:.16em; color:var(--mid);}
-  h1{font-size:clamp(32px,6vw,58px); font-weight:700; letter-spacing:-.02em; margin:0;}
-  h2{font-size:clamp(21px,3vw,31px); font-weight:700; letter-spacing:-.012em; margin:0;}
+  h1{font-size:58px; font-weight:700; letter-spacing:-.02em; margin:0;}
+  h2{font-size:31px; font-weight:700; letter-spacing:-.012em; margin:0;}
   h3{font-size:15px; font-weight:700; margin:0 0 7px;}
   p{margin:0; line-height:1.72; font-size:15px; max-width:64ch;}
   .lead{font-size:17px;}
@@ -534,51 +535,45 @@ stateDiagram
 (function(){
   var slides = [].slice.call(document.querySelectorAll('.slide'));
   var counter = document.getElementById('counter');
+  var idx = 0;
 
-  function currentIdx(){
-    var mid = window.scrollY + window.innerHeight * 0.5;
-    var c = 0;
-    for (var i = 0; i < slides.length; i++){
-      if (slides[i].offsetTop <= mid) c = i;
-    }
-    return c;
+  function fit(){
+    var sc = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--s', sc);
   }
+  addEventListener('resize', fit); fit();
 
-  var ticking = false;
-  function refresh(){
-    counter.textContent = (currentIdx() + 1) + ' / ' + slides.length;
-    ticking = false;
+  function show(i){
+    i = Math.max(0, Math.min(i, slides.length - 1));
+    slides[idx].classList.remove('active');
+    idx = i;
+    slides[idx].classList.add('active');
+    counter.textContent = (idx + 1) + ' / ' + slides.length;
+    if (history.replaceState) history.replaceState(null, '', '#' + (idx + 1));
+    var m = slides[idx].querySelector('pre.mermaid:not([data-processed])');
+    if (m && window.mermaid && window.mermaid.run){ try { mermaid.run({nodes:[m]}); } catch(e){} }
   }
-  addEventListener('scroll', function(){
-    if (!ticking){ ticking = true; requestAnimationFrame(refresh); }
-  }, {passive:true});
-  addEventListener('resize', refresh);
-  refresh();
+  var h = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(h) ? 0 : h - 1);
 
   addEventListener('keydown', function(e){
     if (e.target.closest('input,textarea')) return;
-    var next = (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ');
+    if (e.key === 'Home'){ e.preventDefault(); show(0); return; }
+    if (e.key === 'End'){ e.preventDefault(); show(slides.length - 1); return; }
+    var next = (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '||e.key==='Enter');
     var prev = (e.key==='ArrowLeft'||e.key==='ArrowUp'||e.key==='PageUp');
     if (!next && !prev) return;
     e.preventDefault();
-    var smooth = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    var i = currentIdx();
-    var cur = slides[i];
-    if (next){
-      var remain = (cur.offsetTop + cur.offsetHeight) - (window.scrollY + window.innerHeight);
-      if (remain > 40){
-        window.scrollBy({top: Math.min(window.innerHeight * 0.85, remain + 24), behavior: smooth});
-      } else if (i < slides.length - 1){
-        slides[i + 1].scrollIntoView({behavior: smooth});
-      }
-    } else {
-      if (window.scrollY > cur.offsetTop + 40){
-        window.scrollTo({top: Math.max(cur.offsetTop, window.scrollY - window.innerHeight * 0.85), behavior: smooth});
-      } else if (i > 0){
-        slides[i - 1].scrollIntoView({behavior: smooth});
-      }
-    }
+    show(idx + (next ? 1 : -1));
   });
+
+  var cool = 0;
+  addEventListener('wheel', function(e){
+    var now = Date.now();
+    if (now - cool < 500 || Math.abs(e.deltaY) < 20) return;
+    cool = now;
+    show(idx + (e.deltaY > 0 ? 1 : -1));
+  }, {passive:true});
 })();
 </script>
 
