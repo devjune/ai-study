@@ -109,7 +109,6 @@
   .steps div:first-child{border-top:1px solid var(--faint);}
   .steps .n{font:500 12px var(--mono); color:var(--mid);}
   .steps .d{font-size:13.5px; color:var(--mid);}
-  .steplead{font-size:14px; color:var(--mid); margin-top:-6px;}
   a{color:inherit;}
   :focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
 </style>
@@ -118,7 +117,7 @@
 <section class="slide">
   <p class="sec">기술 세미나 · 2026.10 · 15분</p>
   <h1>Koog</h1>
-  <p class="lead">JVM에서 AI 에이전트를 만드는 JetBrains 프레임워크.<br>다섯 줄짜리 에이전트를 <b>미니 하네스</b>로 키우며 Strategy Graph를 본다.</p>
+  <p class="lead">JVM에서 AI 에이전트를 만드는 JetBrains 프레임워크다</p>
   <p class="hint">→ / ↓ 로 넘김</p>
 </section>
 
@@ -150,10 +149,10 @@
       </ul>
       <h3 style="margin-top:14px">연혁</h3>
       <ul>
-        <li>2025.05 공개</li>
-        <li>2026.03 Java API 추가</li>
-        <li>2026.05 <b>1.0</b> 발표. stable 모듈은 1년 호환 보장</li>
-        <li>2026.09 1.3.0</li>
+        <li>2025.05 공개됐다</li>
+        <li>2026.03 Java API를 더했다</li>
+        <li>2026.05 <b>1.0</b>을 발표했다. stable 모듈은 1년 호환을 보장한다</li>
+        <li>2026.09 1.3.0이 나왔다</li>
       </ul>
     </div>
     <figure>
@@ -200,10 +199,10 @@
     <div>
       <h3>공식 예제</h3>
       <ul>
-        <li><b>Banking</b>: 문의 분류와 도구 호출</li>
-        <li><b>Chess</b>: 반복되는 대국 진행</li>
-        <li><b>GoogleMaps · Playwright · Unity</b>: 외부 시스템 제어(MCP)</li>
-        <li><b>OpenTelemetry · Langfuse · Weave</b>: 운영 모니터링</li>
+        <li><b>Banking</b>: 문의를 분류하고 도구를 부른다</li>
+        <li><b>Chess</b>: 대국을 반복 진행한다</li>
+        <li><b>GoogleMaps · Playwright · Unity</b>: MCP로 외부 시스템을 제어한다</li>
+        <li><b>OpenTelemetry · Langfuse · Weave</b>: 운영을 모니터링한다</li>
       </ul>
     </div>
   </div>
@@ -252,15 +251,15 @@
   <p class="sec">03 미니 하네스</p>
   <h2>오늘 만들 것: 미니 하네스</h2>
   <ul>
-    <li>모델을 부르기만 한다면 Spring AI로 충분하다. 에이전트를 감싸는 작은 하네스를 직접 키워 보면, Koog가 언제 필요한지가 보인다</li>
-    <li>다섯 단계로 키운다. 단계마다 Strategy Graph의 설계가 하나씩 드러난다</li>
+    <li>모델 호출만 필요하면 Spring AI로 충분하다. 그 이상이 필요해지는 지점을 확인하는 것이 목적이다</li>
+    <li>작은 하네스를 다섯 단계로 만들며, 단계마다 Strategy Graph의 설계를 하나씩 확인한다</li>
   </ul>
   <div class="steps">
-    <div><span class="n">1단계</span><span>말한다</span><span class="d">다섯 줄로 에이전트가 돈다</span></div>
-    <div><span class="n">2단계</span><span>가려 받는다</span><span class="d">타입이 맞아야 잇고, 조건으로 가른다</span></div>
-    <div><span class="n">3단계</span><span>이어간다</span><span class="d">값이 아니라 대화 기록이 흐른다</span></div>
-    <div><span class="n">4단계</span><span>폭주하지 않는다</span><span class="d">반복 상한이 설계에 박혀 있다</span></div>
-    <div><span class="n">5단계</span><span>속이 보인다</span><span class="d">전략에서 다이어그램이 나온다</span></div>
+    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄로 REPL이 돈다</span></div>
+    <div><span class="n">2단계</span><span>라우팅</span><span class="d">타입이 맞는 엣지만 붙고, 조건으로 가른다</span></div>
+    <div><span class="n">3단계</span><span>히스토리</span><span class="d">노드 사이에 대화 기록이 공유된다</span></div>
+    <div><span class="n">4단계</span><span>반복 상한</span><span class="d">무한 루프 대신 예외가 난다</span></div>
+    <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 다이어그램이 나온다</span></div>
   </div>
   <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않는다.</p>
   <div class="src">
@@ -271,8 +270,7 @@
 <!-- 03-1 1단계 말한다 -->
 <section class="slide">
   <p class="sec">03 미니 하네스 · 1단계</p>
-  <h2>말한다: 다섯 줄로 에이전트가 돈다</h2>
-  <p class="steplead">출발점. Spring AI 빈을 그대로 물려받아 REPL부터 띄운다.</p>
+  <h2>기본 에이전트: 다섯 줄과 REPL</h2>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> agent = AIAgent(
@@ -286,11 +284,11 @@
 5</pre>
     </div>
     <div>
-      <h3>다섯 줄의 정체</h3>
+      <h3>구성</h3>
       <ul>
         <li><code>AIAgent</code> 하나로 에이전트가 만들어진다. 전략을 안 적으면 기본 전략이 돈다</li>
         <li><code>promptExecutor</code>는 브리지가 만든 빈이다. 모델 설정은 기존 application.properties 그대로</li>
-        <li>아직 할 줄 아는 건 묻고 답하기뿐이다. 다음 단계부터 하나씩 키운다</li>
+        <li>여기까지는 단일 호출이다. 다음 단계부터 흐름 제어를 더한다</li>
       </ul>
     </div>
   </div>
@@ -303,7 +301,6 @@
 <section class="slide">
   <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>노드와 엣지: 타입이 붙은 자료구조</h2>
-  <p class="steplead">가려 받으려면 먼저 흐름을 그래프로 적는다. 연결에는 규칙이 있다.</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
@@ -335,7 +332,6 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 <section class="slide">
   <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>조건 엣지: 분기가 선언으로</h2>
-  <p class="steplead">이제 하네스가 질문을 가려 받는다. 분기는 그래프 정의 안에 적는다.</p>
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
     <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
@@ -371,7 +367,6 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 <section class="slide">
   <p class="sec">03 미니 하네스 · 3단계</p>
   <h2>프롬프트 히스토리: 값이 아니라 대화가 흐른다</h2>
-  <p class="steplead">한 번 묻고 끝나면 비서가 아니다. 대화를 이어간다.</p>
   <div class="cols w">
     <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
 <span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
@@ -400,7 +395,6 @@ run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</
 <section class="slide">
   <p class="sec">03 미니 하네스 · 4단계</p>
   <h2>루프와 상한: 틀릴 자리가 없는 설계</h2>
-  <p class="steplead">스스로 반복하는 에이전트는 폭주가 걱정이다. 상한부터 본다.</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> step <span class="k">by</span> node(<span class="s">"step"</span>) { <span class="s">"$it."</span> }
@@ -421,7 +415,7 @@ Agent couldn't finish in given number of steps (5).</pre>
         <li>자기 자신으로 가는 엣지가 루프다</li>
         <li>횟수 상한은 루프가 아니라 에이전트 설정에 적는다</li>
         <li>안 적으면 기본값이 쓰인다. 빠뜨릴 방법이 없다</li>
-        <li>상한은 그래프 전체 걸음 수다. 노드가 많으면 더 빨리 닳는다</li>
+        <li>상한은 그래프 전체 걸음 수다. 노드가 많으면 같은 값이 더 빨리 소진된다</li>
       </ul>
     </div>
   </div>
@@ -434,7 +428,6 @@ Agent couldn't finish in given number of steps (5).</pre>
 <section class="slide">
   <p class="sec">03 미니 하네스 · 5단계</p>
   <h2>시각화: 전략에서 다이어그램이 나온다</h2>
-  <p class="steplead">다 키웠으니 속을 들여다본다. 그림을 따로 그릴 필요가 없다.</p>
   <div class="cols w">
     <div>
       <figure>
@@ -500,7 +493,7 @@ stateDiagram
       <h3>보여줄 것</h3>
       <ul>
         <li><b>라우팅</b>: 모델 판정에 따라 엣지가 갈린다</li>
-        <li><b>도구 왕복</b>: 도구를 부르고 결과를 받아 다시 모델로</li>
+        <li><b>도구 왕복</b>: 도구를 부르고 결과를 받아 다시 모델로 보낸다</li>
       </ul>
     </div>
     <p class="mid">화면의 그래프는 방금 본 코드의 그 전략이다. 따로 그린 그림이 아니다.</p>
