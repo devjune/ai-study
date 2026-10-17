@@ -25,7 +25,7 @@ class SkillsTest(val promptExecutor: PromptExecutor) : FunSpec({
     // 스킬 폴더를 짧은 경로로 복사해 쓴다.
     val skillsRoot = File("/tmp/koog-skills").also {
         it.deleteRecursively()
-        File("src/test/resources/skills").copyRecursively(it)
+        File("src/main/resources/skills").copyRecursively(it)
     }.absolutePath
 
     test("스킬 폴더에서 판교 사투리 스킬을 찾는다") {
