@@ -55,3 +55,8 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// 하네스 REPL이 터미널 입력을 받으려면 Gradle이 stdin을 넘겨줘야 한다
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    standardInput = System.`in`
+}
