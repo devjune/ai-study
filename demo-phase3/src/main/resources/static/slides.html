@@ -102,6 +102,14 @@
   .counter{position:fixed; right:16px; bottom:14px; font:400 11px var(--mono); color:var(--mid);
     background:var(--paper); border:1px solid var(--faint); padding:4px 8px;}
   .hint{font:400 12px var(--mono); color:var(--mid);}
+  /* 하네스 단계 맵 */
+  .steps{display:flex; flex-direction:column;}
+  .steps div{display:grid; grid-template-columns:58px 170px 1fr; gap:14px; align-items:baseline;
+    padding:11px 0; border-bottom:1px solid var(--faint); font-size:16.5px;}
+  .steps div:first-child{border-top:1px solid var(--faint);}
+  .steps .n{font:500 12px var(--mono); color:var(--mid);}
+  .steps .d{font-size:13.5px; color:var(--mid);}
+  .steplead{font-size:14px; color:var(--mid); margin-top:-6px;}
   a{color:inherit;}
   :focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
 </style>
@@ -110,14 +118,7 @@
 <section class="slide">
   <p class="sec">기술 세미나 · 2026.10 · 15분</p>
   <h1>Koog</h1>
-  <p class="lead">JVM에서 AI 에이전트를 만드는 JetBrains 프레임워크.<br>오늘은 그중 <b>Strategy Graph</b> 하나만 깊게 본다.</p>
-  <p class="mid" style="font-size:15px">슬라이드의 코드와 로그는 전부 직접 실행해서 확인했다. 주장마다 근거 등급을 달았다.</p>
-  <div class="grades">
-    <span>실측: 통과한 테스트</span>
-    <span>진단: 컴파일러·런타임 출력</span>
-    <span>아티팩트: POM·메타데이터</span>
-    <span>공식: 문서·릴리스 노트</span>
-  </div>
+  <p class="lead">JVM에서 AI 에이전트를 만드는 JetBrains 프레임워크.<br>다섯 줄짜리 에이전트를 <b>미니 하네스</b>로 키우며 Strategy Graph를 본다.</p>
   <p class="hint">→ / ↓ 로 넘김</p>
 </section>
 
@@ -128,8 +129,8 @@
   <div class="toc">
     <div><span class="n">01</span><span>Koog 소개</span><span class="t">2분</span></div>
     <div><span class="n">02</span><span>기능 범위</span><span class="t">2분</span></div>
-    <div><span class="n">03</span><span>Strategy Graph 딥다이브</span><span class="t">5분</span></div>
-    <div><span class="n">04</span><span>Demo</span><span class="t">3분</span></div>
+    <div><span class="n">03</span><span>미니 하네스: 다섯 단계</span><span class="t">6분</span></div>
+    <div><span class="n">04</span><span>Demo</span><span class="t">2분</span></div>
     <div><span class="n">05</span><span>적용하며 확인한 것</span><span class="t">2분</span></div>
     <div><span class="n">06</span><span>정리</span><span class="t">1분</span></div>
   </div>
@@ -144,7 +145,7 @@
       <h3>등장 배경</h3>
       <ul>
         <li>에이전트 프레임워크는 파이썬이 먼저였다 (LangGraph, CrewAI)</li>
-        <li>JVM에는 LangChain4j가 있었고, Kotlin 네이티브는 없었다</li>
+        <li>JVM에는 LangChain4j가 있었고 Kotlin 네이티브는 없었다</li>
         <li>그 자리를 Koog가 채웠다</li>
       </ul>
       <h3 style="margin-top:14px">연혁</h3>
@@ -185,7 +186,7 @@
   <h2>왜 만들었나</h2>
   <blockquote>
     <em>"Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents"</em>
-    <span>예측 가능하고, 장애를 견디고, 기업 환경에서 쓸 수 있는 에이전트</span>
+    <span>예측 가능하고 장애를 견디고 기업 환경에서 쓸 수 있는 에이전트</span>
   </blockquote>
   <div class="cols">
     <div>
@@ -246,43 +247,63 @@
   </div>
 </section>
 
-<!-- 03-0 왜 Strategy Graph -->
+<!-- 03-0 오늘 만들 것 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH</p>
-  <h2>왜 Strategy Graph인가</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>오늘 만들 것: 미니 하네스</h2>
   <ul>
-    <li>모델을 부르기만 한다면 Spring AI로 충분하다. Koog를 쓸 이유는 이 구역에서 나온다</li>
-    <li>뒤에 나올 도구, 메모리, 다이어그램 기능이 전부 이 그래프 위에서 돈다</li>
-    <li>파이썬의 LangGraph와 같은 접근이다. 여기서 익히면 다른 곳에서도 통한다</li>
+    <li>모델을 부르기만 한다면 Spring AI로 충분하다. 에이전트를 감싸는 작은 하네스를 직접 키워 보면, Koog가 언제 필요한지가 보인다</li>
+    <li>다섯 단계로 키운다. 단계마다 Strategy Graph의 설계가 하나씩 드러난다</li>
   </ul>
-  <h3 style="margin-top:4px">오늘 다룰 것</h3>
-  <div class="map">
-    <div class="row"><span class="cat">다룸</span><span class="chips">
-      <span class="chip on" data-tip="1/5: 연결이 틀리면 컴파일부터 막힌다">노드·엣지 타입</span>
-      <span class="chip on" data-tip="2/5: 적은 순서대로 검사하고 먼저 맞은 쪽이 탄다">조건 엣지</span>
-      <span class="chip on" data-tip="3/5: 값을 넘기지 않아도 대화 기록이 이어진다">히스토리 공유</span>
-      <span class="chip on" data-tip="4/5: 루프 상한을 빠뜨릴 방법이 없다">루프·상한</span>
-      <span class="chip on" data-tip="5/5: 전략에서 다이어그램이 바로 나온다">시각화</span></span></div>
-    <div class="row"><span class="cat">범위 밖</span><span class="chips">
-      <span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span>
-      <span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span>
-      <span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span>
-      <span class="chip" data-tip="노드 사이에서 값이 흐르는 방식을 정의">노드 간 데이터 전달</span>
-      <span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span></span></div>
+  <div class="steps">
+    <div><span class="n">1단계</span><span>말한다</span><span class="d">다섯 줄로 에이전트가 돈다</span></div>
+    <div><span class="n">2단계</span><span>가려 받는다</span><span class="d">타입이 맞아야 잇고, 조건으로 가른다</span></div>
+    <div><span class="n">3단계</span><span>이어간다</span><span class="d">값이 아니라 대화 기록이 흐른다</span></div>
+    <div><span class="n">4단계</span><span>폭주하지 않는다</span><span class="d">반복 상한이 설계에 박혀 있다</span></div>
+    <div><span class="n">5단계</span><span>속이 보인다</span><span class="d">전략에서 다이어그램이 나온다</span></div>
   </div>
-  <div class="maplegend">
-    <span><i style="background:var(--ink); border-color:var(--ink)"></i>오늘 다섯 장으로 다룬다</span>
-    <span><i></i>이번 발표에서는 다루지 않는다</span>
-  </div>
+  <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않는다.</p>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a></span>
   </div>
 </section>
 
+<!-- 03-1 1단계 말한다 -->
+<section class="slide">
+  <p class="sec">03 미니 하네스 · 1단계</p>
+  <h2>말한다: 다섯 줄로 에이전트가 돈다</h2>
+  <p class="steplead">출발점. Spring AI 빈을 그대로 물려받아 REPL부터 띄운다.</p>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">val</span> agent = AIAgent(
+    promptExecutor = promptExecutor,   <span class="cm">// Spring AI 브리지가 만든 빈</span>
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = <span class="s">"짧게 답한다."</span>,
+)
+<span class="k">while</span> (<span class="k">true</span>) { print(<span class="s">"❯ "</span>); <span class="k">val</span> line = readLine() ?: <span class="k">break</span>; println(agent.run(line)) }</pre>
+      <pre class="err">$ ./gradlew bootRun --args='--spring.profiles.active=harness'
+❯ 2 더하기 3은?
+5</pre>
+    </div>
+    <div>
+      <h3>다섯 줄의 정체</h3>
+      <ul>
+        <li><code>AIAgent</code> 하나로 에이전트가 만들어진다. 전략을 안 적으면 기본 전략이 돈다</li>
+        <li><code>promptExecutor</code>는 브리지가 만든 빈이다. 모델 설정은 기존 application.properties 그대로</li>
+        <li>아직 할 줄 아는 건 묻고 답하기뿐이다. 다음 단계부터 하나씩 키운다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>실측</b> Harness.kt: bootRun REPL에서 "5" 출력</span>
+  </div>
+</section>
+
 <!-- 03-1 노드와 엣지 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH · 1/5</p>
+  <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>노드와 엣지: 타입이 붙은 자료구조</h2>
+  <p class="steplead">가려 받으려면 먼저 흐름을 그래프로 적는다. 연결에는 규칙이 있다.</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
@@ -312,8 +333,9 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 
 <!-- 03-2 조건 엣지 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH · 2/5</p>
+  <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>조건 엣지: 분기가 선언으로</h2>
+  <p class="steplead">이제 하네스가 질문을 가려 받는다. 분기는 그래프 정의 안에 적는다.</p>
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
     <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
@@ -347,8 +369,9 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 
 <!-- 03-3 히스토리 공유 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH · 3/5</p>
+  <p class="sec">03 미니 하네스 · 3단계</p>
   <h2>프롬프트 히스토리: 값이 아니라 대화가 흐른다</h2>
+  <p class="steplead">한 번 묻고 끝나면 비서가 아니다. 대화를 이어간다.</p>
   <div class="cols w">
     <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
 <span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
@@ -375,8 +398,9 @@ run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</
 
 <!-- 03-4 루프와 상한 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH · 4/5</p>
+  <p class="sec">03 미니 하네스 · 4단계</p>
   <h2>루프와 상한: 틀릴 자리가 없는 설계</h2>
+  <p class="steplead">스스로 반복하는 에이전트는 폭주가 걱정이다. 상한부터 본다.</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> step <span class="k">by</span> node(<span class="s">"step"</span>) { <span class="s">"$it."</span> }
@@ -408,8 +432,9 @@ Agent couldn't finish in given number of steps (5).</pre>
 
 <!-- 03-5 시각화 -->
 <section class="slide">
-  <p class="sec">03 STRATEGY GRAPH · 5/5</p>
+  <p class="sec">03 미니 하네스 · 5단계</p>
   <h2>시각화: 전략에서 다이어그램이 나온다</h2>
+  <p class="steplead">다 키웠으니 속을 들여다본다. 그림을 따로 그릴 필요가 없다.</p>
   <div class="cols w">
     <div>
       <figure>
@@ -428,7 +453,7 @@ stateDiagram
     classify --> other : transformed
     math --> [*]
     other --> [*]</pre>
-        <figcaption>2/5의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력이다. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했으며 제목 줄은 뺐다.</figcaption>
+        <figcaption>2단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력이다. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했으며 제목 줄은 뺐다.</figcaption>
       </figure>
     </div>
     <div>
