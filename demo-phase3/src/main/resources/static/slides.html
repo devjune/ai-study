@@ -142,9 +142,9 @@
     <div>
       <h3>등장 배경</h3>
       <ul>
-        <li>에이전트 프레임워크는 그동안 파이썬에만 있었다 (LangGraph, CrewAI)</li>
-        <li>JVM에는 모델을 호출하는 계층(Spring AI)까지만 있었다</li>
-        <li>JetBrains가 그 윗층을 채웠다</li>
+        <li>에이전트 프레임워크는 파이썬이 먼저였다 (LangGraph, CrewAI)</li>
+        <li>JVM에는 LangChain4j가 있었고, Kotlin 네이티브는 없었다</li>
+        <li>그 자리를 Koog가 채웠다</li>
       </ul>
       <h3 style="margin-top:14px">연혁</h3>
       <ul>
@@ -155,13 +155,14 @@
       </ul>
     </div>
     <figure>
-      <svg viewBox="0 0 420 230" role="img" aria-label="오케스트레이션 계층은 파이썬에만 있고 JVM은 비어 있었다">
+      <svg viewBox="0 0 420 230" role="img" aria-label="오케스트레이션 계층은 파이썬이 먼저였고 JVM에는 LangChain4j와 Koog가 들어왔다">
         <text x="0" y="14" class="sm">오케스트레이션 계층</text>
         <rect class="bxf" x="0" y="24" width="196" height="66"/>
         <text x="98" y="52" text-anchor="middle" style="font-size:11px">LangGraph</text>
         <text x="98" y="70" text-anchor="middle" class="sm">파이썬</text>
-        <rect class="gap" x="216" y="24" width="196" height="66"/>
-        <text x="314" y="62" text-anchor="middle" class="sm">부재</text>
+        <rect class="bxf" x="216" y="24" width="196" height="66"/>
+        <text x="314" y="52" text-anchor="middle" style="font-size:11px">LangChain4j · Koog</text>
+        <text x="314" y="70" text-anchor="middle" class="sm">자바 관용 · Kotlin 네이티브</text>
         <text x="0" y="136" class="sm">모델 접근 계층</text>
         <rect class="bxf" x="0" y="146" width="196" height="66"/>
         <text x="98" y="174" text-anchor="middle" style="font-size:11px">LangChain</text>
@@ -519,9 +520,10 @@ stateDiagram
     </div>
   </div>
   <h3 style="margin-top:6px">다음에 볼 것</h3>
-  <p>구조화 출력, 퍼시스턴스, 병렬 노드. 기능 지도에서 아직 확인하지 못한 곳들이다.</p>
+  <p>구조화 출력, 퍼시스턴스, 병렬 노드. 기능 지도에서 아직 확인하지 못한 곳들이다. 같은 테스트를 LangChain4j로 돌려 보는 비교도 후보다.</p>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/module-versioning/" target="_blank" rel="noopener">Module versioning</a>: stable은 1년 비파괴, beta는 마이너에서 바뀔 수 있음</span>
+    <span><b>참고</b> <a href="https://www.youtube.com/watch?v=OFkF30sJfrw" target="_blank" rel="noopener">LangChain4j vs Koog, IntelliJ IDEA Conf 2026</a>: 두 프레임워크를 직접 비교한 89분 세션</span>
     <span><b>저장소</b> github.com/devjune/spring-ai-study (docs/phase3 · demo-phase3)</span>
   </div>
 </section>
