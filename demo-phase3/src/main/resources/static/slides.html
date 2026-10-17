@@ -117,7 +117,7 @@
 <section class="slide">
   <p class="sec">기술 세미나 · 2026.10 · 15분</p>
   <h1>Koog</h1>
-  <p class="lead">JVM에서 AI 에이전트를 만드는 JetBrains 프레임워크</p>
+  <p class="lead">Kotlin-native AI agents on the JVM</p>
   <p class="hint">→ / ↓ 로 넘김</p>
 </section>
 
@@ -149,10 +149,10 @@
       </ul>
       <h3 style="margin-top:14px">연혁</h3>
       <ul>
-        <li>2025.05 공개됐다</li>
-        <li>2026.03 Java API를 더했다</li>
-        <li>2026.05 <b>1.0</b>을 발표했다. stable 모듈은 1년 호환을 보장한다</li>
-        <li>2026.09 1.3.0이 나왔다</li>
+        <li>2025.05 Released</li>
+        <li>2026.03 Java API</li>
+        <li>2026.05 <b>1.0</b> (stable 모듈 1년 호환 보장)</li>
+        <li>2026.09 1.3.0</li>
       </ul>
     </div>
     <figure>
@@ -199,10 +199,10 @@
     <div>
       <h3>공식 예제</h3>
       <ul>
-        <li><b>Banking</b>: 문의를 분류하고 도구를 부른다</li>
-        <li><b>Chess</b>: 대국을 반복 진행한다</li>
-        <li><b>GoogleMaps · Playwright · Unity</b>: MCP로 외부 시스템을 제어한다</li>
-        <li><b>OpenTelemetry · Langfuse · Weave</b>: 운영을 모니터링한다</li>
+        <li><b>Banking</b>: 문의 분류와 도구 호출</li>
+        <li><b>Chess</b>: 반복 대국 진행</li>
+        <li><b>GoogleMaps · Playwright · Unity</b>: 외부 시스템 제어(MCP)</li>
+        <li><b>OpenTelemetry · Langfuse · Weave</b>: 운영 모니터링</li>
       </ul>
     </div>
   </div>
@@ -255,11 +255,11 @@
     <li>작은 하네스를 다섯 단계로 만들며, 단계마다 Strategy Graph의 설계를 하나씩 확인한다</li>
   </ul>
   <div class="steps">
-    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄로 REPL이 돈다</span></div>
-    <div><span class="n">2단계</span><span>라우팅</span><span class="d">타입이 맞는 엣지만 붙고, 조건으로 가른다</span></div>
-    <div><span class="n">3단계</span><span>히스토리</span><span class="d">노드 사이에 대화 기록이 공유된다</span></div>
-    <div><span class="n">4단계</span><span>반복 상한</span><span class="d">무한 루프 대신 예외가 난다</span></div>
-    <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 다이어그램이 나온다</span></div>
+    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
+    <div><span class="n">2단계</span><span>라우팅</span><span class="d">타입 검사를 통과한 엣지와 조건 분기</span></div>
+    <div><span class="n">3단계</span><span>히스토리</span><span class="d">노드 사이에 공유되는 대화 기록</span></div>
+    <div><span class="n">4단계</span><span>반복 상한</span><span class="d">무한 루프 대신 예외</span></div>
+    <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 생성되는 다이어그램</span></div>
   </div>
   <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않는다.</p>
   <div class="src">
@@ -493,7 +493,7 @@ stateDiagram
       <h3>보여줄 것</h3>
       <ul>
         <li><b>라우팅</b>: 모델 판정에 따라 엣지가 갈린다</li>
-        <li><b>도구 왕복</b>: 도구를 부르고 결과를 받아 다시 모델로 보낸다</li>
+        <li><b>도구 왕복</b>: 도구를 부르고 결과를 받아 다시 모델로</li>
       </ul>
     </div>
     <p class="mid">화면의 그래프는 방금 본 코드의 그 전략이다. 따로 그린 그림이 아니다.</p>
