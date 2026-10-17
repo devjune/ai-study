@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.koog.spring.ai.starter.model.chat)
     // AIAgent는 브리지 스타터가 아니라 이 아티팩트에 있다
     implementation(libs.koog.agents.jvm)
+    implementation(libs.koog.skills.jvm)
+    implementation(libs.koog.agents.ext.jvm)
     // Spring AI의 ChatMemoryRepository를 Koog의 ChatHistoryProvider로 감싸는 스타터
     implementation(libs.koog.spring.ai.starter.chat.memory)
     // Spring AI의 EmbeddingModel을 Koog의 LLMEmbeddingProvider로 감싸는 스타터
