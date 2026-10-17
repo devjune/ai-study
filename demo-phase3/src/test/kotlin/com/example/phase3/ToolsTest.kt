@@ -18,6 +18,7 @@ import io.kotest.matchers.or
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.contain
+import io.kotest.matchers.string.shouldContain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -66,6 +67,23 @@ class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
         tools.calls shouldBe listOf("JPY")
     }
 
+    test("비서가 캘린더 도구로 일정을 답한다") {
+        val calendar = CalendarToolSet()
+        val agent = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            systemPrompt = "일정 질문에는 반드시 schedules 도구를 호출하고, " +
+                "도구가 돌려준 일정만 그대로 답한다. 지어내지 않는다.",
+            temperature = 0.0,
+            toolRegistry = ToolRegistry { tools(calendar) },
+        )
+        val result = agent.run("내일 일정 알려줘")
+        println("ToolsTest 캘린더 응답: $result")
+        println("ToolsTest 캘린더 호출: ${calendar.calls}")
+        result shouldContain "디자인 리뷰"
+        calendar.calls.size shouldBe 1
+    }
+
     test("ToolSet이 함수 하나를 도구 스키마로 바꾼다") {
         val descriptor = ExchangeToolSet().asTools().single().descriptor
 
@@ -89,5 +107,17 @@ class ExchangeToolSet : ToolSet {
             "JPY" -> "9.2"
             else -> "미지원 통화"
         }
+    }
+}
+
+@LLMDescription("캘린더 조회 도구")
+class CalendarToolSet : ToolSet {
+    val calls = mutableListOf<String>()
+
+    @Tool
+    @LLMDescription("날짜의 일정 목록을 돌려준다")
+    fun schedules(@LLMDescription("날짜, 예: 내일") day: String): String {
+        calls += day
+        return "10:00 팀 싱크, 14:00 디자인 리뷰"
     }
 }

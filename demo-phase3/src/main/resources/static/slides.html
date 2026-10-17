@@ -339,11 +339,11 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
     <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
-    <span class="k">val</span> math  <span class="k">by</span> node(<span class="s">"math"</span>)  { <span class="s">"수학 경로"</span> }
-    <span class="k">val</span> other <span class="k">by</span> node(<span class="s">"other"</span>) { <span class="s">"일반 경로"</span> }
+    <span class="k">val</span> schedule <span class="k">by</span> node(<span class="s">"schedule"</span>) { <span class="s">"일정 경로"</span> }
+    <span class="k">val</span> other    <span class="k">by</span> node(<span class="s">"other"</span>)    { <span class="s">"일반 경로"</span> }
 
     edge(nodeStart <span class="inf">forwardTo</span> classify)
-    <span class="hi">edge(classify <span class="inf">forwardTo</span> math  <span class="inf">onTextMessage</span> { <span class="s">"MATH"</span> <span class="k">in</span> it.text })</span>
+    <span class="hi">edge(classify <span class="inf">forwardTo</span> schedule <span class="inf">onTextMessage</span> { <span class="s">"SCHEDULE"</span> <span class="k">in</span> it.text })</span>
     <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span>
 }</pre>
     <div>
@@ -363,7 +363,7 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
     </div>
   </div>
   <div class="src">
-    <span><b>실측</b> StrategyGraphTest 라우팅. 4회 돌려 모두 "수학 경로"</span>
+    <span><b>실측</b> StrategyGraphTest 라우팅. 4회 돌려 모두 "일정 경로"</span>
   </div>
 </section>
 
@@ -445,13 +445,13 @@ config:
 stateDiagram
     direction LR
     state "classify" as classify
-    state "math" as math
+    state "schedule" as schedule
     state "other" as other
 
     [*] --> classify
-    classify --> math : transformed
+    classify --> schedule : transformed
     classify --> other : transformed
-    math --> [*]
+    schedule --> [*]
     other --> [*]</pre>
         <figcaption>2단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력이다. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했으며 제목 줄은 뺐다.</figcaption>
       </figure>
@@ -478,16 +478,16 @@ stateDiagram
   <h2>Demo</h2>
   <div class="invert" style="font-size:17px"><b>▶ 전략 그래프 러너</b></div>
   <figure>
-    <svg viewBox="0 0 900 130" role="img" aria-label="실행이 start에서 classify를 거쳐 math로 흐르고 other 경로는 쉬고 있다">
+    <svg viewBox="0 0 900 130" role="img" aria-label="실행이 start에서 classify를 거쳐 schedule로 흐르고 other 경로는 쉬고 있다">
       <defs><marker id="dm" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs>
       <rect class="bx" x="0" y="42" width="90" height="42"/><text x="45" y="68" text-anchor="middle">start</text>
       <path class="flow" d="M94,63 L168,63"/>
       <rect class="bx" x="172" y="42" width="140" height="42"/><text x="242" y="68" text-anchor="middle">classify</text>
       <path class="flow" d="M316,52 C370,36 400,30 450,24"/>
-      <text x="330" y="18" class="sm">"MATH"</text>
+      <text x="330" y="18" class="sm">"SCHEDULE"</text>
       <path class="lnq" d="M316,74 C370,90 400,96 450,102"/>
       <text x="356" y="116" class="sm">else</text>
-      <rect class="bx" x="454" y="4" width="120" height="40"/><text x="514" y="29" text-anchor="middle">math</text>
+      <rect class="bx" x="454" y="4" width="120" height="40"/><text x="514" y="29" text-anchor="middle">schedule</text>
       <rect class="bx" x="454" y="84" width="120" height="40"/><text x="514" y="109" text-anchor="middle">other</text>
       <path class="flow" d="M578,24 C640,32 670,48 716,58"/>
       <path class="lnq" d="M578,104 C640,96 670,80 716,70"/>

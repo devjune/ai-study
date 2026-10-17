@@ -37,13 +37,13 @@ class ChatMemoryTest(
                 chatHistoryProvider = historyProvider
             }
         }
-        val sessionId = "ch06-이름"
+        val sessionId = "memory-비서"
 
-        agent.run("내 이름은 준이야", sessionId)
-        val result = agent.run("내 이름이 뭐라고 했지?", sessionId)
+        agent.run("다음 주 월요일에 치과 예약이 있어", sessionId)
+        val result = agent.run("다음 주 월요일에 뭐 있다고 했지?", sessionId)
 
         println("ChatMemoryTest 응답: $result")
-        result shouldContain "준"
+        result shouldContain "치과"
     }
 
     test("저장된 것은 평문뿐이고 도구 호출은 남지 않는다") {
