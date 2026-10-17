@@ -2,7 +2,6 @@ package com.example.phase3
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
-import java.io.File
 import ai.koog.agents.ext.tool.file.ReadFileTool
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.rag.base.files.JVMFileSystemProvider
@@ -16,6 +15,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 import io.kotest.matchers.string.shouldNotContain
 import org.springframework.boot.test.context.SpringBootTest
+import java.io.File
 
 @SpringBootTest
 class SkillsTest(val promptExecutor: PromptExecutor) : FunSpec({

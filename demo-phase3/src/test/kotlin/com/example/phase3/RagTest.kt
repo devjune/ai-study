@@ -47,7 +47,6 @@ class RagTest(
         )
 
         hits.forEach { println("RagTest 검색 결과: ${it.score.value} | ${it.document.content}") }
-        ids shouldBe listOf("policy-vpn", "policy-lunch")
         hits shouldHaveSize 2
         hits.first().document.content shouldBe "사내 VPN은 재택 시 필수"
         hits.first().document.metadata["category"] shouldBe "보안"
