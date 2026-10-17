@@ -28,16 +28,16 @@ class SkillsTest(val promptExecutor: PromptExecutor) : FunSpec({
         File("src/test/resources/skills").copyRecursively(it)
     }.absolutePath
 
-    test("스킬 폴더에서 회사어 스킬을 찾는다") {
+    test("스킬 폴더에서 판교 사투리 스킬을 찾는다") {
         val skills = discoverSkills(JVMFileSystemProvider.ReadOnly, listOf(skillsRoot))
         skills shouldHaveSize 1
         val prompt = generateSkillsPrompt(skills, SkillsPromptFormat.XML)
         println("SkillsTest 카탈로그: $prompt")
         prompt shouldContain "corporate-speak"
-        prompt shouldContain "회사 공지 말투"
+        prompt shouldContain "판교 사투리"
     }
 
-    test("에이전트가 스킬을 읽어 회사어로 바꾼다") {
+    test("에이전트가 스킬을 읽어 판교 사투리로 바꾼다") {
         val skills = discoverSkills(JVMFileSystemProvider.ReadOnly, listOf(skillsRoot))
         val skillsPrompt = generateSkillsPrompt(skills, SkillsPromptFormat.XML)
         val agent = AIAgent(
@@ -50,8 +50,8 @@ class SkillsTest(val promptExecutor: PromptExecutor) : FunSpec({
                 tool(ReadFileTool(JVMFileSystemProvider.ReadOnly))
             },
         )
-        val result = agent.run("회사어 11로 바꿔 줘: 내일 회식 오세요")
-        println("SkillsTest 회사어 11: $result")
+        val result = agent.run("판교 사투리 11로 바꿔 줘: 내일 회식 오세요")
+        println("SkillsTest 판교 사투리 11: $result")
         result.shouldNotBeBlank()
         result shouldNotContain "찾을 수 없"
     }
