@@ -262,7 +262,7 @@
     <li>작은 하네스를 다섯 단계로 만들며, Koog의 기능을 하나씩 살펴보기</li>
   </ul>
   <div class="steps">
-    <div><span class="n">1단계</span><span>에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
+    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
     <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
     <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
     <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
@@ -276,8 +276,8 @@
 
 <!-- 03-1 1단계 말한다 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 1단계</p>
-  <h2>기본 에이전트: 다섯 줄과 REPL</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>1/5 기본 에이전트: 다섯 줄과 REPL</h2>
   <p class="contract">추가: AIAgent 다섯 줄 · 확인: REPL 응답 "5"</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -307,8 +307,8 @@
 
 <!-- 03-2 2단계 도구 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 2단계</p>
-  <h2>도구: 시그니처가 곧 스키마</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>2/5 도구: 시그니처가 곧 스키마</h2>
   <p class="contract">추가: @Tool 캘린더 함수 · 확인: 도구 호출 왕복</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -339,8 +339,8 @@ toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
 
 <!-- 03-3 3단계 스킬 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 3단계</p>
-  <h2>스킬: 필요할 때 읽는 SKILL.md</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>3/5 스킬: 필요할 때 읽는 SKILL.md</h2>
   <p class="contract">추가: SKILL.md + 파일 읽기 도구 · 확인: 판교 사투리 변환</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -372,8 +372,8 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
 <!-- 03-2 조건 엣지 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 4단계</p>
-  <h2>라우팅: 분기가 선언으로</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>4/5 라우팅: 분기가 선언으로</h2>
   <p class="contract">추가: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
@@ -405,8 +405,8 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
 <!-- 03-5 시각화 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 5단계</p>
-  <h2>시각화: 전략에서 다이어그램이 나옴</h2>
+  <p class="sec">03 미니 하네스</p>
+  <h2>5/5 시각화: 전략에서 다이어그램이 나옴</h2>
   <p class="contract">추가: asMermaidDiagram() 한 줄 · 확인: 다이어그램 원문</p>
   <div class="cols w">
     <div>
