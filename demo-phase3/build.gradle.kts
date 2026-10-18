@@ -41,6 +41,7 @@ dependencies {
     implementation(libs.koog.agents.jvm)
     implementation(libs.koog.skills.jvm)
     implementation(libs.koog.agents.ext.jvm)
+    implementation(libs.jline)
     // Spring AI의 ChatMemoryRepository를 Koog의 ChatHistoryProvider로 감싸는 스타터
     implementation(libs.koog.spring.ai.starter.chat.memory)
     // Spring AI의 EmbeddingModel을 Koog의 LLMEmbeddingProvider로 감싸는 스타터

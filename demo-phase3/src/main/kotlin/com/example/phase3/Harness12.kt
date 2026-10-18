@@ -11,6 +11,10 @@ import ai.koog.skills.discovery.discoverSkills
 import ai.koog.skills.prompt.SkillsPromptFormat
 import ai.koog.skills.prompt.generateSkillsPrompt
 import kotlinx.coroutines.runBlocking
+import org.jline.reader.EndOfFileException
+import org.jline.reader.LineReaderBuilder
+import org.jline.reader.UserInterruptException
+import org.jline.terminal.TerminalBuilder
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -63,9 +67,16 @@ class Harness12(
             }
         }
 
+        val terminal = TerminalBuilder.builder().system(true).build()
+        val reader = LineReaderBuilder.builder().terminal(terminal).build()
         while (true) {
-            print("❯ ")
-            val line = readLine() ?: break
+            val line = try {
+                reader.readLine("❯ ")
+            } catch (e: UserInterruptException) {
+                break
+            } catch (e: EndOfFileException) {
+                break
+            }
             if (line.isBlank()) continue
             if (line == "exit") break
             // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
@@ -73,5 +84,6 @@ class Harness12(
                 else assistantAgent().run(line, "demo")
             println(answer)
         }
+        terminal.close()
     }
 }
