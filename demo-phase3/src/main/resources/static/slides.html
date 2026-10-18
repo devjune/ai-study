@@ -373,7 +373,7 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 <!-- 03-2 조건 엣지 -->
 <section class="slide">
   <p class="sec">03 미니 하네스 · 4단계</p>
-  <h2>조건 엣지: 분기가 선언으로</h2>
+  <h2>라우팅: 분기가 선언으로</h2>
   <p class="contract">추가: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
@@ -534,5 +534,11 @@ stateDiagram
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+<script>
+mermaid.initialize({startOnLoad: false, theme: 'neutral'});
+(function(){
+  var m = document.querySelector('.slide.active pre.mermaid:not([data-processed])');
+  if (m) { try { mermaid.run({nodes:[m]}); } catch(e){} }
+})();
+</script>
 </html>
