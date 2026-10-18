@@ -15,8 +15,9 @@
     height:100vh; overflow:hidden; word-break:keep-all; overflow-wrap:break-word;}
   .slide{position:absolute; top:50%; left:50%; width:1280px; height:720px; box-sizing:border-box;
     transform:translate(-50%,-50%) scale(var(--s,1));
-    display:flex; flex-direction:column; justify-content:center; gap:14px;
-    padding:52px 96px 40px; background:var(--paper); visibility:hidden;}
+    display:flex; flex-direction:column; justify-content:flex-start; gap:14px;
+    padding:64px 96px 40px; background:var(--paper); visibility:hidden;}
+  .slide.center{justify-content:center;}
   .slide.active{visibility:visible;}
   .sec{font:500 11px/1 var(--mono); letter-spacing:.16em; color:var(--mid);}
   h1{font-size:58px; font-weight:700; letter-spacing:-.02em; margin:0;}
@@ -116,7 +117,7 @@
 </style>
 
 <!-- 1 표지 -->
-<section class="slide">
+<section class="slide center">
   <p class="sec">FDE팀 스터디 · 2026.10 · 15분</p>
   <h1>Koog</h1>
   <p class="lead">Kotlin-native AI agents on the JVM</p>
@@ -445,7 +446,7 @@ stateDiagram
 </section>
 
 <!-- 6 Demo -->
-<section class="slide">
+<section class="slide center">
   <p class="sec">04</p>
   <h1>Demo</h1>
 </section>
