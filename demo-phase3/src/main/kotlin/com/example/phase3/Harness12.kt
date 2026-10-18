@@ -1,5 +1,7 @@
 package com.example.phase3
 
+import ai.koog.agents.chatMemory.feature.ChatHistoryProvider
+import ai.koog.agents.chatMemory.feature.ChatMemory
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.ext.tool.file.ReadFileTool
@@ -25,7 +27,10 @@ import java.io.File
  */
 @Component
 @Profile("harness")
-class Harness12(private val promptExecutor: PromptExecutor) : CommandLineRunner {
+class Harness12(
+    private val promptExecutor: PromptExecutor,
+    private val historyProvider: ChatHistoryProvider,
+) : CommandLineRunner {
 
     override fun run(vararg args: String?) = runBlocking {
         // qwen3:4b가 저장소의 긴 절대 경로를 복사하다 글자를 틀려서 짧은 경로로 복사해 쓴다.
@@ -52,15 +57,21 @@ class Harness12(private val promptExecutor: PromptExecutor) : CommandLineRunner 
             systemPrompt = "비서다. 짧게 답한다. 일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다.",
             temperature = 0.0,
             toolRegistry = ToolRegistry { tools(CalendarToolSet()) },
-        )
+        ) {
+            install(ChatMemory) {
+                chatHistoryProvider = historyProvider
+            }
+        }
 
         while (true) {
             print("❯ ")
             val line = readLine() ?: break
             if (line.isBlank()) continue
             if (line == "exit") break
-            val agent = if ("판교 사투리" in line) skillAgent() else assistantAgent()
-            println(agent.run(line))
+            // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
+            val answer = if ("판교 사투리" in line) skillAgent().run(line)
+                else assistantAgent().run(line, "demo")
+            println(answer)
         }
     }
 }
