@@ -130,8 +130,7 @@
     <div><span class="n">02</span><span>기능 범위</span><span class="t">2분</span></div>
     <div><span class="n">03</span><span>미니 하네스: 다섯 단계</span><span class="t">6분</span></div>
     <div><span class="n">04</span><span>Demo</span><span class="t">2분</span></div>
-    <div><span class="n">05</span><span>적용하며 확인한 것</span><span class="t">2분</span></div>
-    <div><span class="n">06</span><span>정리</span><span class="t">1분</span></div>
+    <div><span class="n">05</span><span>적용하며 확인한 것</span><span class="t">3분</span></div>
   </div>
 </section>
 
@@ -176,6 +175,7 @@
   </div>
   <div class="src">
     <span><b>공식</b> <a href="https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/" target="_blank" rel="noopener">Meet Koog</a> · <a href="https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/" target="_blank" rel="noopener">Koog 1.0</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026</a></span>
+    <span><b>참고</b> <a href="https://www.youtube.com/watch?v=OFkF30sJfrw" target="_blank" rel="noopener">LangChain4j vs Koog, IntelliJ IDEA Conf 2026</a>: 두 프레임워크를 직접 비교한 89분 세션</span>
   </div>
 </section>
 
@@ -508,38 +508,6 @@ stateDiagram
     <div class="blankline">③</div>
   </div>
   <p class="mid" style="font-size:14px">후보: 타입 불일치 검출 / 엣지 순서에 따른 분기 역전 / 분기 누락은 컴파일러가 잡지 못함 / 도구 파라미터 추가 시 스키마 자동 반영</p>
-</section>
-
-<!-- 8 정리 -->
-<section class="slide">
-  <p class="sec">06</p>
-  <h2>정리</h2>
-  <div class="cols">
-    <div>
-      <h3>얻는 것</h3>
-      <ul>
-        <li>흐름이 눈에 보이는 자료구조가 된다</li>
-        <li>루프 상한을 빠뜨릴 수 없다</li>
-        <li>압축, 도구 스키마, 원격 도구가 기본으로 온다</li>
-        <li>기존 Spring AI 설정을 그대로 쓴다</li>
-      </ul>
-    </div>
-    <div>
-      <h3>유의할 것</h3>
-      <ul>
-        <li>브리지와 MCP 모듈은 아직 beta다</li>
-        <li>브리지를 쓰면 Spring 버전이 브리지에 묶인다</li>
-        <li>대화 저장소에 도구 호출 기록은 남지 않는다</li>
-      </ul>
-    </div>
-  </div>
-  <h3 style="margin-top:6px">다음에 볼 것</h3>
-  <p>구조화 출력, 퍼시스턴스, 병렬 노드. 기능 지도에서 아직 확인하지 못한 곳들이다. 같은 테스트를 LangChain4j로 돌려 보는 비교도 후보다.</p>
-  <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/module-versioning/" target="_blank" rel="noopener">Module versioning</a>: stable은 1년 비파괴, beta는 마이너에서 바뀔 수 있음</span>
-    <span><b>참고</b> <a href="https://www.youtube.com/watch?v=OFkF30sJfrw" target="_blank" rel="noopener">LangChain4j vs Koog, IntelliJ IDEA Conf 2026</a>: 두 프레임워크를 직접 비교한 89분 세션</span>
-    <span><b>저장소</b> github.com/devjune/spring-ai-study (docs/phase3 · demo-phase3)</span>
-  </div>
 </section>
 
 <div class="counter" id="counter">1 / 8</div>
