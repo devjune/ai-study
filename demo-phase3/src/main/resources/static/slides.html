@@ -263,7 +263,7 @@
     <li>작은 하네스를 다섯 단계로 만들며, Koog의 기능을 하나씩 살펴보기</li>
   </ul>
   <div class="steps">
-    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
+    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
     <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
     <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
     <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
@@ -278,8 +278,8 @@
 <!-- 03-1 1단계 말한다 -->
 <section class="slide">
   <p class="sec">03 미니 하네스</p>
-  <h2>1/5 기본 에이전트: 다섯 줄과 REPL</h2>
-  <p class="contract">추가: AIAgent 다섯 줄 · 확인: REPL 응답 "5"</p>
+  <h2>1/5 기본 에이전트: AIAgent 하나로 시작</h2>
+  <p class="contract">추가: AIAgent와 입력 루프 · 확인: REPL 응답 "5"</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> agent = AIAgent(
@@ -287,7 +287,11 @@
     llmModel = KoogModels.QWEN3_4B_INSTRUCT,
     systemPrompt = <span class="s">"짧게 답한다."</span>,
 )
-<span class="k">while</span> (<span class="k">true</span>) { print(<span class="s">"❯ "</span>); <span class="k">val</span> line = readLine() ?: <span class="k">break</span>; println(agent.run(line)) }</pre>
+<span class="k">while</span> (<span class="k">true</span>) {
+    print(<span class="s">"❯ "</span>)
+    <span class="k">val</span> line = readLine() ?: <span class="k">break</span>
+    println(agent.run(line))
+}</pre>
       <pre class="err">$ ./gradlew bootRun --args='--spring.profiles.active=harness'
 ❯ 2 더하기 3은?
 5</pre>
