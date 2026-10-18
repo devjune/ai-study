@@ -116,7 +116,7 @@
 
 <!-- 1 표지 -->
 <section class="slide">
-  <p class="sec">기술 세미나 · 2026.10 · 15분</p>
+  <p class="sec">FDE팀 스터디 · 2026.10 · 15분</p>
   <h1>Koog</h1>
   <p class="lead">Kotlin-native AI agents on the JVM</p>
   <p class="hint">→ / ↓ 로 넘김</p>
@@ -227,23 +227,26 @@
   <h2>기능 범위</h2>
   <div class="map">
     <div class="row"><span class="cat">에이전트</span><span class="chips">
-      <span class="chip" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
-    <div class="row focus"><span class="cat">전략</span><span class="chips">
-      <span class="chip" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그림. 오늘의 주제">커스텀 그래프</span><span class="chip" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
+      <span class="chip on" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
+    <div class="row"><span class="cat">전략</span><span class="chips">
+      <span class="chip on" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그림. 오늘의 주제">커스텀 그래프</span><span class="chip on" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
     <div class="row"><span class="cat">도구</span><span class="chips">
-      <span class="chip" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
+      <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
     <div class="row"><span class="cat">기능</span><span class="chips">
       <span class="chip" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
     <div class="row"><span class="cat">프롬프트</span><span class="chips">
       <span class="chip" data-tip="길어진 이력을 접어 토큰 절약. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
     <div class="row"><span class="cat">프로토콜</span><span class="chips">
-      <span class="chip" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
+      <span class="chip" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip on" data-tip="스킬 명세를 지원. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
     <div class="row"><span class="cat">통합</span><span class="chips">
-      <span class="chip" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
+      <span class="chip on" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
     <div class="row"><span class="cat">그 외</span><span class="chips">
       <span class="chip" data-tip="텍스트를 벡터로 바꿔 생성하고 비교">임베딩</span><span class="chip" data-tip="벡터 저장소 검색을 에이전트 흐름에 연결">RAG</span><span class="chip" data-tip="모델 응답을 타입 있는 객체로 받기">구조화 출력</span><span class="chip" data-tip="응답을 토큰 단위로 받아 처리">스트리밍</span><span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span><span class="chip" data-tip="입출력 콘텐츠 검열">모더레이션</span><span class="chip" data-tip="전략·상태를 저장 가능한 형태로 직렬화">직렬화</span><span class="chip" data-tip="에이전트·전략 테스트 지원">테스팅</span></span></div>
     <div class="row"><span class="cat">플랫폼</span><span class="chips">
       <span class="chip" data-tip="서버·백엔드. 이번 검증의 범위">JVM</span><span class="chip" data-tip="Kotlin/JS 타깃. 브라우저에서 실행">JS</span><span class="chip" data-tip="WebAssembly 타깃">WasmJS</span><span class="chip" data-tip="Kotlin Multiplatform으로 안드로이드에서 실행">Android</span><span class="chip" data-tip="Kotlin Multiplatform으로 iOS에서 실행">iOS</span></span></div>
+  </div>
+  <div class="maplegend">
+    <span><i style="background:var(--ink); border-color:var(--ink)"></i>오늘 만들 미니 하네스가 쓰는 기능</span>
   </div>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> 목차 기준(버전 선택 없는 단일 최신판, 현재 1.3.0) · <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">Spring AI integration</a> · 말풍선은 문서 한 줄 요약</span>
@@ -256,17 +259,16 @@
   <h2>오늘 만들 것: 미니 하네스</h2>
   <ul>
     <li>모델 호출만 필요하면 Spring AI로 충분. 그 이상이 필요해지는 지점을 확인하는 것이 목적</li>
-    <li>작은 하네스를 다섯 단계로 만들며, 단계마다 Strategy Graph의 설계를 하나씩 확인</li>
+    <li>작은 하네스를 다섯 단계로 만들며, Koog의 기능을 하나씩 확인</li>
   </ul>
   <div class="steps">
-    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
-    <div><span class="n">2단계</span><span>라우팅</span><span class="d">타입 검사를 통과한 엣지와 조건 분기</span></div>
-    <div><span class="n">3단계</span><span>히스토리</span><span class="d">노드 사이에 공유되는 대화 기록</span></div>
-    <div><span class="n">4단계</span><span>반복 상한</span><span class="d">무한 루프 대신 예외</span></div>
+    <div><span class="n">1단계</span><span>에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
+    <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
+    <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
+    <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
     <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 생성되는 다이어그램</span></div>
   </div>
   <div class="invert" style="font-size:14.5px">DSL이 아니라 <b>그래프가 핵심</b>. DSL은 그래프를 코드처럼 읽히게 하는 포장</div>
-  <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않음.</p>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a></span>
   </div>
@@ -294,7 +296,7 @@
       <ul>
         <li><code>AIAgent</code> 하나로 에이전트 생성. 전략을 안 적으면 기본 전략으로 동작</li>
         <li><code>promptExecutor</code>는 브리지가 만든 빈. 모델 설정은 기존 application.properties 그대로</li>
-        <li>여기까지는 단일 호출. 다음 단계부터 흐름 제어를 추가</li>
+        <li>여기까지는 단일 호출. 다음 단계부터 도구, 스킬, 분기를 차례로 추가</li>
       </ul>
     </div>
   </div>
@@ -303,41 +305,74 @@
   </div>
 </section>
 
-<!-- 03-1 노드와 엣지 -->
+<!-- 03-2 2단계 도구 -->
 <section class="slide">
   <p class="sec">03 미니 하네스 · 2단계</p>
-  <h2>노드와 엣지: 타입이 붙은 자료구조</h2>
-  <p class="contract">추가: 노드 연결 · 확인: 컴파일 거절 메시지</p>
+  <h2>도구: 시그니처가 곧 스키마</h2>
+  <p class="contract">추가: @Tool 캘린더 함수 · 확인: 도구 호출 왕복</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
-<span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
+      <pre><span class="k">@Tool</span>
+<span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다"</span>)
+<span class="k">fun</span> schedules(<span class="k">@LLMDescription</span>(<span class="s">"날짜, 예: 내일"</span>) day: String): String {
+    <span class="k">return</span> <span class="s">"10:00 팀 싱크, 14:00 디자인 리뷰"</span>
+}
 
-edge(draft <span class="inf">forwardTo</span> polish)              <span class="cm">// ✕</span>
-edge(draft <span class="inf">forwardTo</span> polish
-    <span class="inf">transformed</span> { it.textContent() })    <span class="cm">// ○</span></pre>
-      <pre class="err">None of the following candidates is applicable:
-fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(…)</pre>
+<span class="cm">// 하네스에 한 줄</span>
+toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
+      <pre class="err">❯ 내일 일정 알려줘
+내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.</pre>
     </div>
     <div>
       <h3>여기서 알 수 있는 것</h3>
       <ul>
-        <li><code>nodeLLMRequest()</code>의 출력은 문자열이 아니라 메시지 타입</li>
-        <li>앞 노드의 출력과 뒤 노드의 입력, 타입이 맞아야 엣지가 붙음</li>
-        <li>안 맞으면 컴파일 단계에서 거절. 거절 사유도 시그니처에 있음</li>
-        <li>메시지에서 글자만 꺼낼 때 <code>textContent()</code> 사용</li>
+        <li>JSON 스키마를 적지 않음. 함수 시그니처와 설명 애노테이션에서 도구 서술자가 생성됨</li>
+        <li>파라미터를 더하면 서술자도 따라 바뀜</li>
+        <li>도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 처리</li>
       </ul>
-      <div class="invert" style="font-size:14px">손으로 짜면 실행해 봐야 아는 오류를, 여기서는 <b>컴파일러가 먼저 검출</b></div>
     </div>
   </div>
   <div class="src">
-    <span><b>진단</b> 컴파일러 거절 메시지 원문</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/tools/annotation-based-tools/" target="_blank" rel="noopener">Annotation-based tools</a></span>
+  </div>
+</section>
+
+<!-- 03-3 3단계 스킬 -->
+<section class="slide">
+  <p class="sec">03 미니 하네스 · 3단계</p>
+  <h2>스킬: 필요할 때 읽는 SKILL.md</h2>
+  <p class="contract">추가: SKILL.md + 파일 읽기 도구 · 확인: 판교 사투리 변환</p>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre>---
+name: corporate-speak
+description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
+  바꾼다. 강도 1부터 11까지. 사용자가 "판교 사투리"라고
+  말하면 이 스킬을 쓴다.
+---
+## 강도
+- 1~3: 부드러운 사내 메모 … 11: 기업 특이점</pre>
+      <pre class="err">❯ 판교 사투리 11로 바꿔 줘: 내일 회식 오세요
+내일 회식 이니셔티브에 대한 전사적 얼라인을 요청드립니다.
+해당 워크스트림의 성공적 완수를 위한 적극적인 참여를 추진 부탁드립니다.</pre>
+    </div>
+    <div>
+      <h3>여기서 알 수 있는 것</h3>
+      <ul>
+        <li>스킬은 frontmatter를 단 마크다운 파일. description 목록이 에이전트의 스킬 카탈로그가 됨</li>
+        <li>요청이 스킬에 해당할 때만 파일을 읽어 지침을 따름. 프롬프트에 미리 싣지 않음</li>
+        <li>Koog는 디스커버리와 카탈로그 생성을 제공(1.2.0-beta). 에이전트에는 파일 읽기 도구만 주면 됨</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/skills/" target="_blank" rel="noopener">Agent Skills</a></span>
   </div>
 </section>
 
 <!-- 03-2 조건 엣지 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스 · 2단계</p>
+  <p class="sec">03 미니 하네스 · 4단계</p>
   <h2>조건 엣지: 분기가 선언으로</h2>
   <p class="contract">추가: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
   <div class="cols w">
@@ -353,8 +388,8 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
     <div>
       <h3>평가 규칙</h3>
       <ul>
-        <li>엣지는 적은 순서대로 검사</li>
-        <li>먼저 맞은 하나만 적용</li>
+        <li>엣지는 적은 순서대로 검사, 먼저 맞은 하나만 적용</li>
+        <li>타입이 맞아야 엣지가 붙음. 연결 오류는 컴파일 단계에서 거절</li>
         <li><code>{ true }</code> 엣지가 마지막 받침이 됨. <code>when</code>의 else 자리</li>
         <li>분기를 빠뜨려도 컴파일러는 모름. <code>when</code>과 다른 점</li>
       </ul>
@@ -365,69 +400,6 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
         <tr><td class="k">onToolCalls</td><td>도구 호출 응답으로 한정</td></tr>
       </table>
     </div>
-  </div>
-</section>
-
-<!-- 03-3 히스토리 공유 -->
-<section class="slide">
-  <p class="sec">03 미니 하네스 · 3단계</p>
-  <h2>프롬프트 히스토리: 값이 아니라 대화가 흐름</h2>
-  <p class="contract">추가: 두 번째 노드 · 확인: 응답 "15"</p>
-  <div class="cols w">
-    <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
-<span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
-
-edge(nodeStart <span class="inf">forwardTo</span> draft)
-edge(draft <span class="inf">forwardTo</span> polish <span class="inf">transformed</span> { <span class="s">"그 숫자에 10을 더하면?"</span> })
-edge(polish <span class="inf">forwardTo</span> nodeFinish <span class="inf">transformed</span> { it.textContent() })
-
-run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</span></pre>
-    <div>
-      <h3>왜 15가 나오나</h3>
-      <ul>
-        <li><code>polish</code>에 넘긴 것은 새 질문 한 줄뿐</li>
-        <li>그런데 모델은 "그 숫자"가 5라는 걸 알고 있음</li>
-        <li>두 노드가 같은 대화 기록 위에서 돌기 때문</li>
-        <li>대신 기록이 계속 쌓임. 그래서 압축 노드가 따로 있음</li>
-      </ul>
-    </div>
-  </div>
-  <div class="src">
-    <span><b>진단</b> 바이트코드: 각 노드가 appendPrompt 후 requestLLM</span>
-  </div>
-</section>
-
-<!-- 03-4 루프와 상한 -->
-<section class="slide">
-  <p class="sec">03 미니 하네스 · 4단계</p>
-  <h2>루프와 상한: 틀릴 자리가 없는 설계</h2>
-  <p class="contract">추가: 자기 엣지 루프 · 확인: 5걸음에서 예외</p>
-  <div class="cols w">
-    <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">val</span> step <span class="k">by</span> node(<span class="s">"step"</span>) { <span class="s">"$it."</span> }
-
-edge(nodeStart <span class="inf">forwardTo</span> step)
-edge(step <span class="inf">forwardTo</span> step       <span class="inf">onCondition</span> { it.length &lt; 3 })
-edge(step <span class="inf">forwardTo</span> nodeFinish <span class="inf">onCondition</span> { it.length &gt;= 3 })
-
-AIAgent(…, strategy = loop, <span class="hi">maxIterations = 5</span>)
-run(<span class="s">""</span>)   <span class="cm">// → "..."</span></pre>
-      <pre class="err">// 탈출 조건을 { true }로 망가뜨리면, 무한루프 대신
-AIAgentMaxNumberOfIterationsReachedException:
-Agent couldn't finish in given number of steps (5).</pre>
-    </div>
-    <div>
-      <h3>상한이 있는 자리</h3>
-      <ul>
-        <li>자기 자신으로 가는 엣지가 루프</li>
-        <li>횟수 상한은 루프가 아니라 에이전트 설정에 적음</li>
-        <li>안 적으면 기본값 적용. 빠뜨릴 방법이 없음</li>
-        <li>상한은 그래프 전체 걸음 수. 노드가 많으면 같은 값이 더 빨리 소진됨</li>
-      </ul>
-    </div>
-  </div>
-  <div class="src">
-    <span><b>진단</b> 탈출 조건을 일부러 망가뜨려 받은 예외</span>
   </div>
 </section>
 
@@ -454,7 +426,7 @@ stateDiagram
     classify --> other : transformed
     schedule --> [*]
     other --> [*]</pre>
-        <figcaption>2단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 제외.</figcaption>
+        <figcaption>4단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 제외.</figcaption>
       </figure>
     </div>
     <div>
@@ -494,7 +466,7 @@ stateDiagram
     <div>
       <h3>구조</h3>
       <ul>
-        <li>1단계 REPL에 도구와 스킬을 추가</li>
+        <li>1단계 REPL에 2단계 도구, 3단계 스킬을 올린 것</li>
         <li>qwen3:4b는 성격이 다른 도구 둘을 주면 헛짚음. 요청을 갈라 역할이 하나뿐인 에이전트에 넘김</li>
       </ul>
     </div>
