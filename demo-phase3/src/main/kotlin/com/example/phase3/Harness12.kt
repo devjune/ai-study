@@ -21,7 +21,7 @@ import java.io.File
  * 프롬프트의 우선순위 지시를 무시하고 엉뚱한 도구를 짚는다. 그래서 요청을
  * 트리거 단어로 갈라 역할이 하나뿐인 에이전트에 넘긴다.
  *
- *   ./gradlew bootRun --args='--spring.profiles.active=harness --spring.main.web-application-type=none'
+ *   ./gradlew bootRun --args='--spring.profiles.active=harness'
  */
 @Component
 @Profile("harness")

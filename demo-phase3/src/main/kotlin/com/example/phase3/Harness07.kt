@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 /**
  * 슬라이드 7(1/5)의 기본 에이전트 하네스.
  *
- *   ./gradlew bootRun --args='--spring.profiles.active=step1 --spring.main.web-application-type=none'
+ *   ./gradlew bootRun --args='--spring.profiles.active=step1'
  */
 @Component
 @Profile("step1")
