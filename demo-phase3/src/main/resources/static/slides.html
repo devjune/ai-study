@@ -94,6 +94,7 @@
   @keyframes flow{to{stroke-dashoffset:-20;}}
   @keyframes fade{0%,100%{opacity:.3} 50%{opacity:1}}
   pre.mermaid{border:none; background:transparent; padding:4px 0 0; display:flex; justify-content:center;}
+  pre.mermaid:not([data-processed]){display:block; text-align:left;}
   .mermaid svg{width:auto !important; max-width:100% !important; height:auto !important; max-height:300px;}
   .mermaid svg g.edgePaths path, .mermaid svg path.transition{
     stroke-dasharray:3 7 !important; animation:flow 1.5s linear infinite;}
@@ -535,10 +536,14 @@ stateDiagram
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
 <script>
-mermaid.initialize({startOnLoad: false, theme: 'neutral'});
 (function(){
-  var m = document.querySelector('.slide.active pre.mermaid:not([data-processed])');
-  if (m) { try { mermaid.run({nodes:[m]}); } catch(e){} }
+  mermaid.initialize({startOnLoad: false, theme: 'neutral'});
+  function render(){
+    var nodes = document.querySelectorAll('pre.mermaid:not([data-processed])');
+    if (nodes.length && window.mermaid) { try { mermaid.run({nodes: nodes}); } catch(e){} }
+  }
+  render();
+  setTimeout(render, 600);
 })();
 </script>
 </html>
