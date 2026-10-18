@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 import java.io.File
 
 /**
- * 미니 하네스 — 입력 루프 하나에 전담 에이전트 둘.
+ * 슬라이드 12 Demo의 미니 하네스 — 입력 루프 하나에 전담 에이전트 둘.
  *
  * qwen3:4b는 성격이 다른 도구 둘(일정 조회, 파일 읽기)을 한 에이전트에 주면
  * 프롬프트의 우선순위 지시를 무시하고 엉뚱한 도구를 짚는다. 그래서 요청을
@@ -25,7 +25,7 @@ import java.io.File
  */
 @Component
 @Profile("harness")
-class Harness(private val promptExecutor: PromptExecutor) : CommandLineRunner {
+class Harness12(private val promptExecutor: PromptExecutor) : CommandLineRunner {
 
     override fun run(vararg args: String?) = runBlocking {
         // qwen3:4b가 저장소의 긴 절대 경로를 복사하다 글자를 틀려서 짧은 경로로 복사해 쓴다.
