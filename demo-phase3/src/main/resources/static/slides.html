@@ -109,6 +109,7 @@
   .steps div:first-child{border-top:1px solid var(--faint);}
   .steps .n{font:500 12px var(--mono); color:var(--mid);}
   .steps .d{font-size:13.5px; color:var(--mid);}
+  .contract{font:400 11.5px var(--mono); color:var(--mid); letter-spacing:.04em;}
   a{color:inherit;}
   :focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
 </style>
@@ -143,8 +144,8 @@
       <h3>등장 배경</h3>
       <ul>
         <li>에이전트 프레임워크는 파이썬이 먼저였다 (LangChain 2022, LangGraph·CrewAI 2023)</li>
-        <li>JVM은 LangChain4j(2023)가 받았다. 스스로 "idiomatic Java 라이브러리"라고 소개한다</li>
-        <li>Kotlin 네이티브의 빈자리는 2025년 Koog가 채웠다</li>
+        <li>JVM은 LangChain4j(2023)가 받았음. 스스로 "idiomatic Java 라이브러리"라고 소개함</li>
+        <li>Kotlin 네이티브의 빈자리는 2025년 Koog가 채웠음</li>
       </ul>
       <h3 style="margin-top:14px">연혁</h3>
       <ul>
@@ -155,7 +156,7 @@
       </ul>
     </div>
     <figure>
-      <svg viewBox="0 0 420 230" role="img" aria-label="오케스트레이션 계층은 파이썬이 먼저였고 JVM에는 LangChain4j와 Koog가 들어왔다">
+      <svg viewBox="0 0 420 230" role="img" aria-label="오케스트레이션 계층은 파이썬이 먼저였고 JVM에는 LangChain4j와 Koog가 들어왔음">
         <text x="0" y="14" class="sm">오케스트레이션 계층</text>
         <rect class="bxf" x="0" y="24" width="196" height="66"/>
         <text x="98" y="52" text-anchor="middle" style="font-size:11px">LangGraph</text>
@@ -190,11 +191,11 @@
   </blockquote>
   <div class="cols">
     <div>
-      <h3>JetBrains 안에서 먼저 썼다</h3>
+      <h3>JetBrains 안에서 먼저 썼음</h3>
       <ul>
-        <li>IDE의 코딩 에이전트 Junie와 AI Assistant를 Kotlin으로 만들고 있다</li>
-        <li>거기서 다듬은 방식을 프레임워크로 묶어 공개했다</li>
-        <li class="mid" style="font-size:13.5px">Junie가 Koog로 만들어졌다는 공식 확인은 없다</li>
+        <li>IDE의 코딩 에이전트 Junie와 AI Assistant를 Kotlin으로 만들고 있음</li>
+        <li>거기서 다듬은 방식을 프레임워크로 묶어 공개했음</li>
+        <li class="mid" style="font-size:13.5px">Junie가 Koog로 만들어졌다는 공식 확인은 없음</li>
       </ul>
     </div>
     <div>
@@ -218,17 +219,17 @@
   <h2>기능 범위</h2>
   <div class="map">
     <div class="row"><span class="cat">에이전트</span><span class="chips">
-      <span class="chip on" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip on" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행한다. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
+      <span class="chip on" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip on" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행함. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
     <div class="row focus"><span class="cat">전략</span><span class="chips">
-      <span class="chip on" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그린다. 오늘의 주제">커스텀 그래프</span><span class="chip on" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
+      <span class="chip on" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그림. 오늘의 주제">커스텀 그래프</span><span class="chip on" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
     <div class="row"><span class="cat">도구</span><span class="chips">
-      <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 된다. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
+      <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
     <div class="row"><span class="cat">기능</span><span class="chips">
-      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 훅을 건다">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 만든다">커스텀 기능</span></span></div>
+      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 만듦">커스텀 기능</span></span></div>
     <div class="row"><span class="cat">프롬프트</span><span class="chips">
-      <span class="chip on" data-tip="길어진 이력을 접어 토큰을 아낀다. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
+      <span class="chip on" data-tip="길어진 이력을 접어 토큰을 아낌. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
     <div class="row"><span class="cat">프로토콜</span><span class="chips">
-      <span class="chip on" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원한다. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
+      <span class="chip on" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원함. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
     <div class="row"><span class="cat">통합</span><span class="chips">
       <span class="chip on" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
     <div class="row"><span class="cat">그 외</span><span class="chips">
@@ -241,7 +242,7 @@
     <span><i></i>문서 확인만</span>
     <span>점선은 오늘 다룰 범위</span>
   </div>
-  <p class="mid" style="font-size:13.5px">오늘 들어갈 구역은 전략. Koog 설계가 가장 직접 드러나는 곳이다.</p>
+  <p class="mid" style="font-size:13.5px">오늘 들어갈 구역은 전략. Koog 설계가 가장 직접 드러나는 곳.</p>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> 목차 기준(버전 선택 없는 단일 최신판, 현재 1.3.0) · 말풍선은 문서 한 줄 요약 · <b>실측</b> 검증 완료는 테스트 19건(1.2.0)</span>
   </div>
@@ -252,8 +253,8 @@
   <p class="sec">03 미니 하네스</p>
   <h2>오늘 만들 것: 미니 하네스</h2>
   <ul>
-    <li>모델 호출만 필요하면 Spring AI로 충분하다. 그 이상이 필요해지는 지점을 확인하는 것이 목적이다</li>
-    <li>작은 하네스를 다섯 단계로 만들며, 단계마다 Strategy Graph의 설계를 하나씩 확인한다</li>
+    <li>모델 호출만 필요하면 Spring AI로 충분함. 그 이상이 필요해지는 지점을 확인하는 것이 목적</li>
+    <li>작은 하네스를 다섯 단계로 만들며, 단계마다 Strategy Graph의 설계를 하나씩 확인함</li>
   </ul>
   <div class="steps">
     <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 다섯 줄과 REPL</span></div>
@@ -262,8 +263,8 @@
     <div><span class="n">4단계</span><span>반복 상한</span><span class="d">무한 루프 대신 예외</span></div>
     <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 생성되는 다이어그램</span></div>
   </div>
-  <div class="invert" style="font-size:14.5px">DSL이 아니라 <b>그래프가 핵심</b>이다. DSL은 그래프를 코드처럼 읽히게 하는 포장이다</div>
-  <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않는다.</p>
+  <div class="invert" style="font-size:14.5px">DSL이 아니라 <b>그래프가 핵심</b>. DSL은 그래프를 코드처럼 읽히게 하는 포장</div>
+  <p class="mid" style="font-size:13.5px">사전 정의 전략, 병렬 노드, 서브그래프, 커스텀 노드는 오늘 다루지 않음.</p>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a></span>
   </div>
@@ -273,6 +274,7 @@
 <section class="slide">
   <p class="sec">03 미니 하네스 · 1단계</p>
   <h2>기본 에이전트: 다섯 줄과 REPL</h2>
+  <p class="contract">더함: AIAgent 다섯 줄 · 확인: REPL 응답 "5"</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> agent = AIAgent(
@@ -288,9 +290,9 @@
     <div>
       <h3>구성</h3>
       <ul>
-        <li><code>AIAgent</code> 하나로 에이전트가 만들어진다. 전략을 안 적으면 기본 전략이 돈다</li>
-        <li><code>promptExecutor</code>는 브리지가 만든 빈이다. 모델 설정은 기존 application.properties 그대로</li>
-        <li>여기까지는 단일 호출이다. 다음 단계부터 흐름 제어를 더한다</li>
+        <li><code>AIAgent</code> 하나로 에이전트가 만들어짐. 전략을 안 적으면 기본 전략이 돌아감</li>
+        <li><code>promptExecutor</code>는 브리지가 만든 빈. 모델 설정은 기존 application.properties 그대로</li>
+        <li>여기까지는 단일 호출. 다음 단계부터 흐름 제어를 더함</li>
       </ul>
     </div>
   </div>
@@ -303,6 +305,7 @@
 <section class="slide">
   <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>노드와 엣지: 타입이 붙은 자료구조</h2>
+  <p class="contract">더함: 노드 연결 · 확인: 컴파일 거절 메시지</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
@@ -317,12 +320,12 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
     <div>
       <h3>여기서 알 수 있는 것</h3>
       <ul>
-        <li><code>nodeLLMRequest()</code>의 출력은 문자열이 아니라 메시지 타입이다</li>
-        <li>앞 노드의 출력과 뒤 노드의 입력, 타입이 맞아야 엣지가 붙는다</li>
-        <li>안 맞으면 컴파일 단계에서 거절당한다. 거절 사유도 시그니처에 있다</li>
-        <li>메시지에서 글자만 꺼낼 때 <code>textContent()</code>를 쓴다</li>
+        <li><code>nodeLLMRequest()</code>의 출력은 문자열이 아니라 메시지 타입</li>
+        <li>앞 노드의 출력과 뒤 노드의 입력, 타입이 맞아야 엣지가 붙음</li>
+        <li>안 맞으면 컴파일 단계에서 거절당함. 거절 사유도 시그니처에 있음</li>
+        <li>메시지에서 글자만 꺼낼 때 <code>textContent()</code>를 씀</li>
       </ul>
-      <div class="invert" style="font-size:14px">손으로 짜면 실행해 봐야 아는 오류를, 여기서는 <b>컴파일러가 먼저 잡는다</b></div>
+      <div class="invert" style="font-size:14px">손으로 짜면 실행해 봐야 아는 오류를, 여기서는 <b>컴파일러가 먼저 잡음</b></div>
     </div>
   </div>
   <div class="src">
@@ -334,6 +337,7 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 <section class="slide">
   <p class="sec">03 미니 하네스 · 2단계</p>
   <h2>조건 엣지: 분기가 선언으로</h2>
+  <p class="contract">더함: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
   <div class="cols w">
     <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
     <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
@@ -347,10 +351,10 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
     <div>
       <h3>평가 규칙</h3>
       <ul>
-        <li>엣지는 적은 순서대로 검사한다</li>
-        <li>먼저 맞은 하나만 탄다</li>
-        <li><code>{ true }</code> 엣지가 마지막 받침이 된다. <code>when</code>의 else 자리다</li>
-        <li>분기를 빠뜨려도 컴파일러는 모른다. <code>when</code>과 다른 점이다</li>
+        <li>엣지는 적은 순서대로 검사함</li>
+        <li>먼저 맞은 하나만 탐</li>
+        <li><code>{ true }</code> 엣지가 마지막 받침이 됨. <code>when</code>의 else 자리</li>
+        <li>분기를 빠뜨려도 컴파일러는 모름. <code>when</code>과 다른 점</li>
       </ul>
       <h3 style="margin-top:12px">조건 세 종류</h3>
       <table>
@@ -368,7 +372,8 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
 <!-- 03-3 히스토리 공유 -->
 <section class="slide">
   <p class="sec">03 미니 하네스 · 3단계</p>
-  <h2>프롬프트 히스토리: 값이 아니라 대화가 흐른다</h2>
+  <h2>프롬프트 히스토리: 값이 아니라 대화가 흐름</h2>
+  <p class="contract">더함: 두 번째 노드 · 확인: 응답 "15"</p>
   <div class="cols w">
     <pre><span class="k">val</span> draft  <span class="k">by</span> nodeLLMRequest()
 <span class="k">val</span> polish <span class="k">by</span> nodeLLMRequest()
@@ -381,10 +386,10 @@ run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</
     <div>
       <h3>왜 15가 나오나</h3>
       <ul>
-        <li><code>polish</code>에 넘긴 것은 새 질문 한 줄뿐이다</li>
-        <li>그런데 모델은 "그 숫자"가 5라는 걸 안다</li>
-        <li>두 노드가 같은 대화 기록 위에서 돌기 때문이다</li>
-        <li>대신 기록이 계속 쌓인다. 그래서 압축 노드가 따로 있다</li>
+        <li><code>polish</code>에 넘긴 것은 새 질문 한 줄뿐</li>
+        <li>그런데 모델은 "그 숫자"가 5라는 걸 알고 있음</li>
+        <li>두 노드가 같은 대화 기록 위에서 돌기 때문</li>
+        <li>대신 기록이 계속 쌓임. 그래서 압축 노드가 따로 있음</li>
       </ul>
     </div>
   </div>
@@ -397,6 +402,7 @@ run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</
 <section class="slide">
   <p class="sec">03 미니 하네스 · 4단계</p>
   <h2>루프와 상한: 틀릴 자리가 없는 설계</h2>
+  <p class="contract">더함: 자기 엣지 루프 · 확인: 5걸음에서 예외</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> step <span class="k">by</span> node(<span class="s">"step"</span>) { <span class="s">"$it."</span> }
@@ -414,10 +420,10 @@ Agent couldn't finish in given number of steps (5).</pre>
     <div>
       <h3>상한이 있는 자리</h3>
       <ul>
-        <li>자기 자신으로 가는 엣지가 루프다</li>
-        <li>횟수 상한은 루프가 아니라 에이전트 설정에 적는다</li>
-        <li>안 적으면 기본값이 쓰인다. 빠뜨릴 방법이 없다</li>
-        <li>상한은 그래프 전체 걸음 수다. 노드가 많으면 같은 값이 더 빨리 소진된다</li>
+        <li>자기 자신으로 가는 엣지가 루프</li>
+        <li>횟수 상한은 루프가 아니라 에이전트 설정에 적음</li>
+        <li>안 적으면 기본값이 쓰임. 빠뜨릴 방법이 없음</li>
+        <li>상한은 그래프 전체 걸음 수. 노드가 많으면 같은 값이 더 빨리 소진됨</li>
       </ul>
     </div>
   </div>
@@ -429,7 +435,8 @@ Agent couldn't finish in given number of steps (5).</pre>
 <!-- 03-5 시각화 -->
 <section class="slide">
   <p class="sec">03 미니 하네스 · 5단계</p>
-  <h2>시각화: 전략에서 다이어그램이 나온다</h2>
+  <h2>시각화: 전략에서 다이어그램이 나옴</h2>
+  <p class="contract">더함: asMermaidDiagram() 한 줄 · 확인: 다이어그램 원문</p>
   <div class="cols w">
     <div>
       <figure>
@@ -448,17 +455,17 @@ stateDiagram
     classify --> other : transformed
     schedule --> [*]
     other --> [*]</pre>
-        <figcaption>2단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력이다. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했으며 제목 줄은 뺐다.</figcaption>
+        <figcaption>2단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 뺐음.</figcaption>
       </figure>
     </div>
     <div>
       <h3>쓰는 법</h3>
       <ul>
-        <li><code>asMermaidDiagram()</code> 한 번이면 끝이다</li>
-        <li>IntelliJ 플러그인은 거터 아이콘으로 같은 그림을 띄운다</li>
-        <li>조건식 내용까지는 안 나온다. transformed라고만 적힌다</li>
+        <li><code>asMermaidDiagram()</code> 한 번이면 끝</li>
+        <li>IntelliJ 플러그인은 거터 아이콘으로 같은 그림을 띄움</li>
+        <li>조건식 내용까지는 안 나옴. transformed라고만 적힘</li>
       </ul>
-      <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있다</div>
+      <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있음</div>
     </div>
   </div>
   <div class="src">
@@ -482,15 +489,15 @@ stateDiagram
     <div>
       <h3>보여줄 것</h3>
       <ul>
-        <li><b>도구 왕복</b>: 일정 질문에 schedules 도구를 부르고 그 결과만 답한다</li>
-        <li><b>Agent Skills</b>: "판교 사투리"를 보고 SKILL.md를 읽어 지침을 따른다</li>
+        <li><b>도구 왕복</b>: 일정 질문에 schedules 도구를 부르고 그 결과만 답함</li>
+        <li><b>Agent Skills</b>: "판교 사투리"를 보고 SKILL.md를 읽어 지침을 따름</li>
       </ul>
     </div>
     <div>
       <h3>구조</h3>
       <ul>
-        <li>1단계의 REPL에 도구와 스킬을 더했다</li>
-        <li>qwen3:4b는 성격이 다른 도구 둘을 주면 헛짚는다. 요청을 갈라 역할이 하나뿐인 에이전트에 넘긴다</li>
+        <li>1단계의 REPL에 도구와 스킬을 더했음</li>
+        <li>qwen3:4b는 성격이 다른 도구 둘을 주면 헛짚음. 요청을 갈라 역할이 하나뿐인 에이전트에 넘김</li>
       </ul>
     </div>
   </div>
