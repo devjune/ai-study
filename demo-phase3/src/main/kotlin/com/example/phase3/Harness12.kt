@@ -50,7 +50,7 @@ class Harness12(
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             systemPrompt = "비서다. 아래 스킬 카탈로그가 있다. 요청이 스킬에 해당하면 " +
                 "그 스킬의 location 경로를 한 글자도 바꾸지 말고 그대로 읽기 도구에 넘겨 " +
-                "본문을 읽고, 지침을 따라 답한다.\n" + skillsPrompt,
+                "본문을 읽고, 지침을 따라 답한다. 본문을 읽기 전에는 답하지 않는다.\n" + skillsPrompt,
             temperature = 0.0,
             toolRegistry = ToolRegistry { tool(ReadFileTool(JVMFileSystemProvider.ReadOnly)) },
         )
