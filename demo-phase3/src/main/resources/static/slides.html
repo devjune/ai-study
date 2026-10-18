@@ -300,7 +300,7 @@
       <ul>
         <li><code>AIAgent</code> 하나로 에이전트 생성. 전략을 안 적으면 기본 전략으로 동작</li>
         <li><code>PromptExecutor</code>는 모델 호출을 맡는 Koog 인터페이스. Spring AI로 치면 ChatModel</li>
-        <li>저 빈은 브리지가 Spring AI ChatModel을 감싸 등록. 모델 설정은 기존 application.properties 그대로</li>
+        <li>브리지가 Spring AI ChatModel을 감싸 빈으로 등록. 모델 설정은 기존 application.properties 그대로</li>
         <li>여기까지는 단일 호출. 다음 단계부터 도구, 스킬, 분기를 차례로 추가</li>
       </ul>
     </div>
