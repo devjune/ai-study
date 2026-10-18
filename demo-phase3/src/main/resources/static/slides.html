@@ -227,32 +227,30 @@
   <h2>기능 범위</h2>
   <div class="map">
     <div class="row"><span class="cat">에이전트</span><span class="chips">
-      <span class="chip on" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip on" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
+      <span class="chip" data-tip="전략을 직접 짜지 않고 run() 하나로 도는 에이전트">기본형</span><span class="chip" data-tip="커스텀 전략 그래프로 흐름을 제어하는 에이전트">그래프</span><span class="chip" data-tip="그래프 없이 람다로 로직을 적는 경량 에이전트">함수형</span><span class="chip" data-tip="목표까지의 계획을 세워 가며 실행. LLM 계획형과 GOAP 두 방식">플래너 β</span></span></div>
     <div class="row focus"><span class="cat">전략</span><span class="chips">
-      <span class="chip on" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그림. 오늘의 주제">커스텀 그래프</span><span class="chip on" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
+      <span class="chip" data-tip="노드·엣지 DSL로 실행 흐름을 직접 그림. 오늘의 주제">커스텀 그래프</span><span class="chip" data-tip="nodeLLMRequest·nodeExecuteTools 같은 기성 노드들">사전 정의 노드</span><span class="chip" data-tip="자주 쓰는 흐름을 완성된 전략으로 제공">사전 정의 전략</span><span class="chip" data-tip="여러 노드를 동시에 돌리고 결과를 합침">병렬 노드</span><span class="chip" data-tip="그래프 속의 그래프. 구역마다 도구 집합을 격리">서브그래프</span><span class="chip" data-tip="노드 사이 값의 흐름을 정의">노드 간 데이터 전달</span></span></div>
     <div class="row"><span class="cat">도구</span><span class="chips">
-      <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
+      <span class="chip" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
     <div class="row"><span class="cat">기능</span><span class="chips">
-      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
+      <span class="chip" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
     <div class="row"><span class="cat">프롬프트</span><span class="chips">
-      <span class="chip on" data-tip="길어진 이력을 접어 토큰 절약. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
+      <span class="chip" data-tip="길어진 이력을 접어 토큰 절약. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
     <div class="row"><span class="cat">프로토콜</span><span class="chips">
-      <span class="chip on" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
+      <span class="chip" data-tip="외부 MCP 서버의 도구를 레지스트리로 가져와 사용">MCP</span><span class="chip" data-tip="에이전트끼리 묻고 답하는 프로토콜. 서버와 클라이언트 모두 지원">A2A</span><span class="chip" data-tip="에이전트와 클라이언트(편집기 등)를 잇는 프로토콜">ACP</span><span class="chip" data-tip="스킬 명세를 지원. 검색과 카탈로그 생성 포함">Agent Skills</span></span></div>
     <div class="row"><span class="cat">통합</span><span class="chips">
-      <span class="chip on" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
+      <span class="chip" data-tip="기존 Spring AI 빈을 PromptExecutor로 잇는 브리지">Spring AI</span><span class="chip" data-tip="Koog 전용 Spring Boot 스타터">Spring Boot</span><span class="chip" data-tip="Ktor 서버에 붙는 플러그인">Ktor</span><span class="chip" data-tip="AWS Bedrock AgentCore 런타임에서 에이전트 실행">Bedrock AgentCore</span></span></div>
     <div class="row"><span class="cat">그 외</span><span class="chips">
-      <span class="chip on" data-tip="텍스트를 벡터로 바꿔 생성하고 비교">임베딩</span><span class="chip on" data-tip="벡터 저장소 검색을 에이전트 흐름에 연결">RAG</span><span class="chip" data-tip="모델 응답을 타입 있는 객체로 받기">구조화 출력</span><span class="chip" data-tip="응답을 토큰 단위로 받아 처리">스트리밍</span><span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span><span class="chip" data-tip="입출력 콘텐츠 검열">모더레이션</span><span class="chip" data-tip="전략·상태를 저장 가능한 형태로 직렬화">직렬화</span><span class="chip" data-tip="에이전트·전략 테스트 지원">테스팅</span></span></div>
+      <span class="chip" data-tip="텍스트를 벡터로 바꿔 생성하고 비교">임베딩</span><span class="chip" data-tip="벡터 저장소 검색을 에이전트 흐름에 연결">RAG</span><span class="chip" data-tip="모델 응답을 타입 있는 객체로 받기">구조화 출력</span><span class="chip" data-tip="응답을 토큰 단위로 받아 처리">스트리밍</span><span class="chip" data-tip="전략에 쓸 노드를 직접 제작">커스텀 노드</span><span class="chip" data-tip="입출력 콘텐츠 검열">모더레이션</span><span class="chip" data-tip="전략·상태를 저장 가능한 형태로 직렬화">직렬화</span><span class="chip" data-tip="에이전트·전략 테스트 지원">테스팅</span></span></div>
     <div class="row"><span class="cat">플랫폼</span><span class="chips">
-      <span class="chip on" data-tip="서버·백엔드. 이번 검증의 범위">JVM</span><span class="chip" data-tip="Kotlin/JS 타깃. 브라우저에서 실행">JS</span><span class="chip" data-tip="WebAssembly 타깃">WasmJS</span><span class="chip" data-tip="Kotlin Multiplatform으로 안드로이드에서 실행">Android</span><span class="chip" data-tip="Kotlin Multiplatform으로 iOS에서 실행">iOS</span></span></div>
+      <span class="chip" data-tip="서버·백엔드. 이번 검증의 범위">JVM</span><span class="chip" data-tip="Kotlin/JS 타깃. 브라우저에서 실행">JS</span><span class="chip" data-tip="WebAssembly 타깃">WasmJS</span><span class="chip" data-tip="Kotlin Multiplatform으로 안드로이드에서 실행">Android</span><span class="chip" data-tip="Kotlin Multiplatform으로 iOS에서 실행">iOS</span></span></div>
   </div>
   <div class="maplegend">
-    <span><i style="background:var(--ink); border-color:var(--ink)"></i>검증 완료(48개 중 12개)</span>
-    <span><i></i>문서 확인만</span>
     <span>점선은 오늘 다룰 범위</span>
   </div>
   <p class="mid" style="font-size:13.5px">오늘 들어갈 구역은 전략. Koog 설계가 가장 직접 드러나는 곳.</p>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> 목차 기준(버전 선택 없는 단일 최신판, 현재 1.3.0) · 말풍선은 문서 한 줄 요약 · <b>실측</b> 검증 완료는 테스트 19건(1.2.0)</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/" target="_blank" rel="noopener">docs.koog.ai</a> 목차 기준(버전 선택 없는 단일 최신판, 현재 1.3.0) · 말풍선은 문서 한 줄 요약</span>
   </div>
 </section>
 
@@ -305,7 +303,7 @@
     </div>
   </div>
   <div class="src">
-    <span><b>실측</b> Harness.kt: bootRun REPL에서 "5" 출력 · REPL: 한 줄씩 읽어 실행하고 출력을 반복하는 대화형 루프 (Read-Eval-Print Loop)</span>
+    <span>Harness.kt · REPL: 한 줄씩 읽어 실행하고 출력을 반복하는 대화형 루프 (Read-Eval-Print Loop)</span>
   </div>
 </section>
 
@@ -337,7 +335,7 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
     </div>
   </div>
   <div class="src">
-    <span><b>진단</b> 컴파일러 거절 메시지 원문 · <b>실측</b> StrategyGraphTest</span>
+    <span><b>진단</b> 컴파일러 거절 메시지 원문</span>
   </div>
 </section>
 
@@ -372,9 +370,6 @@ fun &lt;…, <span class="hi">CompatibleOutput : OutgoingInput</span>&gt; edge(�
       </table>
     </div>
   </div>
-  <div class="src">
-    <span><b>실측</b> StrategyGraphTest 라우팅. 4회 돌려 모두 "일정 경로"</span>
-  </div>
 </section>
 
 <!-- 03-3 히스토리 공유 -->
@@ -402,7 +397,7 @@ run(<span class="s">"2 더하기 3은?"</span>)   <span class="cm">// → "15"</
     </div>
   </div>
   <div class="src">
-    <span><b>실측</b> 체인 출력 "15"(4회 동일) · <b>진단</b> 바이트코드: 각 노드가 appendPrompt 후 requestLLM</span>
+    <span><b>진단</b> 바이트코드: 각 노드가 appendPrompt 후 requestLLM</span>
   </div>
 </section>
 
@@ -436,7 +431,7 @@ Agent couldn't finish in given number of steps (5).</pre>
     </div>
   </div>
   <div class="src">
-    <span><b>실측</b> 정상 루프는 셋째 바퀴에서 끝난다("...") · <b>진단</b> 탈출 조건을 일부러 망가뜨려 받은 예외</span>
+    <span><b>진단</b> 탈출 조건을 일부러 망가뜨려 받은 예외</span>
   </div>
 </section>
 
@@ -477,7 +472,6 @@ stateDiagram
     </div>
   </div>
   <div class="src">
-    <span><b>실측</b> asMermaidDiagram() 출력 원문 (1.2.0에서 실행)</span>
     <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a> · <a href="https://plugins.jetbrains.com/plugin/31989-koog-strategy-graph" target="_blank" rel="noopener">Koog Strategy Graph 플러그인</a></span>
   </div>
 </section>
@@ -508,9 +502,6 @@ stateDiagram
         <li>qwen3:4b는 성격이 다른 도구 둘을 주면 헛짚음. 요청을 갈라 역할이 하나뿐인 에이전트에 넘김</li>
       </ul>
     </div>
-  </div>
-  <div class="src">
-    <span><b>실측</b> Harness.kt: bootRun REPL 출력 그대로 · 도구·스킬 동작은 ToolsTest · SkillsTest</span>
   </div>
 </section>
 
