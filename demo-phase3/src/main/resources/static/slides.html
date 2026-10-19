@@ -392,6 +392,8 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
     edge(nodeStart <span class="inf">forwardTo</span> classify)
     <span class="hi">edge(classify <span class="inf">forwardTo</span> schedule <span class="inf">onTextMessage</span> { <span class="s">"SCHEDULE"</span> <span class="k">in</span> it.text })</span> <span class="cm">// ② 답을 보고 가름</span>
     <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span> <span class="cm">// ③ 나머지 전부</span>
+    edge(schedule <span class="inf">forwardTo</span> nodeFinish)
+    edge(other <span class="inf">forwardTo</span> nodeFinish)
 }
 <span class="cm">// 분류 기준은 시스템 프롬프트 한 줄:</span>
 <span class="cm">// "질문이 일정이나 약속에 관한 것이면 SCHEDULE, 아니면 OTHER 한 단어만 답한다."</span></pre>
@@ -407,9 +409,10 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
       </ul>
       <h3 style="margin-top:12px">조건 세 종류</h3>
       <table>
-        <tr><td class="k">onCondition</td><td>필터</td></tr>
-        <tr><td class="k">onTextMessage</td><td>필터 + String 변환</td></tr>
-        <tr><td class="k">onToolCalls</td><td>도구 호출 응답으로 한정</td></tr>
+        <tr><td class="k">onCondition</td><td>불리언 람다를 받는 범용 조건</td></tr>
+        <tr><td class="k">onTextMessage</td><td>LLM이 텍스트로 응답할 때 일치</td></tr>
+        <tr><td class="k">onToolCalls</td><td>LLM이 도구를 호출할 때 일치</td></tr>
+        <tr><td class="k">onToolNotCalled</td><td>도구를 호출하지 않을 때 일치</td></tr>
       </table>
     </div>
   </div>
