@@ -269,7 +269,7 @@
     <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
     <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
     <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
-    <div><span class="n">5단계</span><span>시각화</span><span class="d">전략에서 생성되는 다이어그램</span></div>
+    <div><span class="n">5단계</span><span>챗 메모리</span><span class="d">세션 ID로 이어지는 대화</span></div>
   </div>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a></span>
@@ -412,21 +412,8 @@ dispatchRouter(
         <li>엣지는 선언한 순서대로 검사됨</li>
         <li>넓은 조건(<code>onCondition { true }</code>)은 마지막에 둠. 앞에 오면 뒤 분기를 가림</li>
       </ul>
-    </div>
-  </div>
-  <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a>: 조건 분기(onCondition) 예제와 같은 꼴</span>
-  </div>
-</section>
-
-<!-- 03-5 시각화 -->
-<section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>5/5 시각화: 전략에서 다이어그램이 나옴</h2>
-  <p class="contract">추가: asMermaidDiagram() 한 줄 · 확인: 두 전략 모두 그려짐</p>
-  <div class="cols">
-    <figure>
-      <pre class="mermaid">---
+      <figure>
+        <pre class="mermaid">---
 config:
   theme: neutral
 ---
@@ -439,36 +426,52 @@ stateDiagram
     [*] --> assistant : onCondition
     skill --> [*]
     assistant --> [*]</pre>
-      <figcaption><code>dispatchRouter().asMermaidDiagram()</code>. 4단계에서 우리가 짠 전략</figcaption>
-    </figure>
-    <figure>
-      <pre class="mermaid">---
-config:
-  theme: neutral
----
-stateDiagram
-    direction TB
-    state "nodeCallLLM" as nodeCallLLM
-    state "nodeExecuteTool" as nodeExecuteTool
-    state "nodeSendToolResult" as nodeSendToolResult
-
-    [*] --> nodeCallLLM
-    nodeCallLLM --> nodeExecuteTool : transformed
-    nodeCallLLM --> [*] : transformed
-    nodeExecuteTool --> nodeSendToolResult
-    nodeSendToolResult --> [*] : transformed
-    nodeSendToolResult --> nodeExecuteTool : transformed</pre>
-      <figcaption><code>singleRunStrategy().asMermaidDiagram()</code>. 1단계에서 전략을 안 적었을 때 실제로 돌던 Koog 내장 전략. 두 그림 모두 렌더를 위해 방향과 테마 지시만 더함</figcaption>
-    </figure>
+        <figcaption><code>dispatchRouter().asMermaidDiagram()</code>. 전략은 자료구조라서 실행 전에 그려짐. 렌더를 위해 방향과 테마 지시만 더함</figcaption>
+      </figure>
+    </div>
   </div>
-  <ul>
-    <li>같은 함수 한 번으로 우리가 짠 전략도, Koog가 숨겨 둔 내장 전략도 그려짐</li>
-    <li>오른쪽의 루프가 2단계에서 "기본 전략이 처리한다"고 넘어간 도구 왕복</li>
-    <li>조건식 내용까지는 안 나옴. onCondition, transformed라고만 적힘</li>
-  </ul>
-  <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있음. 내장 전략도 예외가 아님</div>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a> · <a href="https://docs.koog.ai/predefined-agent-strategies/" target="_blank" rel="noopener">Predefined agent strategies</a>: singleRunStrategy</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a>: 조건 분기(onCondition) 예제와 같은 꼴</span>
+  </div>
+</section>
+
+<!-- 03-5 챗 메모리 -->
+<section class="slide">
+  <p class="sec">03 미니 하네스</p>
+  <h2>5/5 챗 메모리: 세션 ID로 이어지는 대화</h2>
+  <p class="contract">추가: ChatMemory 기능과 세션 ID · 확인: 앞 일정을 도구 호출 없이 답함</p>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">fun</span> assistantAgent() = AIAgent(
+    promptExecutor = promptExecutor,
+    llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+    systemPrompt = <span class="s">"비서다. 짧게 답한다. "</span> +
+        <span class="s">"일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다."</span>,
+    temperature = 0.0,
+    toolRegistry = ToolRegistry { tools(CalendarToolSet()) },
+) {
+    <span class="hi">install(ChatMemory) {</span>
+    <span class="hi">    chatHistoryProvider = historyProvider</span>
+    <span class="hi">}</span>
+}
+
+askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo"</span></span>) }</pre>
+      <pre class="err">❯ 내일 일정 알려줘
+내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.
+❯ 아까 말한 첫 번째 일정이 뭐였지?
+10:00 팀 싱크입니다.</pre>
+    </div>
+    <div>
+      <h3>여기서 알 수 있는 것</h3>
+      <ul>
+        <li>실행 시작 때 세션의 이력을 읽고, 끝나면 이번 대화를 저장. run의 둘째 인자가 세션 ID, 다르면 이력도 분리</li>
+        <li>이력은 에이전트가 아니라 ChatHistoryProvider가 보관. 요청마다 새로 만드는 에이전트도 같은 세션을 이어받음</li>
+        <li>여기서는 브리지의 챗 메모리 스타터가 Spring AI ChatMemoryRepository를 감싼 provider 빈을 등록. 저장소는 Spring AI 것 그대로</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/features/chat-memory/" target="_blank" rel="noopener">Chat memory</a> · <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">Spring AI integration</a>: Chat Memory Starter</span>
   </div>
 </section>
 

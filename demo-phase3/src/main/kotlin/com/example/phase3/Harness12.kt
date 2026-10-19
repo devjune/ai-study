@@ -58,7 +58,8 @@ class Harness12(
         fun assistantAgent() = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            systemPrompt = "비서다. 짧게 답한다. 일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다.",
+            systemPrompt = "비서다. 짧게 답한다. " +
+                "일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다.",
             temperature = 0.0,
             toolRegistry = ToolRegistry { tools(CalendarToolSet()) },
         ) {

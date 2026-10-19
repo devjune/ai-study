@@ -2,7 +2,6 @@ package com.example.phase3
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.asMermaidDiagram
-import ai.koog.agents.core.agent.singleRunStrategy
 import ai.koog.prompt.executor.model.PromptExecutor
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
@@ -37,13 +36,5 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
         println("StrategyGraphTest 다이어그램:\n$diagram")
         diagram shouldContain "skill"
         diagram shouldContain "assistant"
-    }
-
-    test("내장 전략도 같은 API로 그려진다") {
-        val diagram = singleRunStrategy().asMermaidDiagram()
-        println("StrategyGraphTest 내장 전략 다이어그램:\n$diagram")
-        diagram shouldContain "nodeCallLLM"
-        diagram shouldContain "nodeExecuteTool"
-        diagram shouldContain "nodeSendToolResult"
     }
 })
