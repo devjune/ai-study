@@ -383,21 +383,26 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
   <h2>4/5 라우팅: 분기가 선언으로</h2>
   <p class="contract">추가: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
   <div class="cols w">
-    <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
-    <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
+    <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()   <span class="cm">// ① 질문을 모델에게. 아래 프롬프트가 한 단어로 답하게 함</span>
     <span class="k">val</span> schedule <span class="k">by</span> node(<span class="s">"schedule"</span>) { <span class="s">"일정 경로"</span> }
     <span class="k">val</span> other    <span class="k">by</span> node(<span class="s">"other"</span>)    { <span class="s">"일반 경로"</span> }
 
     edge(nodeStart <span class="inf">forwardTo</span> classify)
-    <span class="hi">edge(classify <span class="inf">forwardTo</span> schedule <span class="inf">onTextMessage</span> { <span class="s">"SCHEDULE"</span> <span class="k">in</span> it.text })</span>
-    <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span>
-}</pre>
+    <span class="hi">edge(classify <span class="inf">forwardTo</span> schedule <span class="inf">onTextMessage</span> { <span class="s">"SCHEDULE"</span> <span class="k">in</span> it.text })</span> <span class="cm">// ② 답을 보고 가름</span>
+    <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span> <span class="cm">// ③ 나머지 전부</span>
+}
+<span class="cm">// 분류 기준은 시스템 프롬프트 한 줄:</span>
+<span class="cm">// "질문이 일정이나 약속에 관한 것이면 SCHEDULE, 아니면 OTHER 한 단어만 답한다."</span></pre>
+      <pre class="err">agent.run("내일 회의 몇 시였지?")
+→ "일정 경로"   (classify가 SCHEDULE이라 답해 ②를 탐)</pre>
+    </div>
     <div>
       <h3>평가 규칙</h3>
       <ul>
-        <li>엣지는 적은 순서대로 검사, 먼저 맞은 하나만 적용</li>
+        <li>엣지는 적은 순서대로 검사, 먼저 맞은 하나만 적용. <code>{ true }</code>가 <code>when</code>의 else 자리</li>
         <li>타입이 맞아야 엣지가 붙음. 연결 오류는 컴파일 단계에서 거절</li>
-        <li><code>{ true }</code> 엣지가 마지막 받침이 됨. <code>when</code>의 else 자리</li>
         <li>분기를 빠뜨려도 컴파일러는 모름. <code>when</code>과 다른 점</li>
       </ul>
       <h3 style="margin-top:12px">조건 세 종류</h3>
