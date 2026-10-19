@@ -104,3 +104,12 @@ phase1·phase2와 다른 스택을 쓰는 비용보다, **"Koog의 Spring AI 브
 | Koog | 1.2.0-beta (+ `koog-agents-jvm:1.2.0`) | Maven Central 최신. 1.1.1-beta로 낮춰도 같은 오류 재현 — 버전을 낮춰서 해결되는 문제가 아님을 실증 |
 
 phase1·phase2는 Spring Boot 4.0.0 · Spring AI 2.0.1을 그대로 쓴다 — phase3만 다른 스택을 쓴다는 사실 자체를 문서 2장에 1급 관찰로 남긴다.
+
+## 2026-10-19 onTextMessage 조건이 1.2.0에서 평가되지 않음
+
+조건 엣지 라우팅에서 `onTextMessage { 조건 }`의 람다가 무시되고 먼저 선언된
+텍스트 엣지가 항상 선택된다 (프로브 4회 재현: 조건이 거짓인 입력도 전부 첫
+엣지로). `onCondition { ... it.textContent() }`는 정상 동작한다. 덱과 테스트의
+라우팅 예제를 onCondition 기반으로 바꿨다. 과거 "조건 동작" 관찰들은 모두
+첫-엣지 선택과 결과가 우연히 일치했던 것이다. 1.3.0에서의 재현 여부는 확인
+하지 않았다.

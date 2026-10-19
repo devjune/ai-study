@@ -381,43 +381,31 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 <section class="slide">
   <p class="sec">03 미니 하네스</p>
   <h2>4/5 라우팅: 분기가 선언으로</h2>
-  <p class="contract">추가: 조건 엣지 2줄 · 확인: 4회 모두 "일정 경로"</p>
+  <p class="contract">추가: 조건 엣지 2줄 · 확인: 일정은 캘린더로, 나머지는 모델로</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
-    <span class="k">val</span> classify <span class="k">by</span> nodeLLMRequest()   <span class="cm">// ① 질문을 모델에게. 아래 프롬프트가 한 단어로 답하게 함</span>
-    <span class="k">val</span> schedule <span class="k">by</span> node(<span class="s">"schedule"</span>) { <span class="s">"일정 경로"</span> }
-    <span class="k">val</span> other    <span class="k">by</span> node(<span class="s">"other"</span>)    { <span class="s">"일반 경로"</span> }
+    <span class="k">val</span> schedule <span class="k">by</span> node(<span class="s">"schedule"</span>) { CalendarToolSet().schedules(it) }
+    <span class="k">val</span> answer <span class="k">by</span> nodeLLMRequest()
 
-    edge(nodeStart <span class="inf">forwardTo</span> classify)
-    <span class="hi">edge(classify <span class="inf">forwardTo</span> schedule <span class="inf">onTextMessage</span> { <span class="s">"SCHEDULE"</span> <span class="k">in</span> it.text })</span> <span class="cm">// ② 답을 보고 가름</span>
-    <span class="hi">edge(classify <span class="inf">forwardTo</span> other <span class="inf">onTextMessage</span> { <span class="k">true</span> })</span> <span class="cm">// ③ 나머지 전부</span>
+    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> schedule <span class="inf">onCondition</span> { <span class="s">"일정"</span> <span class="k">in</span> it })</span>
+    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> answer <span class="inf">onCondition</span> { <span class="k">true</span> })</span>
     edge(schedule <span class="inf">forwardTo</span> nodeFinish)
-    edge(other <span class="inf">forwardTo</span> nodeFinish)
-}
-<span class="cm">// 분류 기준은 시스템 프롬프트 한 줄:</span>
-<span class="cm">// "질문이 일정이나 약속에 관한 것이면 SCHEDULE, 아니면 OTHER 한 단어만 답한다."</span></pre>
-      <pre class="err">agent.run("내일 회의 몇 시였지?")
-→ "일정 경로"   (classify가 SCHEDULE이라 답해 ②를 탐)</pre>
+    edge(answer <span class="inf">forwardTo</span> nodeFinish <span class="inf">transformed</span> { it.textContent() })
+}</pre>
+      <pre class="err">run("오늘 일정 알려줘")    → "10:00 팀 싱크, 14:00 디자인 리뷰"
+run("오늘 점심 뭐 먹을까")  → "김치찌개, 라면, 김밥 중에서?"</pre>
     </div>
     <div>
       <h3>평가 규칙</h3>
       <ul>
-        <li>엣지는 적은 순서대로 검사, 먼저 맞은 하나만 적용. <code>{ true }</code>가 <code>when</code>의 else 자리</li>
-        <li>타입이 맞아야 엣지가 붙음. 연결 오류는 컴파일 단계에서 거절</li>
-        <li>분기를 빠뜨려도 컴파일러는 모름. <code>when</code>과 다른 점</li>
+        <li>엣지는 선언한 순서대로 검사됨</li>
+        <li>넓은 조건(<code>onCondition { true }</code>)은 마지막에 둠. 앞에 오면 뒤 분기를 가림</li>
       </ul>
-      <h3 style="margin-top:12px">조건 네 종류</h3>
-      <table>
-        <tr><td class="k">onCondition</td><td>불리언 람다를 받는 범용 조건</td></tr>
-        <tr><td class="k">onTextMessage</td><td>LLM이 텍스트로 응답할 때 일치</td></tr>
-        <tr><td class="k">onToolCalls</td><td>LLM이 도구를 호출할 때 일치</td></tr>
-        <tr><td class="k">onToolNotCalled</td><td>도구를 호출하지 않을 때 일치</td></tr>
-      </table>
     </div>
   </div>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a> · <a href="https://docs.koog.ai/examples/Banking/" target="_blank" rel="noopener">Banking 예제</a>: 같은 패턴의 분류 라우팅</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a>: 조건 분기(onCondition) 예제와 같은 꼴</span>
   </div>
 </section>
 
@@ -435,15 +423,13 @@ config:
 ---
 stateDiagram
     direction LR
-    state "classify" as classify
     state "schedule" as schedule
-    state "other" as other
+    state "answer" as answer
 
-    [*] --> classify
-    classify --> schedule : transformed
-    classify --> other : transformed
+    [*] --> schedule : onCondition
+    [*] --> answer : onCondition
     schedule --> [*]
-    other --> [*]</pre>
+    answer --> [*] : transformed</pre>
         <figcaption>4단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 제외.</figcaption>
       </figure>
     </div>
@@ -452,7 +438,7 @@ stateDiagram
       <ul>
         <li><code>asMermaidDiagram()</code> 한 번이면 끝</li>
         <li>IntelliJ 플러그인은 거터 아이콘으로 같은 그림을 띄움</li>
-        <li>조건식 내용까지는 안 나옴. transformed라고만 적힘</li>
+        <li>조건식 내용까지는 안 나옴. onCondition이라고만 적힘</li>
       </ul>
       <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있음</div>
     </div>

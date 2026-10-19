@@ -5,12 +5,13 @@ import ai.koog.agents.core.agent.asMermaidDiagram
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequest
-import ai.koog.agents.core.dsl.extension.onTextMessage
 import ai.koog.prompt.executor.model.PromptExecutor
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotBeBlank
+import io.kotest.matchers.string.shouldNotContain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -43,12 +44,26 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             strategy = assistantRouter(),
-            systemPrompt = "질문이 일정이나 약속에 관한 것이면 SCHEDULE, 아니면 OTHER 한 단어만 답한다.",
+            systemPrompt = "비서다. 짧게 답한다.",
             temperature = 0.2,
         )
-        val result = agent.run("내일 회의 몇 시였지?")
+        val result = agent.run("오늘 일정 알려줘")
         println("StrategyGraphTest 라우팅 응답: $result")
-        result shouldBe "일정 경로"
+        result shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰"
+    }
+
+    test("일반 질문은 모델이 받아 답한다") {
+        val agent = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            strategy = assistantRouter(),
+            systemPrompt = "비서다. 짧게 답한다.",
+            temperature = 0.2,
+        )
+        val result = agent.run("오늘 점심 뭐 먹을까")
+        println("StrategyGraphTest 일반 응답: $result")
+        result.shouldNotBeBlank()
+        result shouldNotContain "팀 싱크"
     }
 
     test("전략에서 Mermaid 다이어그램이 나온다") {
@@ -56,7 +71,7 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
         println("StrategyGraphTest 다이어그램:\n$diagram")
         diagram shouldContain "stateDiagram"
         diagram shouldContain "schedule"
-        diagram shouldContain "other"
+        diagram shouldContain "schedule"
     }
 
     test("자기 자신으로 돌아오는 엣지가 루프가 된다") {
@@ -78,13 +93,11 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
 })
 
 private fun assistantRouter() = strategy<String, String>("route") {
-    val classify by nodeLLMRequest()
-    val schedule by node<String, String>("schedule") { "일정 경로" }
-    val other by node<String, String>("other") { "일반 경로" }
+    val schedule by node<String, String>("schedule") { CalendarToolSet().schedules(it) }
+    val answer by nodeLLMRequest()
 
-    edge(nodeStart forwardTo classify)
-    edge(classify forwardTo schedule onTextMessage { "SCHEDULE" in it.text })
-    edge(classify forwardTo other onTextMessage { true })
+    edge(nodeStart forwardTo schedule onCondition { "일정" in it })
+    edge(nodeStart forwardTo answer onCondition { true })
     edge(schedule forwardTo nodeFinish)
-    edge(other forwardTo nodeFinish)
+    edge(answer forwardTo nodeFinish transformed { it.textContent() })
 }
