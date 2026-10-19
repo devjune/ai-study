@@ -25,7 +25,7 @@ import java.io.File
  *
  * qwen3:4b는 성격이 다른 도구 둘(일정 조회, 파일 읽기)을 한 에이전트에 주면
  * 프롬프트의 우선순위 지시를 무시하고 엉뚱한 도구를 짚는다. 그래서 요청을
- * 트리거 단어로 갈라 역할이 하나뿐인 에이전트에 넘긴다.
+ * dispatchRouter 전략으로 갈라 역할이 하나뿐인 에이전트에 넘긴다.
  *
  *   ./gradlew bootRun --args='--spring.profiles.active=harness'
  */
@@ -69,6 +69,11 @@ class Harness12(
 
         val terminal = TerminalBuilder.builder().system(true).build()
         val reader = LineReaderBuilder.builder().terminal(terminal).build()
+        val dispatch = AIAgent(
+            promptExecutor = promptExecutor,
+            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+            strategy = dispatchRouter(),
+        )
         while (true) {
             val line = try {
                 reader.readLine("❯ ")
@@ -80,7 +85,7 @@ class Harness12(
             if (line.isBlank()) continue
             if (line == "exit") break
             // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
-            val answer = if ("판교 사투리" in line) skillAgent().run(line)
+            val answer = if (dispatch.run(line) == "SKILL") skillAgent().run(line)
                 else assistantAgent().run(line, "demo")
             println(answer)
         }
