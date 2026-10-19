@@ -4,12 +4,15 @@ import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 
 /**
- * 슬라이드 10의 라우팅 전략. 요청을 스킬 담당과 비서 담당으로 가른다.
- * 하네스가 실제로 이 전략으로 분기한다.
+ * 슬라이드 10의 라우팅 전략. 판교 사투리 요청은 스킬 담당에게, 나머지는 비서에게 보낸다.
+ * 담당을 함수로 받아서 테스트는 LLM 없이 분기만 검증한다.
  */
-fun dispatchRouter() = strategy<String, String>("dispatch") {
-    val skill by node<String, String>("skill") { "SKILL" }
-    val assistant by node<String, String>("assistant") { "ASSISTANT" }
+fun dispatchRouter(
+    askSkill: suspend (String) -> String,
+    askAssistant: suspend (String) -> String,
+) = strategy<String, String>("dispatch") {
+    val skill by node<String, String>("skill") { askSkill(it) }
+    val assistant by node<String, String>("assistant") { askAssistant(it) }
 
     edge(nodeStart forwardTo skill onCondition { "판교 사투리" in it })
     edge(nodeStart forwardTo assistant onCondition { true })

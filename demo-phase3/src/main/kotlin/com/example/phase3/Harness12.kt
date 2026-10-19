@@ -69,10 +69,14 @@ class Harness12(
 
         val terminal = TerminalBuilder.builder().system(true).build()
         val reader = LineReaderBuilder.builder().terminal(terminal).build()
-        val dispatch = AIAgent(
+        // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
+        val router = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = dispatchRouter(),
+            strategy = dispatchRouter(
+                askSkill = { skillAgent().run(it) },
+                askAssistant = { assistantAgent().run(it, "demo") },
+            ),
         )
         while (true) {
             val line = try {
@@ -84,10 +88,7 @@ class Harness12(
             }
             if (line.isBlank()) continue
             if (line == "exit") break
-            // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
-            val answer = if (dispatch.run(line) == "SKILL") skillAgent().run(line)
-                else assistantAgent().run(line, "demo")
-            println(answer)
+            println(router.run(line))
         }
         terminal.close()
     }

@@ -383,20 +383,28 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 <section class="slide">
   <p class="sec">03 미니 하네스</p>
   <h2>4/5 라우팅: 분기가 선언으로</h2>
-  <p class="contract">추가: 조건 엣지 2줄 · 확인: 일정은 캘린더를 거쳐, 나머지는 바로 모델로</p>
+  <p class="contract">추가: 조건 엣지 2줄 · 확인: 판교 사투리는 skill로, 나머지는 assistant로</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">val</span> router = strategy&lt;String, String&gt;(<span class="s">"route"</span>) {
-    <span class="k">val</span> schedule <span class="k">by</span> node(<span class="s">"schedule"</span>) { CalendarToolSet().schedules(it) }
-    <span class="k">val</span> reply <span class="k">by</span> nodeLLMRequest()
+      <pre><span class="k">fun</span> dispatchRouter(
+    askSkill: <span class="k">suspend</span> (String) -&gt; String,
+    askAssistant: <span class="k">suspend</span> (String) -&gt; String,
+) = strategy&lt;String, String&gt;(<span class="s">"dispatch"</span>) {
+    <span class="k">val</span> skill <span class="k">by</span> node&lt;String, String&gt;(<span class="s">"skill"</span>) { askSkill(it) }
+    <span class="k">val</span> assistant <span class="k">by</span> node&lt;String, String&gt;(<span class="s">"assistant"</span>) { askAssistant(it) }
 
-    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> schedule <span class="inf">onCondition</span> { <span class="s">"일정"</span> <span class="k">in</span> it })</span>
-    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> reply <span class="inf">onCondition</span> { <span class="k">true</span> })</span>
-    edge(schedule <span class="inf">forwardTo</span> reply <span class="inf">transformed</span> { <span class="s">"다음 일정을 자연스러운 존댓말 한 문장으로 안내한다: $it"</span> })
-    edge(reply <span class="inf">forwardTo</span> nodeFinish <span class="inf">transformed</span> { it.textContent() })
-}</pre>
-      <pre class="err">run("오늘 일정 알려줘")    → "10시에 팀 싱크, 2시에 디자인 리뷰가 있습니다."
-run("오늘 점심 뭐 먹을까")  → "김치찌개, 라면, 김밥 중 선택?"</pre>
+    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> skill <span class="inf">onCondition</span> { <span class="s">"판교 사투리"</span> <span class="k">in</span> it })</span>
+    <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> assistant <span class="inf">onCondition</span> { <span class="k">true</span> })</span>
+    edge(skill <span class="inf">forwardTo</span> nodeFinish)
+    edge(assistant <span class="inf">forwardTo</span> nodeFinish)
+}
+
+dispatchRouter(
+    askSkill = { skillAgent().run(it) },
+    askAssistant = { assistantAgent().run(it, <span class="s">"demo"</span>) },
+)</pre>
+      <pre class="err">"판교 사투리 3으로 바꿔 줘: …"  →  skill      (3단계 스킬 에이전트)
+"내일 일정 알려줘"              →  assistant  (2단계 캘린더 비서)</pre>
     </div>
     <div>
       <h3>평가 규칙</h3>
@@ -425,13 +433,13 @@ config:
 ---
 stateDiagram
     direction LR
-    state "schedule" as schedule
-    state "reply" as reply
+    state "skill" as skill
+    state "assistant" as assistant
 
-    [*] --> schedule : onCondition
-    [*] --> reply : onCondition
-    schedule --> reply : transformed
-    reply --> [*] : transformed</pre>
+    [*] --> skill : onCondition
+    [*] --> assistant : onCondition
+    skill --> [*]
+    assistant --> [*]</pre>
         <figcaption>4단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 제외.</figcaption>
       </figure>
     </div>

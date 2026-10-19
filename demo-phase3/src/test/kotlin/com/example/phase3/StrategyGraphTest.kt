@@ -2,57 +2,39 @@ package com.example.phase3
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.asMermaidDiagram
-import ai.koog.agents.core.dsl.builder.node
-import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeLLMRequest
 import ai.koog.prompt.executor.model.PromptExecutor
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotBeBlank
-import io.kotest.matchers.string.shouldNotContain
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
-    fun agent() = AIAgent(
+    fun router() = AIAgent(
         promptExecutor = promptExecutor,
         llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-        strategy = assistantRouter(),
-        systemPrompt = "비서다. 짧게 답한다.",
-        temperature = 0.2,
+        strategy = dispatchRouter(
+            askSkill = { "skill: $it" },
+            askAssistant = { "assistant: $it" },
+        ),
     )
 
-    test("조건 엣지가 분기를 고른다") {
-        val result = agent().run("오늘 일정 알려줘")
-        println("StrategyGraphTest 라우팅 응답: $result")
-        result shouldContain "팀 싱크"
+    test("판교 사투리 요청은 스킬 담당에게 간다") {
+        router().run("판교 사투리 3으로 바꿔 줘: 내일 회식 오세요") shouldBe
+            "skill: 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요"
     }
 
-    test("일반 질문은 모델이 받아 답한다") {
-        val result = agent().run("오늘 점심 뭐 먹을까")
-        println("StrategyGraphTest 일반 응답: $result")
-        result.shouldNotBeBlank()
-        result shouldNotContain "팀 싱크"
+    test("나머지 요청은 비서에게 간다") {
+        router().run("내일 일정 알려줘") shouldBe "assistant: 내일 일정 알려줘"
     }
 
     test("전략에서 Mermaid 다이어그램이 나온다") {
-        val diagram = assistantRouter().asMermaidDiagram()
+        val diagram = dispatchRouter({ it }, { it }).asMermaidDiagram()
         println("StrategyGraphTest 다이어그램:\n$diagram")
-        diagram shouldContain "stateDiagram"
-        diagram shouldContain "schedule"
+        diagram shouldContain "skill"
+        diagram shouldContain "assistant"
     }
 })
-
-private fun assistantRouter() = strategy<String, String>("route") {
-    val schedule by node<String, String>("schedule") { CalendarToolSet().schedules(it) }
-    val reply by nodeLLMRequest()
-
-    edge(nodeStart forwardTo schedule onCondition { "일정" in it })
-    edge(nodeStart forwardTo reply onCondition { true })
-    edge(schedule forwardTo reply transformed { "다음 일정을 자연스러운 존댓말 한 문장으로 안내한다: $it" })
-    edge(reply forwardTo nodeFinish transformed { it.textContent() })
-}
