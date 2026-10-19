@@ -24,13 +24,13 @@ class DispatchTest(val promptExecutor: PromptExecutor) : FunSpec({
     }
 
     test("비서 요청을 가른다") {
-        agent().run("내일 일정 알려줘") shouldBe "TASK"
+        agent().run("내일 일정 알려줘") shouldBe "ASSISTANT"
     }
 
     test("가르는 전략에서 다이어그램이 나온다") {
         val diagram = dispatchRouter().asMermaidDiagram()
         println("DispatchTest 다이어그램:\n$diagram")
         diagram shouldContain "skill"
-        diagram shouldContain "task"
+        diagram shouldContain "assistant"
     }
 })

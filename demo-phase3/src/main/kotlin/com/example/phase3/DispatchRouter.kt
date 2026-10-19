@@ -9,10 +9,10 @@ import ai.koog.agents.core.dsl.builder.strategy
  */
 fun dispatchRouter() = strategy<String, String>("dispatch") {
     val skill by node<String, String>("skill") { "SKILL" }
-    val task by node<String, String>("task") { "TASK" }
+    val assistant by node<String, String>("assistant") { "ASSISTANT" }
 
     edge(nodeStart forwardTo skill onCondition { "판교 사투리" in it })
-    edge(nodeStart forwardTo task onCondition { true })
+    edge(nodeStart forwardTo assistant onCondition { true })
     edge(skill forwardTo nodeFinish)
-    edge(task forwardTo nodeFinish)
+    edge(assistant forwardTo nodeFinish)
 }
