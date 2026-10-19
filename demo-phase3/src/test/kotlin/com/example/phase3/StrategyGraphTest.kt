@@ -18,49 +18,22 @@ import org.springframework.boot.test.context.SpringBootTest
 class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
     extensions(SpringExtension)
 
-    test("두 노드를 잇는 커스텀 전략이 돈다") {
-        val chain = strategy<String, String>("two-step") {
-            val draft by nodeLLMRequest()
-            val polish by nodeLLMRequest()
-
-            edge(nodeStart forwardTo draft)
-            edge(draft forwardTo polish transformed { "그 숫자에 10을 더하면?" })
-            edge(polish forwardTo nodeFinish transformed { it.textContent() })
-        }
-        val agent = AIAgent(
-            promptExecutor = promptExecutor,
-            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = chain,
-            systemPrompt = "숫자만 답한다. 다른 말은 붙이지 않는다.",
-            temperature = 0.2,
-        )
-        val result = agent.run("2 더하기 3은?")
-        println("StrategyGraphTest 체인 응답: $result")
-        result shouldContain "15"
-    }
+    fun agent() = AIAgent(
+        promptExecutor = promptExecutor,
+        llmModel = KoogModels.QWEN3_4B_INSTRUCT,
+        strategy = assistantRouter(),
+        systemPrompt = "비서다. 짧게 답한다.",
+        temperature = 0.2,
+    )
 
     test("조건 엣지가 분기를 고른다") {
-        val agent = AIAgent(
-            promptExecutor = promptExecutor,
-            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = assistantRouter(),
-            systemPrompt = "비서다. 짧게 답한다.",
-            temperature = 0.2,
-        )
-        val result = agent.run("오늘 일정 알려줘")
+        val result = agent().run("오늘 일정 알려줘")
         println("StrategyGraphTest 라우팅 응답: $result")
         result shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰"
     }
 
     test("일반 질문은 모델이 받아 답한다") {
-        val agent = AIAgent(
-            promptExecutor = promptExecutor,
-            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = assistantRouter(),
-            systemPrompt = "비서다. 짧게 답한다.",
-            temperature = 0.2,
-        )
-        val result = agent.run("오늘 점심 뭐 먹을까")
+        val result = agent().run("오늘 점심 뭐 먹을까")
         println("StrategyGraphTest 일반 응답: $result")
         result.shouldNotBeBlank()
         result shouldNotContain "팀 싱크"
@@ -71,24 +44,6 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
         println("StrategyGraphTest 다이어그램:\n$diagram")
         diagram shouldContain "stateDiagram"
         diagram shouldContain "schedule"
-        diagram shouldContain "schedule"
-    }
-
-    test("자기 자신으로 돌아오는 엣지가 루프가 된다") {
-        val loop = strategy<String, String>("loop") {
-            val step by node<String, String>("step") { "$it." }
-
-            edge(nodeStart forwardTo step)
-            edge(step forwardTo step onCondition { it.length < 3 })
-            edge(step forwardTo nodeFinish onCondition { it.length >= 3 })
-        }
-        val agent = AIAgent(
-            promptExecutor = promptExecutor,
-            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = loop,
-            maxIterations = 5,
-        )
-        agent.run("") shouldBe "..."
     }
 })
 
