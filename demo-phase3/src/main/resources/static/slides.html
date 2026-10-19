@@ -423,11 +423,10 @@ dispatchRouter(
 <section class="slide">
   <p class="sec">03 미니 하네스</p>
   <h2>5/5 시각화: 전략에서 다이어그램이 나옴</h2>
-  <p class="contract">추가: asMermaidDiagram() 한 줄 · 확인: 다이어그램 원문</p>
-  <div class="cols w">
-    <div>
-      <figure>
-        <pre class="mermaid">---
+  <p class="contract">추가: asMermaidDiagram() 한 줄 · 확인: 우리 전략과 내장 전략 둘 다 그려짐</p>
+  <div class="cols">
+    <figure>
+      <pre class="mermaid">---
 config:
   theme: neutral
 ---
@@ -440,20 +439,36 @@ stateDiagram
     [*] --> assistant : onCondition
     skill --> [*]
     assistant --> [*]</pre>
-        <figcaption>4단계의 라우팅 전략에 <code>asMermaidDiagram()</code>을 부른 출력. 노드·엣지는 그대로 두고 렌더를 위해 가로 방향과 테마 지시만 더했고 제목 줄은 제외.</figcaption>
-      </figure>
-    </div>
-    <div>
-      <h3>쓰는 법</h3>
-      <ul>
-        <li><code>asMermaidDiagram()</code> 한 번이면 끝</li>
-        <li>조건식 내용까지는 안 나옴. onCondition이라고만 적힘</li>
-      </ul>
-      <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있음</div>
-    </div>
+      <figcaption><code>dispatchRouter().asMermaidDiagram()</code>. 4단계에서 우리가 짠 전략</figcaption>
+    </figure>
+    <figure>
+      <pre class="mermaid">---
+config:
+  theme: neutral
+---
+stateDiagram
+    direction LR
+    state "nodeCallLLM" as nodeCallLLM
+    state "nodeExecuteTool" as nodeExecuteTool
+    state "nodeSendToolResult" as nodeSendToolResult
+
+    [*] --> nodeCallLLM
+    nodeCallLLM --> nodeExecuteTool : transformed
+    nodeCallLLM --> [*] : transformed
+    nodeExecuteTool --> nodeSendToolResult
+    nodeSendToolResult --> [*] : transformed
+    nodeSendToolResult --> nodeExecuteTool : transformed</pre>
+      <figcaption><code>singleRunStrategy().asMermaidDiagram()</code>. 1단계에서 전략을 안 적었을 때 실제로 돌던 Koog 내장 전략</figcaption>
+    </figure>
   </div>
+  <ul>
+    <li>같은 함수 한 번으로 우리가 짠 전략도, Koog가 숨겨 둔 내장 전략도 그려짐</li>
+    <li>오른쪽의 도구 실행 → 결과 전달 → 다시 도구 루프가 2단계에서 "기본 전략이 처리한다"고 넘어간 도구 왕복</li>
+    <li>조건식 내용까지는 안 나옴. onCondition, transformed라고만 적힘</li>
+  </ul>
+  <div class="invert" style="font-size:14px">전략이 <b>자료구조</b>라서 그릴 수 있음. 내장 전략도 예외가 아님</div>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a></span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/custom-strategy-graphs/" target="_blank" rel="noopener">Custom strategy graphs</a> · <a href="https://docs.koog.ai/predefined-agent-strategies/" target="_blank" rel="noopener">Predefined agent strategies</a>: singleRunStrategy</span>
   </div>
 </section>
 
@@ -484,8 +499,8 @@ stateDiagram
     slides[idx].classList.add('active');
     counter.textContent = (idx + 1) + ' / ' + slides.length;
     if (history.replaceState) history.replaceState(null, '', '#' + (idx + 1));
-    var m = slides[idx].querySelector('pre.mermaid:not([data-processed])');
-    if (m && window.mermaid && window.mermaid.run){ try { mermaid.run({nodes:[m]}); } catch(e){} }
+    var ms = slides[idx].querySelectorAll('pre.mermaid:not([data-processed])');
+    if (ms.length && window.mermaid && window.mermaid.run){ try { mermaid.run({nodes:ms}); } catch(e){} }
   }
   var h = parseInt((location.hash || '').slice(1), 10);
   show(isNaN(h) ? 0 : h - 1);
