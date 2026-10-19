@@ -53,6 +53,6 @@ private fun assistantRouter() = strategy<String, String>("route") {
 
     edge(nodeStart forwardTo schedule onCondition { "일정" in it })
     edge(nodeStart forwardTo reply onCondition { true })
-    edge(schedule forwardTo reply transformed { "이 일정을 보고 비서답게 알려 준다: $it" })
+    edge(schedule forwardTo reply transformed { "다음 일정을 자연스러운 존댓말 한 문장으로 안내한다: $it" })
     edge(reply forwardTo nodeFinish transformed { it.textContent() })
 }

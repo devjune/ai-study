@@ -390,10 +390,10 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
     <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> schedule <span class="inf">onCondition</span> { <span class="s">"일정"</span> <span class="k">in</span> it })</span>
     <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> reply <span class="inf">onCondition</span> { <span class="k">true</span> })</span>
-    edge(schedule <span class="inf">forwardTo</span> reply <span class="inf">transformed</span> { <span class="s">"이 일정을 보고 비서답게 알려 준다: $it"</span> })
+    edge(schedule <span class="inf">forwardTo</span> reply <span class="inf">transformed</span> { <span class="s">"다음 일정을 자연스러운 존댓말 한 문장으로 안내한다: $it"</span> })
     edge(reply <span class="inf">forwardTo</span> nodeFinish <span class="inf">transformed</span> { it.textContent() })
 }</pre>
-      <pre class="err">run("오늘 일정 알려줘")    → "10:00 팀 싱크, 14:00 디자인 리뷰. 준비 완료."
+      <pre class="err">run("오늘 일정 알려줘")    → "10시에 팀 싱크를, 2시에 디자인 리뷰를 진행합니다."
 run("오늘 점심 뭐 먹을까")  → "김치찌개, 라면, 팟차림 중 선택?"</pre>
     </div>
     <div>
