@@ -5,6 +5,7 @@ import ai.koog.agents.chatMemory.feature.ChatMemory
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.ext.tool.file.ReadFileTool
+import ai.koog.agents.features.eventHandler.feature.EventHandler
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.rag.base.files.JVMFileSystemProvider
 import ai.koog.skills.discovery.discoverSkills
@@ -53,7 +54,9 @@ class Harness12(
                 "본문을 읽고, 지침을 따라 답한다. 본문을 읽기 전에는 답하지 않는다.\n" + skillsPrompt,
             temperature = 0.0,
             toolRegistry = ToolRegistry { tool(ReadFileTool(JVMFileSystemProvider.ReadOnly)) },
-        )
+        ) {
+            install(EventHandler, trace("skill"))
+        }
 
         fun assistantAgent() = AIAgent(
             promptExecutor = promptExecutor,
@@ -66,6 +69,7 @@ class Harness12(
             install(ChatMemory) {
                 chatHistoryProvider = historyProvider
             }
+            install(EventHandler, trace("assistant"))
         }
 
         val terminal = TerminalBuilder.builder().system(true).build()
@@ -78,7 +82,9 @@ class Harness12(
                 askSkill = { skillAgent().run(it) },
                 askAssistant = { assistantAgent().run(it, "demo") },
             ),
-        )
+        ) {
+            install(EventHandler, trace("dispatch", nodes = true))
+        }
         while (true) {
             val line = try {
                 reader.readLine("❯ ")

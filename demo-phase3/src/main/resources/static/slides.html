@@ -234,7 +234,7 @@
     <div class="row"><span class="cat">도구</span><span class="chips">
       <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
     <div class="row"><span class="cat">기능</span><span class="chips">
-      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
+      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip on" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
     <div class="row"><span class="cat">프롬프트</span><span class="chips">
       <span class="chip" data-tip="길어진 이력을 접어 토큰 절약. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
     <div class="row"><span class="cat">프로토콜</span><span class="chips">
@@ -330,6 +330,10 @@
 <span class="cm">// 하네스에 한 줄</span>
 toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
+  dispatch  → assistant
+  assistant LLM 호출 (메시지 2개)
+  assistant schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
+  assistant LLM 호출 (메시지 4개)
 내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.</pre>
     </div>
     <div>
@@ -362,7 +366,11 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 ## 강도
 - 1~3: 부드러운 사내 메모 … 11: 기업 특이점</pre>
       <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
-내일 회식 공유 드리고, 참석 여부는 편하게 싱크해 주세요.</pre>
+  dispatch  → skill
+  skill     LLM 호출 (메시지 2개)
+  skill     __read_file__(path=/tmp/koog-skills/pangyo-dialect/SKILL.md) → 2,047자
+  skill     LLM 호출 (메시지 4개)
+내일 회식 오세요 → 내일 회식 공유 드리고, 참석 여부는 편하게 싱크해 주세요.</pre>
     </div>
     <div>
       <h3>여기서 알 수 있는 것</h3>
@@ -403,8 +411,12 @@ dispatchRouter(
     askSkill = { skillAgent().run(it) },
     askAssistant = { assistantAgent().run(it, <span class="s">"demo"</span>) },
 )</pre>
-      <pre class="err">"판교 사투리 3으로 바꿔 줘: …"  →  skill      (3단계 스킬 에이전트)
-"내일 일정 알려줘"              →  assistant  (2단계 캘린더 비서)</pre>
+      <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
+  dispatch  → skill
+  …
+❯ 내일 일정 알려줘
+  dispatch  → assistant
+  …</pre>
     </div>
     <div>
       <h3>평가 규칙</h3>
@@ -456,9 +468,9 @@ stateDiagram
 }
 
 askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo"</span></span>) }</pre>
-      <pre class="err">❯ 내일 일정 알려줘
-내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.
-❯ 아까 말한 첫 번째 일정이 뭐였지?
+      <pre class="err">❯ 아까 말한 첫 번째 일정이 뭐였지?
+  dispatch  → assistant
+  assistant LLM 호출 (메시지 4개)
 10:00 팀 싱크입니다.</pre>
     </div>
     <div>
