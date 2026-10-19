@@ -33,7 +33,7 @@ class SkillsTest(val promptExecutor: PromptExecutor) : FunSpec({
         skills shouldHaveSize 1
         val prompt = generateSkillsPrompt(skills, SkillsPromptFormat.XML)
         println("SkillsTest 카탈로그: $prompt")
-        prompt shouldContain "corporate-speak"
+        prompt shouldContain "pangyo-dialect"
         prompt shouldContain "판교 사투리"
     }
 

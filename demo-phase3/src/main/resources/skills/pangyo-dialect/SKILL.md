@@ -1,5 +1,5 @@
 ---
-name: corporate-speak
+name: pangyo-dialect
 description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로 바꾼다. 강도 1부터 11까지. 사용자가 "판교 사투리"라고 말하면 이 스킬을 쓴다.
 ---
 
