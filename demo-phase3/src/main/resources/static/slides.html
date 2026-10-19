@@ -86,7 +86,7 @@
     display:flex; flex-direction:column; gap:4px; font:400 11.5px/1.55 var(--mono); color:var(--mid);}
   .src b{display:inline-block; min-width:50px; color:var(--paper); background:var(--ink); padding:1px 6px; font-weight:500; margin-right:7px;}
   .src a{color:var(--mid); text-underline-offset:3px;}
-  svg text{font:500 12.5px var(--mono); fill:var(--ink);}
+  figure > svg text{font:500 12.5px var(--mono); fill:var(--ink);}
   svg .sm{font-size:10.5px; fill:var(--mid);}
   svg .bx{fill:none; stroke:var(--ink); stroke-width:1.25;}
   svg .bxf{fill:var(--wash); stroke:var(--ink); stroke-width:1.25;}
@@ -502,8 +502,18 @@ askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo
     slides[idx].classList.add('active');
     counter.textContent = (idx + 1) + ' / ' + slides.length;
     if (history.replaceState) history.replaceState(null, '', '#' + (idx + 1));
-    var ms = slides[idx].querySelectorAll('pre.mermaid:not([data-processed])');
-    if (ms.length && window.mermaid && window.mermaid.run){ try { mermaid.run({nodes:ms}); } catch(e){} }
+    renderMermaid(slides[idx].querySelectorAll('pre.mermaid:not([data-processed])'));
+  }
+  // 슬라이드는 transform: scale 안에 있어 그 안에서 재면 글자 폭이 어긋난다.
+  // mermaid.render는 임시 요소를 body에 붙여 재므로 결과 svg만 가져온다.
+  window.renderMermaid = function(nodes){
+    if (!nodes.length || !window.mermaid || !window.mermaid.render) return;
+    Array.prototype.forEach.call(nodes, function(node, i){
+      node.setAttribute('data-processed', 'true');
+      mermaid.render('mm' + Date.now() + '_' + i, node.textContent)
+        .then(function(r){ node.innerHTML = r.svg; })
+        .catch(function(){ node.removeAttribute('data-processed'); });
+    });
   }
   var h = parseInt((location.hash || '').slice(1), 10);
   show(isNaN(h) ? 0 : h - 1);
@@ -534,8 +544,7 @@ askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo
 (function(){
   mermaid.initialize({startOnLoad: false, theme: 'neutral'});
   function render(){
-    var nodes = document.querySelectorAll('pre.mermaid:not([data-processed])');
-    if (nodes.length && window.mermaid) { try { mermaid.run({nodes: nodes}); } catch(e){} }
+    renderMermaid(document.querySelectorAll('.slide.active pre.mermaid:not([data-processed])'));
   }
   render();
   setTimeout(render, 600);
