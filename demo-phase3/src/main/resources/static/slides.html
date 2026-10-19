@@ -111,6 +111,8 @@
   .steps div:first-child{border-top:1px solid var(--faint);}
   .steps .n{font:500 12px var(--mono); color:var(--mid);}
   .steps .d{font-size:13.5px; color:var(--mid);}
+  .steps.compact div{padding:8px 0; font-size:15px;}
+  .steps.two div{grid-template-columns:120px 1fr;}
   .contract{font:400 11.5px var(--mono); color:var(--mid); letter-spacing:.04em;}
   a{color:inherit;}
   :focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
@@ -260,19 +262,34 @@
   <h2>오늘 만들 것: 미니 하네스</h2>
   <ul>
     <li>모델 호출만 필요하면 Spring AI로 충분. 그 이상이 필요해지는 지점을 확인하는 것이 목적</li>
-    <li>하네스는 에이전트를 감싸 돌리는 최소 실행 틀</li>
+    <li>하네스: 모델 호출 바깥의 전부. 오늘은 여섯 부품을 다섯 단계로 쌓음</li>
     <li>그 안에 만드는 것: 일정과 회사 말투를 아는 작은 비서</li>
-    <li>다섯 단계로 쌓으며 Koog의 기능을 하나씩 살펴보기</li>
   </ul>
-  <div class="steps">
-    <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
-    <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
-    <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
-    <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
-    <div><span class="n">5단계</span><span>챗 메모리</span><span class="d">세션 ID로 이어지는 대화</span></div>
+  <div class="cols">
+    <div>
+      <h3>오늘 만드는 부품</h3>
+      <div class="steps compact">
+        <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
+        <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
+        <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
+        <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
+        <div><span class="n">5단계</span><span>챗 메모리</span><span class="d">세션 ID로 이어지는 대화</span></div>
+        <div><span class="n">전 단계</span><span>관측</span><span class="d">이벤트 핸들러가 찍는 터미널의 흐린 줄</span></div>
+      </div>
+    </div>
+    <div>
+      <h3>안 만드는 부품: Koog의 해당 기능</h3>
+      <div class="steps compact two">
+        <div><span>압축</span><span class="d">히스토리 압축</span></div>
+        <div><span>재시도</span><span class="d">실패 처리</span></div>
+        <div><span>가드레일</span><span class="d">모더레이션</span></div>
+        <div><span>테스트</span><span class="d">테스팅</span></div>
+        <div><span>영속</span><span class="d">퍼시스턴스</span></div>
+      </div>
+    </div>
   </div>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a></span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a> · 기능 이름은 docs.koog.ai 목차(5장 칩)</span>
   </div>
 </section>
 
