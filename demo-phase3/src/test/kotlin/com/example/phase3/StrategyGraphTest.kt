@@ -29,7 +29,7 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
     test("조건 엣지가 분기를 고른다") {
         val result = agent().run("오늘 일정 알려줘")
         println("StrategyGraphTest 라우팅 응답: $result")
-        result shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰"
+        result shouldContain "팀 싱크"
     }
 
     test("일반 질문은 모델이 받아 답한다") {
@@ -49,10 +49,10 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
 
 private fun assistantRouter() = strategy<String, String>("route") {
     val schedule by node<String, String>("schedule") { CalendarToolSet().schedules(it) }
-    val answer by nodeLLMRequest()
+    val reply by nodeLLMRequest()
 
     edge(nodeStart forwardTo schedule onCondition { "일정" in it })
-    edge(nodeStart forwardTo answer onCondition { true })
-    edge(schedule forwardTo nodeFinish)
-    edge(answer forwardTo nodeFinish transformed { it.textContent() })
+    edge(nodeStart forwardTo reply onCondition { true })
+    edge(schedule forwardTo reply transformed { "이 일정을 보고 비서답게 알려 준다: $it" })
+    edge(reply forwardTo nodeFinish transformed { it.textContent() })
 }
