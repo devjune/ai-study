@@ -7,6 +7,7 @@ import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.ext.tool.file.ReadFileTool
 import ai.koog.agents.features.eventHandler.feature.EventHandler
 import ai.koog.agents.snapshot.feature.Persistence
+import ai.koog.agents.snapshot.feature.RollbackToolRegistry
 import ai.koog.agents.snapshot.feature.isTombstone
 import ai.koog.agents.snapshot.providers.file.JVMFilePersistenceStorageProvider
 import ai.koog.prompt.executor.model.PromptExecutor
@@ -76,6 +77,7 @@ class Harness12(
                 "도구 결과가 없음이면 없다고 답한다. 이력의 일정을 다른 날짜에 쓰지 않는다. 일정 추가에는 add 도구를 호출한다.",
             temperature = 0.0,
             toolRegistry = ToolRegistry { tools(calendar) },
+            strategy = assistantStrategy(calendar, checkpoints),
         ) {
             install(ChatMemory) {
                 chatHistoryProvider = historyProvider
@@ -83,6 +85,8 @@ class Harness12(
             install(Persistence) {
                 storage = checkpoints
                 enableAutomaticPersistence = true
+                rollbackToolRegistry = RollbackToolRegistry.builder()
+                    .registerRollback(calendar::add, calendar::remove).build()
             }
             install(EventHandler, trace("assistant"))
         }

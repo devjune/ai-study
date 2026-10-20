@@ -245,3 +245,11 @@ BGE_M3, embedding·server.port 프로퍼티, ToolsTest의 수동 도구 루프 �
 프로젝트 미팅…"). "매번 호출" 지시 두 가지는 효과 없음. 프롬프트에 예시 한 줄("'모레
 일정은?' → schedules(day=모레)")을 넣자 이력 두어 개까지는 도구를 불렀다. 네댓 개 이상
 쌓이면 여전히 건너뛸 수 있어 시나리오에 한계로 적음. 첫 턴 출력은 그대로라 슬라이드 유지.
+
+## 2026-10-20 체크포인트 저장소: 공식 JDBC 모듈 있음
+
+docs.koog.ai Agent persistence 페이지는 인메모리·파일·직접 구현만 적지만, Maven Central에
+`ai.koog:agents-features-persistence-jdbc` 1.3.0이 있고 Postgres·MySQL·H2 구현체
+(DataSource, 스키마 마이그레이터, 보관 기한)가 들어 있다. 챗 메모리 쪽도
+`agents-features-chat-history-jdbc`, `agents-features-chat-memory-sql`이 있다. 벡터
+저장소는 체크포인트 저장소 목록에 없고 RAG·장기 기억용이다. 12장 불릿과 예상 질문에 반영.

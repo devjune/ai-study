@@ -7,6 +7,8 @@ import ai.koog.agents.core.tools.reflect.ToolSet
 @LLMDescription("캘린더")
 class CalendarToolSet : ToolSet {
     val calls = mutableListOf<String>()
+    var lastAdded: Entry? = null
+        private set
     private val entries = mutableMapOf(
         "내일" to mutableListOf("10:00 팀 싱크", "14:00 디자인 리뷰"),
     )
@@ -26,6 +28,27 @@ class CalendarToolSet : ToolSet {
         @LLMDescription("제목, 예: 치과") title: String,
     ): String {
         entries.getOrPut(day) { mutableListOf() } += "$time $title"
+        lastAdded = Entry(day, time, title)
         return "추가됨: $day $time $title"
     }
+
+    @Tool
+    @LLMDescription("날짜의 일정을 지운다")
+    fun remove(
+        @LLMDescription("날짜, 예: 내일") day: String,
+        @LLMDescription("시각, 예: 16:00") time: String,
+        @LLMDescription("제목, 예: 치과") title: String,
+    ): String {
+        calls += "remove:$day $time $title"
+        entries[day]?.remove("$time $title")
+        return "삭제됨: $day $time $title"
+    }
+
+    /** 마지막으로 추가한 일정과 같은 시각의 다른 일정이 있으면 그 일정. */
+    fun conflictOfLastAdded(): String? {
+        val added = lastAdded ?: return null
+        return entries[added.day].orEmpty().firstOrNull { it.startsWith(added.time) && it != "${added.time} ${added.title}" }
+    }
+
+    data class Entry(val day: String, val time: String, val title: String)
 }
