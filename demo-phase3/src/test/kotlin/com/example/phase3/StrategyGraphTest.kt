@@ -49,7 +49,7 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
         } finally {
             System.setOut(original)
         }
-        out.toString("UTF-8") shouldContain "dispatch  → assistant"
+        out.toString("UTF-8") shouldContain "dispatch    → assistant"
     }
 
     test("전략에서 Mermaid 다이어그램이 나온다") {

@@ -51,6 +51,9 @@
   th,td{border:1px solid var(--faint); padding:8px 11px; text-align:left; vertical-align:top;}
   th{border-color:var(--ink); border-bottom-width:2px; font:500 12.5px var(--mono);}
   td.k{font:400 12.5px var(--mono);}
+  table.cmp{font-size:14px;}
+  table.cmp td, table.cmp th{padding:7px 10px; vertical-align:top;}
+  table.cmp td:last-child{font:400 12.5px var(--mono); color:var(--mid); white-space:nowrap;}
   /* 목차 */
   .toc{display:flex; flex-direction:column; gap:0;}
   .toc div{display:grid; grid-template-columns:40px 1fr 60px; gap:14px; align-items:baseline;
@@ -112,6 +115,10 @@
   .steps .n{font:500 12px var(--mono); color:var(--mid);}
   .steps .d{font-size:13.5px; color:var(--mid);}
   .steps.compact div{padding:8px 0; font-size:15px;}
+  .layers{display:flex; flex-direction:column; gap:6px; font-size:13.5px; line-height:1.55;}
+  .layer{border:1px solid var(--ink); padding:9px 12px;}
+  .layer b{display:block; font:500 11px var(--mono); letter-spacing:.14em; color:var(--mid); margin-bottom:3px;}
+  .layer.bridge{border-style:dashed; color:var(--mid); padding:6px 12px; font:400 12px var(--mono);}
   .steps.two div{grid-template-columns:120px 1fr;}
   .contract{font:400 11.5px var(--mono); color:var(--mid); letter-spacing:.04em;}
   a{color:inherit;}
@@ -131,10 +138,10 @@
   <p class="sec">AGENDA</p>
   <h2>목차</h2>
   <div class="toc">
-    <div><span class="n">01</span><span>Koog 소개</span><span class="t">2분</span></div>
-    <div><span class="n">02</span><span>기능 범위</span><span class="t">2분</span></div>
-    <div><span class="n">03</span><span>미니 하네스: 다섯 단계</span><span class="t">6분</span></div>
-    <div><span class="n">04</span><span>Demo · 질의</span><span class="t">5분</span></div>
+    <div><span class="n">01</span><span>Koog가 내세우는 것</span><span class="t">2분 30초</span></div>
+    <div><span class="n">02</span><span>우리 스택에서 여섯 단계</span><span class="t">6분</span></div>
+    <div><span class="n">03</span><span>Spring AI와 갈리는 지점</span><span class="t">1분</span></div>
+    <div><span class="n">04</span><span>Demo · 질의</span><span class="t">4분</span></div>
   </div>
 </section>
 
@@ -195,38 +202,38 @@
 <!-- 3b 왜 만들었나 -->
 <section class="slide">
   <p class="sec">01</p>
-  <h2>왜 만들었나</h2>
+  <h2>공식이 내세우는 것</h2>
   <blockquote>
     <em>"Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents"</em>
     <span>예측 가능하고 장애를 견디고 기업 환경에서 쓸 수 있는 에이전트</span>
   </blockquote>
   <div class="cols">
     <div>
-      <h3>JetBrains 내부에서 먼저 사용</h3>
+      <h3>기본 부품만 주는 프레임워크와 갈리는 지점</h3>
       <ul>
-        <li>IDE의 코딩 에이전트 Junie와 AI Assistant를 Kotlin으로 개발 중</li>
-        <li>거기서 다듬은 방식을 프레임워크로 묶어 공개</li>
-        <li class="mid" style="font-size:13.5px">Junie가 Koog로 만들어졌다는 공식 확인은 없음</li>
+        <li>그래프 워크플로: 도메인 모델 위에 명시적 그래프로 실행 논리를 통제</li>
+        <li>내구 실행: 상태 기계 전체를 체크포인트로 저장. 복구와 되돌리기</li>
+        <li>히스토리 압축 전략, 재시도 부품, LLM 전환(이력 자동 재작성)</li>
+        <li>패턴 전부: 그래프, GOAP, LLM 플래너, 멀티 에이전트 오케스트레이션</li>
       </ul>
     </div>
     <div>
-      <h3>공식 예제</h3>
+      <h3>검증과 통합</h3>
       <ul>
-        <li><b><a href="https://docs.koog.ai/examples/Banking/" target="_blank" rel="noopener">Banking</a></b>: 문의 분류와 도구 호출</li>
-        <li><b><a href="https://docs.koog.ai/examples/Chess/" target="_blank" rel="noopener">Chess</a></b>: 반복 대국 진행</li>
-        <li><b><a href="https://docs.koog.ai/examples/GoogleMapsMcp/" target="_blank" rel="noopener">GoogleMaps</a> · <a href="https://docs.koog.ai/examples/PlaywrightMcp/" target="_blank" rel="noopener">Playwright</a> · <a href="https://docs.koog.ai/examples/UnityMcp/" target="_blank" rel="noopener">Unity</a></b>: 외부 시스템 제어(MCP)</li>
-        <li><b><a href="https://docs.koog.ai/examples/OpenTelemetry/" target="_blank" rel="noopener">OpenTelemetry</a> · <a href="https://docs.koog.ai/examples/Langfuse/" target="_blank" rel="noopener">Langfuse</a> · <a href="https://docs.koog.ai/examples/Weave/" target="_blank" rel="noopener">Weave</a></b>: 운영 모니터링</li>
+        <li>JetBrains 제품과 내부 에이전트에서 사용. ML 엔지니어가 다듬은 프롬프트와 전략<br><span class="mid">어느 제품인지는 공식 자료에 이름이 없음</span></li>
+        <li>Kotlin DSL과 Java API. 1.0부터 stable 모듈 1년 호환 보장</li>
+        <li>Spring Boot · Spring AI · Ktor 통합, 멀티플랫폼, OpenTelemetry</li>
       </ul>
     </div>
   </div>
   <div class="src">
-    <span><b>공식</b> <a href="https://github.com/JetBrains/koog" target="_blank" rel="noopener">github.com/JetBrains/koog</a> README · <a href="https://blog.jetbrains.com/kotlin/2025/09/the-kotlin-ai-stack-build-ai-agents-with-koog-code-smarter-with-junie-and-more/" target="_blank" rel="noopener">Kotlin AI Stack</a> · <a href="https://docs.koog.ai/examples/" target="_blank" rel="noopener">examples</a></span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a> · <a href="https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/" target="_blank" rel="noopener">Koog 1.0</a> · 예제: <a href="https://docs.koog.ai/examples/Banking/" target="_blank" rel="noopener">Banking</a> · <a href="https://docs.koog.ai/examples/Chess/" target="_blank" rel="noopener">Chess</a> · <a href="https://docs.koog.ai/examples/GoogleMapsMcp/" target="_blank" rel="noopener">MCP</a> · <a href="https://docs.koog.ai/examples/Langfuse/" target="_blank" rel="noopener">Langfuse</a></span>
   </div>
 </section>
 
 <!-- 4 기능 범위 -->
 <section class="slide">
-  <p class="sec">02</p>
+  <p class="sec">01</p>
   <h2>기능 범위</h2>
   <div class="map">
     <div class="row"><span class="cat">에이전트</span><span class="chips">
@@ -236,7 +243,7 @@
     <div class="row"><span class="cat">도구</span><span class="chips">
       <span class="chip on" data-tip="@Tool 붙인 함수가 곧 도구가 됨. 스키마는 자동 생성">애노테이션</span><span class="chip" data-tip="애노테이션 대신 Tool 클래스를 직접 구현">클래스 기반</span><span class="chip" data-tip="프레임워크가 기본 제공하는 도구 모음">내장 도구</span><span class="chip" data-tip="도구 파라미터 스키마를 손으로 기술">커스텀 스키마</span></span></div>
     <div class="row"><span class="cat">기능</span><span class="chips">
-      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip on" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
+      <span class="chip on" data-tip="대화 이력의 저장과 복원. Spring AI 저장소 어댑터 포함">챗 메모리</span><span class="chip on" data-tip="도구 호출 등 실행 이벤트에 거는 훅">이벤트 핸들러</span><span class="chip" data-tip="실행 과정을 추적 로그로 남김">트레이싱</span><span class="chip" data-tip="대화가 끝나도 남는 지식 저장">장기 기억</span><span class="chip on" data-tip="실행 상태를 저장해 중단 지점부터 복원">퍼시스턴스</span><span class="chip" data-tip="표준 관측. Langfuse·Datadog·Weave 익스포터 지원">OpenTelemetry</span><span class="chip" data-tip="install()로 붙는 기능을 직접 제작">커스텀 기능</span></span></div>
     <div class="row"><span class="cat">프롬프트</span><span class="chips">
       <span class="chip" data-tip="길어진 이력을 접어 토큰 절약. 접는 방식은 선택 가능">히스토리 압축</span><span class="chip" data-tip="이미지 등 텍스트 밖 콘텐츠를 프롬프트에 싣기">멀티모달</span><span class="chip" data-tip="프롬프트 캐싱 지시로 비용·지연 절감">캐시 제어</span><span class="chip" data-tip="모델 호출 실패 시의 재시도·복구 규칙">실패 처리</span><span class="chip" data-tip="같은 요청의 응답을 저장해 재사용">응답 캐싱</span><span class="chip" data-tip="LLM 세션 이력을 직접 읽고 고치는 저수준 API">수동 이력</span></span></div>
     <div class="row"><span class="cat">프로토콜</span><span class="chips">
@@ -258,45 +265,38 @@
 
 <!-- 03-0 오늘 만들 것 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>오늘 만들 것: 미니 하네스</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>오늘 만들 것: 우리 환경에서의 배치</h2>
   <ul>
-    <li>모델 호출만 필요하면 Spring AI로 충분. 그 이상이 필요해지는 지점을 확인하는 것이 목적</li>
-    <li>하네스: 모델 호출 바깥의 전부. 오늘은 여섯 부품을 다섯 단계로 쌓음</li>
-    <li>그 안에 만드는 것: 일정과 회사 말투를 아는 작은 비서</li>
+    <li>Koog가 내세우는 셋(그래프 워크플로, 내구 실행, 관측)을 우리 Spring AI 스택에서 직접 확인하는 것이 목적</li>
+    <li>아래층은 이미 쓰는 Spring AI. 브리지로 ChatModel과 ChatMemoryRepository를 재사용. Koog의 전제가 아니라 우리 선택</li>
+    <li>그 위에 만드는 것: 일정과 회사 말투를 아는 작은 비서</li>
   </ul>
   <div class="cols">
-    <div>
-      <h3>오늘 만드는 부품</h3>
-      <div class="steps compact">
-        <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
-        <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
-        <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
-        <div><span class="n">4단계</span><span>라우팅</span><span class="d">조건 엣지로 가르는 분기</span></div>
-        <div><span class="n">5단계</span><span>챗 메모리</span><span class="d">세션 ID로 이어지는 대화</span></div>
-        <div><span class="n">전 단계</span><span>관측</span><span class="d">이벤트 핸들러가 찍는 터미널의 흐린 줄</span></div>
-      </div>
+    <div class="layers">
+      <div class="layer"><b>KOOG</b>dispatch 전략 → 비서 에이전트(캘린더 도구 · 챗 메모리 · 체크포인트) / 스킬 에이전트(SKILL.md 읽기). 이벤트 핸들러는 셋 모두에</div>
+      <div class="layer bridge">브리지 koog-spring-ai-starter: ChatModel → PromptExecutor · ChatMemoryRepository → ChatHistoryProvider</div>
+      <div class="layer"><b>SPRING AI</b>ChatModel(Ollama, qwen3:4b-instruct) · ChatMemoryRepository(인메모리)</div>
     </div>
-    <div>
-      <h3>안 만드는 부품: Koog의 해당 기능</h3>
-      <div class="steps compact two">
-        <div><span>압축</span><span class="d">히스토리 압축</span></div>
-        <div><span>재시도</span><span class="d">실패 처리</span></div>
-        <div><span>가드레일</span><span class="d">모더레이션</span></div>
-        <div><span>테스트</span><span class="d">테스팅</span></div>
-        <div><span>영속</span><span class="d">퍼시스턴스</span></div>
-      </div>
+    <div class="steps compact">
+      <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
+      <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
+      <div><span class="n">3단계</span><span>스킬</span><span class="d">필요할 때 읽는 SKILL.md</span></div>
+      <div><span class="n">4단계</span><span>오케스트레이션</span><span class="d">담당 에이전트 둘을 그래프로</span></div>
+      <div><span class="n">5단계</span><span>챗 메모리</span><span class="d">세션 ID로 이어지는 대화</span></div>
+      <div><span class="n">6단계</span><span>내구 실행</span><span class="d">노드마다 체크포인트, 중단 뒤 이어서</span></div>
+      <div><span class="n">전 단계</span><span>관측</span><span class="d">이벤트 핸들러가 찍는 터미널의 흐린 줄</span></div>
     </div>
   </div>
   <div class="src">
-    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a> · <a href="https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/" target="_blank" rel="noopener">KotlinConf 2026 키노트</a> · 기능 이름은 docs.koog.ai 목차(5장 칩)</span>
+    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a>: Spring AI 통합 · <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">Spring AI integration</a></span>
   </div>
 </section>
 
 <!-- 03-1 1단계 말한다 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>1/5 기본 에이전트: AIAgent 하나로 시작</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>1/6 기본 에이전트: AIAgent 하나로 시작</h2>
   <p class="contract">추가: AIAgent와 입력 루프 · 확인: REPL 응답 "5"</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -331,8 +331,8 @@
 
 <!-- 03-2 2단계 도구 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>2/5 도구: 시그니처가 곧 스키마</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>2/6 도구: 시그니처가 곧 스키마</h2>
   <p class="contract">추가: @Tool 캘린더 함수 · 확인: 도구 호출 왕복</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -347,10 +347,10 @@
 <span class="cm">// 하네스에 한 줄</span>
 toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
-  dispatch  → assistant
-  assistant LLM 호출 (메시지 2개)
-  assistant schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
-  assistant LLM 호출 (메시지 4개)
+  dispatch    → assistant
+  assistant   LLM 호출 (메시지 2개)
+  assistant   schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
+  assistant   LLM 호출 (메시지 4개)
 내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.</pre>
     </div>
     <div>
@@ -369,8 +369,8 @@ toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
 
 <!-- 03-3 3단계 스킬 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>3/5 스킬: 필요할 때 읽는 SKILL.md</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>3/6 스킬: 필요할 때 읽는 SKILL.md</h2>
   <p class="contract">추가: SKILL.md + 파일 읽기 도구 · 확인: 판교 사투리 변환</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -383,10 +383,10 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 ## 강도
 - 1~3: 부드러운 사내 메모 … 11: 기업 특이점</pre>
       <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
-  dispatch  → skill
-  skill     LLM 호출 (메시지 2개)
-  skill     __read_file__(path=/tmp/koog-skills/pangyo-dialect/SKILL.md) → 2,047자
-  skill     LLM 호출 (메시지 4개)
+  dispatch    → skill
+  skill       LLM 호출 (메시지 2개)
+  skill       __read_file__(path=/tmp/koog-skills/pangyo-dialect/SKILL.md) → 2,047자
+  skill       LLM 호출 (메시지 4개)
 내일 회식 오세요 → 내일 회식 공유 드리고, 참석 여부는 편하게 싱크해 주세요.</pre>
     </div>
     <div>
@@ -395,7 +395,7 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
         <li>스킬은 frontmatter를 단 마크다운 파일. description 목록이 에이전트의 스킬 카탈로그가 됨</li>
         <li>요청이 스킬에 해당할 때만 파일을 읽어 지침을 따름. 프롬프트에 미리 싣지 않음</li>
         <li>Agent Skills는 Anthropic이 낸 표준. Koog 밖에서도 통하는 형식</li>
-        <li>Koog 몫은 둘: 폴더에서 SKILL.md를 찾고, description 목록을 프롬프트 문자열로 만들어 줌(1.2.0-beta). 내 몫은 파일 읽기 도구를 쥐여 주는 것뿐</li>
+        <li>Koog 몫은 둘: 폴더에서 SKILL.md를 찾고, description 목록을 프롬프트 문자열로 만들어 줌(1.3.0-beta). 내 몫은 파일 읽기 도구를 쥐여 주는 것뿐</li>
       </ul>
     </div>
   </div>
@@ -406,8 +406,8 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
 <!-- 03-2 조건 엣지 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>4/5 라우팅: 분기가 선언으로</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>4/6 오케스트레이션: 담당 에이전트 둘을 그래프로</h2>
   <p class="contract">추가: 조건 엣지 2줄 · 확인: 판교 사투리는 skill로, 나머지는 assistant로</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -417,29 +417,26 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 ) = strategy&lt;String, String&gt;(<span class="s">"dispatch"</span>) {
     <span class="k">val</span> skill <span class="k">by</span> node&lt;String, String&gt;(<span class="s">"skill"</span>) { askSkill(it) }
     <span class="k">val</span> assistant <span class="k">by</span> node&lt;String, String&gt;(<span class="s">"assistant"</span>) { askAssistant(it) }
-
     <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> skill <span class="inf">onCondition</span> { <span class="s">"판교 사투리"</span> <span class="k">in</span> it })</span>
     <span class="hi">edge(nodeStart <span class="inf">forwardTo</span> assistant <span class="inf">onCondition</span> { <span class="k">true</span> })</span>
     edge(skill <span class="inf">forwardTo</span> nodeFinish)
     edge(assistant <span class="inf">forwardTo</span> nodeFinish)
 }
-
 dispatchRouter(
     askSkill = { skillAgent().run(it) },
     askAssistant = { assistantAgent().run(it, <span class="s">"demo"</span>) },
 )</pre>
       <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
-  dispatch  → skill
-  …
+  dispatch    → skill
 ❯ 내일 일정 알려줘
-  dispatch  → assistant
-  …</pre>
+  dispatch    → assistant</pre>
     </div>
     <div>
       <h3>평가 규칙</h3>
       <ul>
         <li>엣지는 선언한 순서대로 검사됨</li>
         <li>넓은 조건(<code>onCondition { true }</code>)은 마지막에 둠. 앞에 오면 뒤 분기를 가림</li>
+        <li>if문과 다른 점: 노드와 엣지가 자료구조. 그림, 노드 이벤트, 체크포인트가 그 위에 붙음</li>
       </ul>
       <figure>
         <pre class="mermaid">---
@@ -466,8 +463,8 @@ stateDiagram
 
 <!-- 03-5 챗 메모리 -->
 <section class="slide">
-  <p class="sec">03 미니 하네스</p>
-  <h2>5/5 챗 메모리: 세션 ID로 이어지는 대화</h2>
+  <p class="sec">02 여섯 단계</p>
+  <h2>5/6 챗 메모리: 세션 ID로 이어지는 대화</h2>
   <p class="contract">추가: ChatMemory 기능과 세션 ID · 확인: 앞 일정을 도구 호출 없이 답함</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
@@ -486,8 +483,8 @@ stateDiagram
 
 askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo"</span></span>) }</pre>
       <pre class="err">❯ 아까 말한 첫 번째 일정이 뭐였지?
-  dispatch  → assistant
-  assistant LLM 호출 (메시지 4개)
+  dispatch    → assistant
+  assistant   LLM 호출 (메시지 4개)
 10:00 팀 싱크입니다.</pre>
     </div>
     <div>
@@ -501,6 +498,67 @@ askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo
   </div>
   <div class="src">
     <span><b>공식</b> <a href="https://docs.koog.ai/features/chat-memory/" target="_blank" rel="noopener">Chat memory</a> · <a href="https://docs.koog.ai/spring-ai-integration/" target="_blank" rel="noopener">Spring AI integration</a>: Chat Memory Starter</span>
+  </div>
+</section>
+
+<!-- 03-6 내구 실행 -->
+<section class="slide">
+  <p class="sec">02 여섯 단계</p>
+  <h2>6/6 내구 실행: 중단 뒤 이어서</h2>
+  <p class="contract">추가: Persistence 기능 · 확인: 강제 종료 뒤 재시작하면 중단 지점부터 완료</p>
+  <div class="cols w">
+    <div style="display:flex; flex-direction:column; gap:9px">
+      <pre><span class="k">val</span> checkpoints = JVMFilePersistenceStorageProvider(Path.of(<span class="s">"/tmp/koog-checkpoints"</span>))
+<span class="hi">install(Persistence) {</span>
+<span class="hi">    storage = checkpoints</span>
+<span class="hi">    enableAutomaticPersistence = <span class="k">true</span></span>
+<span class="hi">}</span>
+checkpoints.getLatestCheckpoint(<span class="s">"demo"</span>)?.takeUnless { it.isTombstone() }?.let {
+    traceLine(<span class="s">"persistence"</span>, <span class="s">"중단된 실행 발견, $node 다음부터 이어감"</span>)
+    println(assistantAgent().run(<span class="s">""</span>, <span class="s">"demo"</span>))
+}</pre>
+      <pre class="err">❯ 내일 일정 알려 주고, 일정마다 준비할 것을 다섯 가지씩 이유와 함께 제안해 줘
+  dispatch    → assistant
+  assistant   LLM 호출 (메시지 2개)
+  assistant   schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
+  assistant   LLM 호출 (메시지 4개)
+[1]    63747 killed     java -jar …          ← 터미널 1에서 pkill -9
+$ koog
+  persistence 중단된 실행 발견, nodeExecuteTool 다음부터 이어감
+  assistant   LLM 호출 (메시지 4개)
+1. **10:00 팀 싱크** …</pre>
+    </div>
+    <div>
+      <h3>여기서 알 수 있는 것</h3>
+      <ul>
+        <li>노드가 끝날 때마다 체크포인트 저장: 메시지 이력, 마지막 노드와 출력, 모델, 도구 목록. 정상 완료 때 완료 표시</li>
+        <li>저장 키는 run의 둘째 인자. 챗 메모리의 세션 ID와 같은 값이라, 한 세션이 대화 이력과 실행 상태를 함께 가짐</li>
+        <li>완료 표시 없는 체크포인트가 있으면 다음 run이 그 노드 다음부터 이어감. 되돌리기와 도구 부작용 롤백도 같은 기능</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/features/agent-persistence/" target="_blank" rel="noopener">Agent persistence</a>: 체크포인트, 복구, 롤백</span>
+  </div>
+</section>
+
+<!-- 5 갈리는 지점 -->
+<section class="slide">
+  <p class="sec">03</p>
+  <h2>Spring AI와 갈리는 지점</h2>
+  <table class="cmp">
+    <tr><th>부품</th><th>Spring AI</th><th>Koog</th><th>오늘</th></tr>
+    <tr><td class="k">모델 호출</td><td>ChatClient</td><td>AIAgent. PromptExecutor는 브리지가 ChatModel을 감쌈</td><td>1단계</td></tr>
+    <tr><td class="k">도구</td><td>@Tool</td><td>@Tool. 같은 방식</td><td>2단계</td></tr>
+    <tr><td class="k">스킬</td><td>코어에 없음, 직접 구현</td><td>discoverSkills, 카탈로그 프롬프트(1.3.0-beta)</td><td>3단계</td></tr>
+    <tr><td class="k">오케스트레이션</td><td>코드로 호출 순서를 씀</td><td>전략 그래프. 노드와 엣지가 자료구조</td><td>4단계</td></tr>
+    <tr><td class="k">챗 메모리</td><td>ChatMemory advisor</td><td>ChatMemory 기능. 저장소는 Spring AI 것 재사용</td><td>5단계</td></tr>
+    <tr><td class="k">내구 실행</td><td>코어에 없음</td><td>Persistence. 노드마다 체크포인트, 세션 단위 복구와 롤백</td><td>6단계</td></tr>
+    <tr><td class="k">관측</td><td>Micrometer 관측</td><td>EventHandler, Tracing, OpenTelemetry</td><td>전 단계</td></tr>
+    <tr><td class="k">그 밖</td><td>모델 호출 재시도</td><td>히스토리 압축 전략, 재시도 부품, LLM 전환(이력 재작성), GOAP·LLM 플래너</td><td>출처만</td></tr>
+  </table>
+  <div class="src">
+    <span><b>공식</b> <a href="https://docs.koog.ai/why-koog/" target="_blank" rel="noopener">Why Koog</a>: "기본 부품만 주는 프레임워크와 갈리는 지점" · Spring AI 열은 1.1.6 코어 기준</span>
   </div>
 </section>
 

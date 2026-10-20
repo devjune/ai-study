@@ -11,15 +11,15 @@ import ai.koog.serialization.JSONPrimitive
 fun trace(label: String, nodes: Boolean = false): EventHandlerConfig.() -> Unit = {
     if (nodes) {
         onNodeExecutionStarting { ctx ->
-            if (!ctx.node.name.startsWith("__")) line(label, "→ ${ctx.node.name}")
+            if (!ctx.node.name.startsWith("__")) traceLine(label, "→ ${ctx.node.name}")
         }
     }
     onLLMCallStarting { ctx ->
-        line(label, "LLM 호출 (메시지 ${ctx.prompt.messages.size}개)")
+        traceLine(label, "LLM 호출 (메시지 ${ctx.prompt.messages.size}개)")
     }
     onToolCallCompleted { ctx ->
         val args = ctx.toolArgs.entries.entries.joinToString(", ") { (k, v) -> "$k=${v.text()}" }
-        line(label, "${ctx.toolName}($args) → ${ctx.toolResult?.summary().orEmpty()}")
+        traceLine(label, "${ctx.toolName}($args) → ${ctx.toolResult?.summary().orEmpty()}")
     }
 }
 
@@ -28,5 +28,5 @@ private fun JSONElement.text() = (this as? JSONPrimitive)?.content ?: toString()
 private fun JSONElement.summary() =
     if (this is JSONPrimitive) content.replace('\n', ' ') else "%,d자".format(toString().length)
 
-private fun line(label: String, text: String) =
-    println("\u001b[2m  ${label.padEnd(10)}$text\u001b[0m")
+fun traceLine(label: String, text: String) =
+    println("\u001b[2m  ${label.padEnd(12)}$text\u001b[0m")

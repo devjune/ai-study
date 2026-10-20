@@ -6,6 +6,9 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.ext.tool.file.ReadFileTool
 import ai.koog.agents.features.eventHandler.feature.EventHandler
+import ai.koog.agents.snapshot.feature.Persistence
+import ai.koog.agents.snapshot.feature.isTombstone
+import ai.koog.agents.snapshot.providers.file.JVMFilePersistenceStorageProvider
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.rag.base.files.JVMFileSystemProvider
 import ai.koog.skills.discovery.discoverSkills
@@ -20,6 +23,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.io.File
+import java.nio.file.Path
 
 /**
  * 슬라이드 12 Demo의 미니 하네스 — 입력 루프 하나에 전담 에이전트 둘.
@@ -45,6 +49,8 @@ class Harness12(
         }.absolutePath
         val skills = discoverSkills(JVMFileSystemProvider.ReadOnly, listOf(skillsRoot))
         val skillsPrompt = generateSkillsPrompt(skills, SkillsPromptFormat.XML)
+        // 체크포인트는 재시작 뒤에도 남아야 하므로 지우지 않는다.
+        val checkpoints = JVMFilePersistenceStorageProvider(Path.of("/tmp/koog-checkpoints"))
 
         fun skillAgent() = AIAgent(
             promptExecutor = promptExecutor,
@@ -69,6 +75,10 @@ class Harness12(
             install(ChatMemory) {
                 chatHistoryProvider = historyProvider
             }
+            install(Persistence) {
+                storage = checkpoints
+                enableAutomaticPersistence = true
+            }
             install(EventHandler, trace("assistant"))
         }
 
@@ -84,6 +94,13 @@ class Harness12(
             ),
         ) {
             install(EventHandler, trace("dispatch", nodes = true))
+        }
+        // 세션 "demo"는 챗 메모리의 대화 키이자 체크포인트의 실행 키다.
+        // 완료 표시 없는 체크포인트가 남아 있으면 그 노드 다음부터 마저 돌린다.
+        checkpoints.getLatestCheckpoint("demo")?.takeUnless { it.isTombstone() }?.let {
+            val node = it.graphProperties?.nodePath?.substringAfterLast('/')
+            traceLine("persistence", "중단된 실행 발견, $node 다음부터 이어감")
+            println(assistantAgent().run("", "demo"))
         }
         while (true) {
             val line = try {

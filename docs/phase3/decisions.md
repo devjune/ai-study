@@ -148,3 +148,36 @@ dispatch 그림 하나와 예상 질문으로 내렸고, 내장 전략(singleRun
 dispatch 줄, 11장은 메시지 4개짜리 LLM 호출 한 번과 도구 줄 없음. 비서 세션의
 메시지 수가 턴마다 2개씩 느는 것으로 챗 메모리가 보인다. step1(7장)은 트레이스
 없이 두어 대비로 쓴다.
+
+## 2026-10-20 Koog 1.3.0으로 이동
+
+코어 `koog-agents-jvm` 1.3.0, 브리지·skills·ext·mcp는 1.3.0-beta(Maven Central 최신).
+1.3.0-beta 브리지의 POM도 Spring Boot 3.5.14 / Spring AI 1.1.6을 고정하므로 스택은 그대로다.
+1.3.0 릴리스 노트는 모델 정의 추가와 Google 캐시 토큰·Langfuse 트레이스 버그 수정뿐.
+전체 테스트 14건 통과. onTextMessage 조건 무시 현상의 1.3.0 재현 여부는 확인하지 않았다
+(덱과 테스트는 onCondition만 쓴다).
+
+## 2026-10-20 Persistence: 저장 키는 run의 둘째 인자
+
+공식 문서의 "체크포인트는 특정 에이전트에 묶인다"는 말과 달리, 1.2.0·1.3.0의 Persistence
+기능은 `AIAgentContext.runId`로 저장하고 찾는다. `run(input, "demo")`의 둘째 인자가 그
+runId이고, 챗 메모리의 세션 ID와 같은 값이다. 에이전트 `id`를 주고 둘째 인자를 비우면
+실행마다 새 UUID가 되어 복구가 일어나지 않는다(첫 실험 실패 원인).
+
+동작: 노드가 끝날 때마다 체크포인트(nodeCallLLM, nodeExecuteTool, nodeSendToolResult),
+정상 완료 때 tombstone. 다음 `run(…, 같은 세션)`은 tombstone 없는 마지막 체크포인트가
+있으면 거기서 이어간다. 입력은 무시된다("다시 시작"으로 재개해도 원래 질문의 답이 나옴).
+PersistenceTest 2건: 중단된 세션 재개는 모델 호출 1회(메시지 4개), 도구 호출 1회.
+
+하네스: 비서 에이전트에 `install(Persistence)`(파일 저장소 /tmp/koog-checkpoints), 기동 때
+세션 "demo"에 tombstone 없는 체크포인트가 있으면 트레이스 줄을 찍고 `run("", "demo")`로
+마저 돌린다. 체크포인트 폴더는 재시작 뒤에도 남아야 하므로 지우지 않는다(리허설 뒤 수동 삭제).
+
+## 2026-10-20 덱을 공식 주장 기준으로 재구성 (14장)
+
+"Spring AI로도 다 되는 것 아닌가"라는 질문에 답이 없었다. 주제를 Koog의 공식 주장
+(Why Koog: 그래프 워크플로, 내구 실행, 재시도·압축·LLM 전환, JetBrains 검증, 통합)을
+우리 Spring AI 스택에서 확인하는 것으로 잡았다. Spring AI 위에 얹는 구도는 Why Koog의
+통합 항목 중 하나이지 Koog의 전제가 아니므로 6장 "우리 환경에서의 배치"로만 둔다.
+4장 공식 주장, 6장 두 층 배치와 여섯 단계, 10장 오케스트레이션, 12장 내구 실행(신설),
+13장 Spring AI와 갈리는 지점(신설, 오늘 본 것과 출처만인 것 구분), 14장 Demo.
