@@ -92,6 +92,7 @@
   figure > svg text{font:500 12.5px var(--mono); fill:var(--ink);}
   svg .sm{font-size:10.5px; fill:var(--mid);}
   svg .bx{fill:none; stroke:var(--ink); stroke-width:1.25;}
+  svg .bxd{fill:none; stroke:var(--mid); stroke-width:1; stroke-dasharray:4 3;}
   svg .bxf{fill:var(--wash); stroke:var(--ink); stroke-width:1.25;}
   svg .gap{fill:none; stroke:var(--ink); stroke-width:1.25; stroke-dasharray:5 5; animation:fade 2.4s ease-in-out infinite;}
   svg .flow{stroke:var(--ink); stroke-width:1.5; fill:none; stroke-dasharray:3 7; animation:flow 1.5s linear infinite;}
@@ -115,10 +116,6 @@
   .steps .n{font:500 12px var(--mono); color:var(--mid);}
   .steps .d{font-size:13.5px; color:var(--mid);}
   .steps.compact div{padding:8px 0; font-size:15px;}
-  .layers{display:flex; flex-direction:column; gap:6px; font-size:13.5px; line-height:1.55;}
-  .layer{border:1px solid var(--ink); padding:9px 12px;}
-  .layer b{display:block; font:500 11px var(--mono); letter-spacing:.14em; color:var(--mid); margin-bottom:3px;}
-  .layer.bridge{border-style:dashed; color:var(--mid); padding:6px 12px; font:400 12px var(--mono);}
   .steps.two div{grid-template-columns:120px 1fr;}
   .contract{font:400 11.5px var(--mono); color:var(--mid); letter-spacing:.04em;}
   a{color:inherit;}
@@ -272,11 +269,26 @@
     <li>그 위에 만드는 것: 일정과 회사 말투를 아는 작은 비서</li>
   </ul>
   <div class="cols">
-    <div class="layers">
-      <div class="layer"><b>KOOG</b>dispatch 전략 → 비서 에이전트 · 스킬 에이전트. 이벤트 핸들러는 셋 모두에</div>
-      <div class="layer bridge">브리지: Spring AI 빈을 Koog 인터페이스로 포장. ChatModel → PromptExecutor, ChatMemoryRepository → ChatHistoryProvider</div>
-      <div class="layer"><b>SPRING AI</b>ChatModel(Ollama, qwen3:4b-instruct) · ChatMemoryRepository(인메모리)</div>
-    </div>
+    <figure>
+      <svg viewBox="-1 -1 522 252" role="img" aria-label="위층 Koog가 브리지를 거쳐 아래층 Spring AI의 ChatModel과 ChatMemoryRepository를 호출">
+        <defs><marker id="lm" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs>
+        <rect class="bx" x="0" y="0" width="520" height="64"/>
+        <text x="14" y="22" class="sm">KOOG</text>
+        <text x="14" y="46">dispatch 전략 → 비서 에이전트 · 스킬 에이전트</text>
+        <rect class="bxd" x="0" y="104" width="520" height="44"/>
+        <text x="14" y="123" class="sm">브리지 (koog-spring-ai-starter)</text>
+        <text x="14" y="139" class="sm">Spring AI 빈을 Koog 인터페이스로 포장</text>
+        <rect class="bx" x="0" y="186" width="520" height="64"/>
+        <text x="14" y="208" class="sm">SPRING AI</text>
+        <text x="14" y="232">ChatModel(Ollama, qwen3:4b-instruct) · ChatMemoryRepository(인메모리)</text>
+        <line x1="300" y1="64" x2="300" y2="186" stroke="currentColor" stroke-width="1.25" marker-end="url(#lm)"/>
+        <text x="294" y="90" class="sm" text-anchor="end">PromptExecutor</text>
+        <text x="294" y="170" class="sm" text-anchor="end">ChatModel</text>
+        <line x1="500" y1="64" x2="500" y2="186" stroke="currentColor" stroke-width="1.25" marker-end="url(#lm)"/>
+        <text x="494" y="90" class="sm" text-anchor="end">ChatHistoryProvider</text>
+        <text x="494" y="170" class="sm" text-anchor="end">ChatMemoryRepository</text>
+      </svg>
+    </figure>
     <div class="steps compact">
       <div><span class="n">1단계</span><span>기본 에이전트</span><span class="d">AIAgent 하나와 입력 루프</span></div>
       <div><span class="n">2단계</span><span>도구</span><span class="d">@Tool 함수와 자동 생성 스키마</span></div>
