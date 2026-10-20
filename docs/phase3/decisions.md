@@ -253,3 +253,32 @@ docs.koog.ai Agent persistence 페이지는 인메모리·파일·직접 구현�
 (DataSource, 스키마 마이그레이터, 보관 기한)가 들어 있다. 챗 메모리 쪽도
 `agents-features-chat-history-jdbc`, `agents-features-chat-memory-sql`이 있다. 벡터
 저장소는 체크포인트 저장소 목록에 없고 RAG·장기 기억용이다. 12장 불릿과 예상 질문에 반영.
+
+## 2026-10-20 롤백 데모: 겹치는 일정은 도구 실행 전으로 되돌림
+
+체크포인트를 복구 말고 롤백에도 써 보자는 요청. 선택은 "제대로 된 것": 추가한 일정이 같은
+시각의 다른 일정과 겹치면 도구 실행 전 체크포인트로 롤백하고, RollbackToolRegistry에 등록한
+반대 도구(remove)를 Koog가 부르게 한다. 비서에 전략 assistantStrategy를 줬다
+(receive → request → execute → verify → report, 롤백 뒤에는 receive → reject).
+
+처음 두 번은 무한 루프였다. 1.3.0 바이트코드로 확인한 동작:
+
+- 자동 체크포인트는 기술 노드(`__start__`, `__finish__`)에는 안 남는다(Persistence.isTechnicalNode).
+  "도구 실행 전" 체크포인트를 가지려면 입력을 받는 노드(receive)가 앞에 있어야 한다.
+- `rollbackToCheckpoint`는 즉시 되돌리지 않고 복원 데이터를 컨텍스트에 저장한다. 노드가 끝난 뒤
+  AIAgentGraphStrategyBase.restoreStateIfNeeded → restoreDefault가 반대 도구 실행, 실행 지점을
+  체크포인트 노드 다음으로, 프롬프트를 체크포인트 이력으로 되돌리는 순서로 적용한다. 그래서
+  verify 안에서 "되돌린 뒤 목록"을 찍으면 아직 그대로다(첫 실패).
+- 반대 도구 대상은 현재 프롬프트에서 체크포인트 이력 뒤에 붙은 메시지(앞부분 일치 차이)의
+  Tool.Call이다. request 뒤 체크포인트에는 add 호출 메시지가 이미 있어 차이가 비고 remove가
+  안 불렸다. 실행 지점은 request 다음이라 execute가 다시 돌아 add가 반복됐다(둘째 실패).
+- 반대 도구는 Tool.executeUnsafe로 직접 실행돼 EventHandler 도구 이벤트에 안 잡힌다. 트레이스에
+  remove 줄이 없고, 롤백 뒤 목록(치과 없음)으로 보인다. 테스트는 CalendarToolSet.calls로 단정.
+- 롤백 뒤에는 LLM 호출 없이 reject 노드가 답을 만든다. 그 턴은 챗 메모리에 남지 않는다
+  (다음 턴의 "(이력 N개)"가 그대로).
+- 문서의 `RollbackToolRegistry { registerRollback(...) }` DSL은 1.3.0 jar에 없고 builder()만 있다.
+
+공식 문서(Agent persistence, "Rolling back all side-effects produced by tools")에 "For every
+createUser tool call there will be a removeUser invocation in the reverse order when rolling
+back", "removeUser tool should take the same exact arguments as createUser"가 있다. 롤백 뒤
+실행이 어디서 이어지는지는 문서에 없고 위 바이트코드로 확인했다. 테스트 17건.

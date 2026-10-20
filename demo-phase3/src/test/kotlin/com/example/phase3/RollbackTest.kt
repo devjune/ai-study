@@ -37,14 +37,14 @@ class RollbackTest(val promptExecutor: PromptExecutor) : FunSpec({
         install(EventHandler, trace("assistant"))
     }
 
-    test("같은 시각과 겹치는 추가는 롤백되고 반대 도구로 지워진다") {
+    test("같은 시각과 겹치는 추가는 롤백되고 반대 도구 remove가 같은 인자로 불린다") {
         val calendar = CalendarToolSet()
         val result = assistant(calendar).run("내일 14시에 치과 추가해 줘", "rollback-${System.nanoTime()}")
 
         println("RollbackTest 응답: $result / 호출: ${calendar.calls}")
-        result shouldContain "겹쳐"
+        result shouldContain "추가하지 않았습니다"
+        calendar.calls.filter { it.startsWith("remove:") } shouldBe listOf("remove:내일 14:00 치과")
         calendar.schedules("내일") shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰"
-        calendar.calls.any { it.startsWith("remove:") } shouldBe true
     }
 
     test("겹치지 않는 추가는 그대로 남는다") {
@@ -52,6 +52,7 @@ class RollbackTest(val promptExecutor: PromptExecutor) : FunSpec({
         val result = assistant(calendar).run("내일 16시에 치과 추가해 줘", "rollback-${System.nanoTime()}")
 
         println("RollbackTest 응답: $result / 호출: ${calendar.calls}")
+        calendar.calls.none { it.startsWith("remove:") } shouldBe true
         calendar.schedules("내일") shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰, 16:00 치과"
     }
 })
