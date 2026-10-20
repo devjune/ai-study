@@ -135,7 +135,7 @@
   <p class="sec">AGENDA</p>
   <h2>목차</h2>
   <div class="toc">
-    <div><span class="n">01</span><span>Koog가 내세우는 것</span><span class="t">2분 30초</span></div>
+    <div><span class="n">01</span><span>Koog가 내세우는 것</span><span class="t">2분</span></div>
     <div><span class="n">02</span><span>Spring AI 스택에서 여섯 단계</span><span class="t">6분</span></div>
     <div><span class="n">03</span><span>Spring AI와 갈리는 지점</span><span class="t">1분</span></div>
     <div><span class="n">04</span><span>Demo · 질의</span><span class="t">3분 + 2분</span></div>
@@ -331,7 +331,7 @@
         <li><code>AIAgent</code> 하나로 에이전트 생성. 전략을 안 적으면 기본 전략으로 동작</li>
         <li><code>PromptExecutor</code>는 모델 호출을 맡는 Koog 인터페이스. Spring AI로 치면 ChatModel</li>
         <li>브리지는 Koog의 Spring AI 연동 스타터(koog-spring-ai-starter-model-chat). ChatModel을 LLMClient로 감싼 PromptExecutor 빈을 등록. Ollama 주소는 application.properties 그대로, 모델 이름은 코드의 LLModel이 매 호출 지정</li>
-        <li>여기까지는 단일 호출. 다음 단계부터 도구, 스킬, 분기를 차례로 추가</li>
+        <li>여기까지는 단일 호출. 다음 단계부터 도구, 스킬, 오케스트레이션, 메모리, 체크포인트를 차례로 추가</li>
       </ul>
     </div>
   </div>
