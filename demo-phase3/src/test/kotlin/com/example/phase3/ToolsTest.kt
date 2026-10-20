@@ -1,12 +1,6 @@
 package com.example.phase3
 
 import ai.koog.agents.core.agent.AIAgent
-import ai.koog.agents.core.dsl.builder.strategy
-import ai.koog.agents.core.dsl.extension.nodeExecuteTools
-import ai.koog.agents.core.dsl.extension.nodeLLMRequest
-import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResults
-import ai.koog.agents.core.dsl.extension.onTextMessage
-import ai.koog.agents.core.dsl.extension.onToolCalls
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
@@ -39,32 +33,6 @@ class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
         println("ToolsTest 응답: $result")
         println("ToolsTest 도구 호출: ${tools.calls}")
         result should (contain("1385") or contain("1,385"))
-    }
-
-    test("도구 호출 왕복을 그래프로 직접 그린다") {
-        val toolLoop = strategy<String, String>("tool-loop") {
-            val request by nodeLLMRequest()
-            val execute by nodeExecuteTools()
-            val report by nodeLLMSendToolResults()
-
-            edge(nodeStart forwardTo request)
-            edge(request forwardTo execute onToolCalls { true })
-            edge(request forwardTo nodeFinish onTextMessage { true })
-            edge(execute forwardTo report)
-            edge(report forwardTo nodeFinish onTextMessage { true })
-        }
-        val tools = ExchangeToolSet()
-        val agent = AIAgent(
-            promptExecutor = promptExecutor,
-            llmModel = KoogModels.QWEN3_4B_INSTRUCT,
-            strategy = toolLoop,
-            systemPrompt = "환율 질문에는 반드시 exchangeRate 도구를 호출한다.",
-            temperature = 0.0,
-            toolRegistry = ToolRegistry { tools(tools) },
-        )
-        val result = agent.run("1엔은 몇 원이야?")
-        println("ToolsTest 그래프 응답: $result")
-        tools.calls shouldBe listOf("JPY")
     }
 
     test("비서가 캘린더 도구로 일정을 답한다") {

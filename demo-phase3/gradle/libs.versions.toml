@@ -10,12 +10,11 @@ springAi = "1.1.6"
 koogSpringAi = "1.3.0-beta"
 # AIAgent는 스타터가 아니라 이 아티팩트에 있다. 스타터가 끌어오는 prompt-executor-*-jvm과 같은 1.3.0(비-beta) 계열.
 koogAgents = "1.3.0"
-# MCP·skills·ext 모듈은 1.3.0-beta가 최신이며, 그 POM이 agents-core 1.3.0을 끌어오므로 코어와 어긋나지 않는다.
-koogAgentsMcp = "1.3.0-beta"
+# skills·ext 모듈은 1.3.0-beta가 최신이며, 그 POM이 agents-core 1.3.0을 끌어오므로 코어와 어긋나지 않는다.
 koogSkills = "1.3.0-beta"
 koogAgentsExt = "1.3.0-beta"
 jline = "3.29.0"
-# agents-mcp가 끌어오는 kotlin-sdk-client 0.11.1이 컴파일된 버전. Boot BOM의 1.6.3을 이 값으로 덮는다.
+# Koog 1.3.0이 요구하는 kotlinx-serialization. Boot BOM의 1.6.3을 이 값으로 덮는다.
 kotlinxSerialization = "1.10.0"
 # 5.x 최종판. 6.2.4에서는 아래 spring 확장 1.3.0의 SpringExtension이 ConstructorExtension으로 인식되지 않아
 # 생성자 주입 테스트가 전부 "should have a zero-arg constructor"로 실패한다 — 엔진을 확장에 맞춰 낮춘 핀이다.
@@ -32,10 +31,8 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 [libraries]
 # 버전은 spring-ai-bom / 플러그인이 관리하므로 좌표(module)만 선언한다.
 spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "springAi" }
-spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-starter-model-ollama" }
-spring-ai-vector-store = { module = "org.springframework.ai:spring-ai-vector-store" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 koog-spring-ai-starter-model-chat = { module = "ai.koog:koog-spring-ai-starter-model-chat", version.ref = "koogSpringAi" }
@@ -44,8 +41,5 @@ koog-skills-jvm = { module = "ai.koog:skills-jvm", version.ref = "koogSkills" }
 koog-agents-ext-jvm = { module = "ai.koog:agents-ext-jvm", version.ref = "koogAgentsExt" }
 jline = { module = "org.jline:jline", version.ref = "jline" }
 koog-spring-ai-starter-chat-memory = { module = "ai.koog:koog-spring-ai-starter-chat-memory", version.ref = "koogSpringAi" }
-koog-spring-ai-starter-model-embedding = { module = "ai.koog:koog-spring-ai-starter-model-embedding", version.ref = "koogSpringAi" }
-koog-spring-ai-starter-vector-store = { module = "ai.koog:koog-spring-ai-starter-vector-store", version.ref = "koogSpringAi" }
-koog-agents-mcp-jvm = { module = "ai.koog:agents-mcp-jvm", version.ref = "koogAgentsMcp" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotest-extensions-spring = { module = "io.kotest.extensions:kotest-extensions-spring", version.ref = "kotestExtensionsSpring" }

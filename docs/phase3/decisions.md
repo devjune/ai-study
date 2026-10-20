@@ -219,3 +219,18 @@ PersistenceTest 2건: 중단된 세션 재개는 모델 호출 1회(메시지 4�
 담당을 나눈 대가로 두고, 스킬 이름이 들어간 질문("판교사투리란?")은 띄어쓰기와
 무관하게 스킬 에이전트가 파일을 읽고 답하게 했다. 스킬 요청의 콜론 규칙: 콜론이
 있으면 그 뒤 문장을, 없으면 직전 비서 답변을 바꾼다.
+
+## 2026-10-20 qwen3:8b 비교, 4B 유지
+
+같은 여섯 입력을 로컬 qwen3:8b로 돌림. 총 478초(4B는 턴당 수 초), 강도 11은 똑같이
+SKILL.md의 등산 예시를 베꼈고, "오늘"을 2023-10-10으로 지어내 도구에 넘겼다. 바꿀 이유
+없음. 11의 예시 베끼기는 모델 크기와 무관한 프롬프트 문제로 두고, 데모는 3과 7을 쓴다.
+
+## 2026-10-20 발표 범위 밖 코드 정리
+
+웹 스타터, Spring AI vector-store, Koog embedding·vector-store·mcp 스타터, KoogModels의
+BGE_M3, embedding·server.port 프로퍼티, ToolsTest의 수동 도구 루프 테스트를 뺐다.
+웹 스타터를 빼자 Spring AI 스타터가 끌어오는 WebFlux 때문에 Boot가 리액티브 앱으로
+판단해 기동에 실패했다. `spring.main.web-application-type=none`을 공통 설정으로 옮겨
+해결. kotlinx-serialization 1.10.0 덮어쓰기는 MCP가 아니라 Koog 1.3.0 자체가 요구하므로
+유지. 테스트 14건, 두 프로필 기동과 실측 출력 확인.
