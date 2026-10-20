@@ -348,15 +348,17 @@
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">class</span> CalendarToolSet : ToolSet {
+    <span class="k">private val</span> base = listOf(<span class="s">"10:00 팀 싱크"</span>, <span class="s">"14:00 디자인 리뷰"</span>)
+    <span class="k">private val</span> added = mutableMapOf&lt;String, MutableList&lt;String&gt;&gt;()
     <span class="k">@Tool</span>
     <span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다"</span>)
     <span class="k">fun</span> schedules(<span class="k">@LLMDescription</span>(<span class="s">"날짜, 예: 내일"</span>) day: String): String {
-        <span class="k">return</span> <span class="s">"10:00 팀 싱크, 14:00 디자인 리뷰"</span>
+        <span class="k">return</span> (base + added[day].orEmpty()).sorted().joinToString(<span class="s">", "</span>)
     }
+    <span class="cm">// add(day, time, title)는 같은 꼴. added[day]에 넣는다</span>
 }
-
-<span class="cm">// AIAgent에 한 줄</span>
-toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
+<span class="k">val</span> calendar = CalendarToolSet()
+toolRegistry = ToolRegistry { tools(calendar) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
   dispatch    → assistant
   assistant   LLM #1 메시지 2개 → 도구 호출 schedules(day=내일)  1.0s
@@ -369,7 +371,7 @@ toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
       <h3>여기서 알 수 있는 것</h3>
       <ul>
         <li>도구는 원래 JSON 스키마로 모델에게 알려야 함. 여기서는 함수 시그니처와 설명 애노테이션이 그 스키마가 됨</li>
-        <li>파라미터를 더하면 서술자도 따라 바뀜</li>
+        <li>파라미터를 더하면 서술자도 따라 바뀜. 같은 꼴의 add(day, time, title)도 있어 데모에서 추가 → 조회</li>
         <li>도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 처리</li>
       </ul>
     </div>
@@ -485,9 +487,9 @@ stateDiagram
     promptExecutor = promptExecutor,
     llmModel = KoogModels.QWEN3_4B_INSTRUCT,
     systemPrompt = <span class="s">"비서다. 짧게 답한다. "</span> +
-        <span class="s">"일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다."</span>,
+        <span class="s">"일정 질문에는 schedules 도구를, 일정 추가에는 add 도구를 호출하고 그 결과만 답한다."</span>,
     temperature = 0.0,
-    toolRegistry = ToolRegistry { tools(CalendarToolSet()) },
+    toolRegistry = ToolRegistry { tools(calendar) },
 ) {
     <span class="hi">install(ChatMemory) {</span>
     <span class="hi">    chatHistoryProvider = historyProvider</span>

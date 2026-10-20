@@ -65,13 +65,16 @@ class Harness12(
             install(EventHandler, trace("skill"))
         }
 
+        // 일정은 프로세스가 사는 동안 유지된다. 요청마다 새로 만드는 에이전트가 같은 캘린더를 쥔다.
+        val calendar = CalendarToolSet()
+
         fun assistantAgent() = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             systemPrompt = "비서다. 짧게 답한다. " +
-                "일정 질문에는 schedules 도구를 호출하고 그 결과만 답한다.",
+                "일정 질문에는 schedules 도구를, 일정 추가에는 add 도구를 호출하고 그 결과만 답한다.",
             temperature = 0.0,
-            toolRegistry = ToolRegistry { tools(CalendarToolSet()) },
+            toolRegistry = ToolRegistry { tools(calendar) },
         ) {
             install(ChatMemory) {
                 chatHistoryProvider = historyProvider
