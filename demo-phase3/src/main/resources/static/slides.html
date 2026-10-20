@@ -209,20 +209,20 @@
   </blockquote>
   <div class="cols">
     <div>
-      <h3>기본 부품만 주는 프레임워크와 갈리는 지점</h3>
+      <h3>기본 부품만 주는 프레임워크와 다른 점</h3>
       <ul>
-        <li>그래프 워크플로: 도메인 모델 위에 명시적 그래프로 실행 논리를 통제</li>
-        <li>내구 실행: 상태 기계 전체를 체크포인트로 저장. 복구와 되돌리기</li>
-        <li>히스토리 압축 전략, 재시도 부품, LLM 전환(이력 자동 재작성)</li>
-        <li>패턴 전부: 그래프, GOAP, LLM 플래너, 멀티 에이전트 오케스트레이션</li>
+        <li>그래프 워크플로: 에이전트의 동작을 프롬프트에 맡기지 않고 데이터 클래스와 그래프로 적어 통제</li>
+        <li>내구 실행: 대화 메시지만이 아니라 실행 상태 전체를 체크포인트로 남김. 장애 복구와 되돌리기</li>
+        <li>긴 대화를 줄이는 히스토리 압축, 조건을 건 재시도, 이력까지 옮기는 LLM 전환</li>
+        <li>그래프, GOAP, LLM 플래너, 멀티 에이전트까지 한 프레임워크 안에서 조합</li>
       </ul>
     </div>
     <div>
       <h3>검증과 통합</h3>
       <ul>
-        <li>JetBrains 제품과 내부 에이전트에서 사용. ML 엔지니어가 다듬은 프롬프트와 전략<br><span class="mid">어느 제품인지는 공식 자료에 이름이 없음</span></li>
-        <li>Kotlin DSL과 Java API. 1.0부터 stable 모듈 최소 1년 호환 보장</li>
-        <li>Spring Boot · Spring AI · Ktor 통합, 멀티플랫폼, OpenTelemetry</li>
+        <li>JetBrains 제품과 사내 에이전트에 쓰이며, ML 엔지니어가 다듬은 프롬프트와 전략이 들어 있음<br><span class="mid">어느 제품인지는 공식 자료가 밝히지 않음</span></li>
+        <li>Kotlin DSL과 Java API 둘 다 제공. 1.0부터 stable 모듈은 최소 1년간 깨지는 변경 없음</li>
+        <li>Spring Boot · Spring AI · Ktor 연동. 멀티플랫폼과 OpenTelemetry 지원</li>
       </ul>
     </div>
   </div>
