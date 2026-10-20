@@ -84,8 +84,10 @@ class Harness12(
         }
 
         // 스킬 에이전트는 이력이 없다. 이력을 주면 4B가 파일을 안 읽고 앞 대화 말투를 따라간다.
-        // 대신 "방금 그 일정을 판교 사투리로" 같은 요청이 되도록 직전 비서 답변만 요청에 붙인다.
+        // 대신 콜론 뒤에 바꿀 문장이 없는 요청에는 직전 비서 답변을 원문으로 붙여
+        // "방금 그 일정을 판교 사투리로" 같은 요청이 되게 한다.
         suspend fun withLastAnswer(input: String): String {
+            if (':' in input) return input
             val last = historyProvider.load("demo").lastOrNull { it is Message.Assistant }?.textContent()
             return if (last == null) input else "$input\n\n[판교 사투리로 바꿀 원문]\n$last"
         }
