@@ -30,6 +30,10 @@ class StrategyGraphTest(val promptExecutor: PromptExecutor) : FunSpec({
             "skill: 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요"
     }
 
+    test("띄어쓰기 없는 판교사투리도 스킬 담당에게 간다") {
+        router().run("판교사투리란?") shouldBe "skill: 판교사투리란?"
+    }
+
     test("나머지 요청은 비서에게 간다") {
         router().run("내일 일정 알려줘") shouldBe "assistant: 내일 일정 알려줘"
     }

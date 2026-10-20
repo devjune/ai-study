@@ -14,7 +14,7 @@ fun dispatchRouter(
     val skill by node<String, String>("skill") { askSkill(it) }
     val assistant by node<String, String>("assistant") { askAssistant(it) }
 
-    edge(nodeStart forwardTo skill onCondition { "판교 사투리" in it })
+    edge(nodeStart forwardTo skill onCondition { "판교사투리" in it.replace(" ", "") })
     edge(nodeStart forwardTo assistant onCondition { true })
     edge(skill forwardTo nodeFinish)
     edge(assistant forwardTo nodeFinish)
