@@ -359,9 +359,10 @@
 toolRegistry = ToolRegistry { tools(CalendarToolSet()) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
   dispatch    → assistant
-  assistant   LLM 호출 (메시지 2개)
-  assistant   schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
-  assistant   LLM 호출 (메시지 4개)
+  assistant   LLM #1 메시지 2개 → 도구 호출 schedules(day=내일)  1.0s
+  assistant   schedules → 10:00 팀 싱크, 14:00 디자인 리뷰
+  assistant   LLM #2 메시지 4개 → 답  1.1s
+  assistant   완료 2.1s
 내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.</pre>
     </div>
     <div>
@@ -395,9 +396,10 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 - 1~3: 부드러운 사내 메모 … 11: 기업 특이점</pre>
       <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
   dispatch    → skill
-  skill       LLM 호출 (메시지 2개)
-  skill       __read_file__(path=/tmp/koog-skills/pangyo-dialect/SKILL.md) → 2,047자
-  skill       LLM 호출 (메시지 4개)
+  skill       LLM #1 메시지 2개 → 도구 호출 __read_file__(path=…/pangyo-dialect/SKILL.md)  1.3s
+  skill       __read_file__ → 2,047자
+  skill       LLM #2 메시지 4개 → 답  4.9s
+  skill       완료 6.2s
 내일 회식 오세요 → 내일 회식 공유 드리고, 참석 여부는 편하게 싱크해 주세요.</pre>
     </div>
     <div>
@@ -495,7 +497,8 @@ stateDiagram
 askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo"</span></span>) }</pre>
       <pre class="err">❯ 아까 말한 첫 번째 일정이 뭐였지?
   dispatch    → assistant
-  assistant   LLM 호출 (메시지 4개)
+  assistant   LLM #1 메시지 4개 (이력 2개) → 답  0.6s
+  assistant   완료 0.6s
 10:00 팀 싱크입니다.</pre>
     </div>
     <div>
@@ -530,13 +533,13 @@ checkpoints.getLatestCheckpoint(<span class="s">"demo"</span>)?.takeUnless { it.
 }</pre>
       <pre class="err">❯ 내일 일정 알려 주고, 일정마다 준비할 것을 다섯 가지씩 이유와 함께 제안해 줘
   dispatch    → assistant
-  assistant   LLM 호출 (메시지 2개)
-  assistant   schedules(day=내일) → 10:00 팀 싱크, 14:00 디자인 리뷰
-  assistant   LLM 호출 (메시지 4개)
-[1]    63747 killed     java -jar …          ← 터미널 1에서 pkill -9
+  assistant   LLM #1 메시지 2개 → 도구 호출 schedules(day=내일)  1.0s
+  assistant   schedules → 10:00 팀 싱크, 14:00 디자인 리뷰
+[1]    11388 killed     java -jar …          ← 터미널 1에서 pkill -9
 $ koog
   persistence 중단된 실행 발견, nodeExecuteTool 다음부터 이어감
-  assistant   LLM 호출 (메시지 4개)
+  assistant   LLM #1 메시지 4개 → 답  5.5s
+  assistant   완료 5.5s
 1. **10:00 팀 싱크** …</pre>
     </div>
     <div>
