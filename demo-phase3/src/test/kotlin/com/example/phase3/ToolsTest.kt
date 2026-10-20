@@ -57,7 +57,7 @@ class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
         calendar.add("내일", "16:00", "치과")
 
         calendar.schedules("내일") shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰, 16:00 치과"
-        calendar.schedules("오늘") shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰"
+        calendar.schedules("오늘") shouldBe "없음"
     }
 
     test("ToolSet이 함수 하나를 도구 스키마로 바꾼다") {

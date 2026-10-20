@@ -348,14 +348,13 @@
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">class</span> CalendarToolSet : ToolSet {
-    <span class="k">private val</span> base = listOf(<span class="s">"10:00 팀 싱크"</span>, <span class="s">"14:00 디자인 리뷰"</span>)
-    <span class="k">private val</span> added = mutableMapOf&lt;String, MutableList&lt;String&gt;&gt;()
+    <span class="k">private val</span> entries = mutableMapOf(<span class="s">"내일"</span> to mutableListOf(<span class="s">"10:00 팀 싱크"</span>, <span class="s">"14:00 디자인 리뷰"</span>))
     <span class="k">@Tool</span>
-    <span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다"</span>)
+    <span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다. 없으면 없음"</span>)
     <span class="k">fun</span> schedules(<span class="k">@LLMDescription</span>(<span class="s">"날짜, 예: 내일"</span>) day: String): String {
-        <span class="k">return</span> (base + added[day].orEmpty()).sorted().joinToString(<span class="s">", "</span>)
+        <span class="k">return</span> entries[day]?.sorted()?.joinToString(<span class="s">", "</span>) ?: <span class="s">"없음"</span>
     }
-    <span class="cm">// add(day, time, title)는 같은 꼴. added[day]에 넣는다</span>
+    <span class="cm">// add(day, time, title)는 같은 꼴. entries[day]에 넣는다</span>
 }
 <span class="k">val</span> calendar = CalendarToolSet()
 toolRegistry = ToolRegistry { tools(calendar) }</pre>
@@ -487,7 +486,8 @@ stateDiagram
     promptExecutor = promptExecutor,
     llmModel = KoogModels.QWEN3_4B_INSTRUCT,
     systemPrompt = <span class="s">"비서다. 짧게 답한다. "</span> +
-        <span class="s">"일정 질문에는 schedules 도구를, 일정 추가에는 add 도구를 호출하고 그 결과만 답한다."</span>,
+        <span class="s">"일정 질문에는 날짜마다 schedules 도구를 호출해야 한다. 예: '모레 일정은?' → schedules(day=모레). "</span> +
+        <span class="s">"도구 결과가 없음이면 없다고 답한다. 이력의 일정을 다른 날짜에 쓰지 않는다. 일정 추가에는 add 도구를 호출한다."</span>,
     temperature = 0.0,
     toolRegistry = ToolRegistry { tools(calendar) },
 ) {
@@ -495,7 +495,6 @@ stateDiagram
     <span class="hi">    chatHistoryProvider = historyProvider</span>
     <span class="hi">}</span>
 }
-
 askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo"</span></span>) }</pre>
       <pre class="err">❯ 아까 말한 첫 번째 일정이 뭐였지?
   dispatch    → assistant

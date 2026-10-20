@@ -72,7 +72,8 @@ class Harness12(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             systemPrompt = "비서다. 짧게 답한다. " +
-                "일정 질문에는 schedules 도구를, 일정 추가에는 add 도구를 호출하고 그 결과만 답한다.",
+                "일정 질문에는 날짜마다 schedules 도구를 호출해야 한다. 예: '모레 일정은?' → schedules(day=모레). " +
+                "도구 결과가 없음이면 없다고 답한다. 이력의 일정을 다른 날짜에 쓰지 않는다. 일정 추가에는 add 도구를 호출한다.",
             temperature = 0.0,
             toolRegistry = ToolRegistry { tools(calendar) },
         ) {

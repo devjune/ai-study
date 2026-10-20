@@ -7,14 +7,15 @@ import ai.koog.agents.core.tools.reflect.ToolSet
 @LLMDescription("캘린더")
 class CalendarToolSet : ToolSet {
     val calls = mutableListOf<String>()
-    private val base = listOf("10:00 팀 싱크", "14:00 디자인 리뷰")
-    private val added = mutableMapOf<String, MutableList<String>>()
+    private val entries = mutableMapOf(
+        "내일" to mutableListOf("10:00 팀 싱크", "14:00 디자인 리뷰"),
+    )
 
     @Tool
-    @LLMDescription("날짜의 일정 목록을 돌려준다")
+    @LLMDescription("날짜의 일정 목록을 돌려준다. 없으면 없음")
     fun schedules(@LLMDescription("날짜, 예: 내일") day: String): String {
         calls += day
-        return (base + added[day].orEmpty()).sorted().joinToString(", ")
+        return entries[day]?.sorted()?.joinToString(", ") ?: "없음"
     }
 
     @Tool
@@ -24,7 +25,7 @@ class CalendarToolSet : ToolSet {
         @LLMDescription("시각, 예: 16:00") time: String,
         @LLMDescription("제목, 예: 치과") title: String,
     ): String {
-        added.getOrPut(day) { mutableListOf() } += "$time $title"
+        entries.getOrPut(day) { mutableListOf() } += "$time $title"
         return "추가됨: $day $time $title"
     }
 }
