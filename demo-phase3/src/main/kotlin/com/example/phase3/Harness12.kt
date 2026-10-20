@@ -10,6 +10,7 @@ import ai.koog.agents.snapshot.feature.Persistence
 import ai.koog.agents.snapshot.feature.isTombstone
 import ai.koog.agents.snapshot.providers.file.JVMFilePersistenceStorageProvider
 import ai.koog.prompt.executor.model.PromptExecutor
+import ai.koog.prompt.message.Message
 import ai.koog.rag.base.files.JVMFileSystemProvider
 import ai.koog.skills.discovery.discoverSkills
 import ai.koog.skills.prompt.SkillsPromptFormat
@@ -82,6 +83,13 @@ class Harness12(
             install(EventHandler, trace("assistant"))
         }
 
+        // 스킬 에이전트는 이력이 없다. 이력을 주면 4B가 파일을 안 읽고 앞 대화 말투를 따라간다.
+        // 대신 "방금 그 일정을 판교 사투리로" 같은 요청이 되도록 직전 비서 답변만 요청에 붙인다.
+        suspend fun withLastAnswer(input: String): String {
+            val last = historyProvider.load("demo").lastOrNull { it is Message.Assistant }?.textContent()
+            return if (last == null) input else "$input\n\n[판교 사투리로 바꿀 원문]\n$last"
+        }
+
         val terminal = TerminalBuilder.builder().system(true).build()
         val reader = LineReaderBuilder.builder().terminal(terminal).build()
         // 비서 대화는 세션 하나로 이어진다. 스킬 요청만 기억 없는 전담 에이전트가 받는다.
@@ -89,7 +97,7 @@ class Harness12(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
             strategy = dispatchRouter(
-                askSkill = { skillAgent().run(it) },
+                askSkill = { skillAgent().run(withLastAnswer(it)) },
                 askAssistant = { assistantAgent().run(it, "demo") },
             ),
         ) {

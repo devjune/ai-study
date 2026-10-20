@@ -434,7 +434,7 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
     edge(assistant <span class="inf">forwardTo</span> nodeFinish)
 }
 dispatchRouter(
-    askSkill = { skillAgent().run(it) },
+    askSkill = { skillAgent().run(withLastAnswer(it)) },
     askAssistant = { assistantAgent().run(it, <span class="s">"demo"</span>) },
 )</pre>
       <pre class="err">❯ 판교 사투리 3으로 바꿔 줘: 내일 회식 오세요
