@@ -1,8 +1,6 @@
 # Koog 세미나: Kotlin-native AI agents on the JVM
 
-FDE팀 스터디 · 2026.10 · 15분
-
-슬라이드와 같은 순서, 같은 번호로 읽는 문서입니다. 장 번호는 슬라이드 번호와 같습니다. 코드는 발표에서 돌리는 코드 그대로이고(저장소 demo-phase3), 터미널 출력은 전부 실제로 돌려 받은 것입니다(Koog 1.3.0, Ollama의 qwen3:4b-instruct, temperature 0). 모델 출력이라 글자 단위로는 발표 때와 다를 수 있습니다.
+FDE팀 스터디 · 2026.10
 
 ## 2. 목차
 
@@ -13,8 +11,6 @@ FDE팀 스터디 · 2026.10 · 15분
 | 03 | Spring AI와 다른 점 | 14 | 1분 |
 | 04 | Demo · 질의 | 15 | 3분 + 2분 |
 
-앞 2분은 Koog가 스스로 무엇이라고 내세우는지 봅니다. 본론은 그 주장을 Spring AI 스택에서 여섯 단계로 직접 확인하는 것입니다. 단계마다 코드를 보고 바로 돌립니다. 끝에 Spring AI와 무엇이 다른지 표로 정리합니다.
-
 ## 3. Koog 소개
 
 에이전트 프레임워크는 파이썬이 먼저였습니다. LangChain(2022), LangGraph와 CrewAI(2023) 순서입니다. JVM에는 2023년 LangChain4j가 나왔고, 저장소 소개문에서 스스로 "idiomatic Java 라이브러리"(Java다운 관용 스타일)라고 소개합니다. 2025년에 JetBrains가 Kotlin 네이티브로 Koog를 냈습니다.
@@ -24,7 +20,7 @@ FDE팀 스터디 · 2026.10 · 15분
 | 2025.05 | 공개(Released) |
 | 2026.03 | Java API |
 | 2026.05 | 1.0. stable 모듈은 최소 1년 호환 보장 |
-| 2026.09 | 1.3.0. 이 문서의 코드 버전 |
+| 2026.09 | 1.3.0 |
 
 출처: 연도는 GitHub 저장소 생성일 기준(langchain 2022-10, langchain4j 2023-06, langgraph 2023-08, crewAI 2023-10, koog 2025-05). "idiomatic Java"는 [langchain4j](https://github.com/langchain4j/langchain4j) 저장소 소개문. 공식 글 [Meet Koog](https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · [KotlinConf 2026](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog Comes to Java](https://blog.jetbrains.com/ai/2026/03/koog-comes-to-java/) · [Releases](https://github.com/JetBrains/koog/releases)
 
@@ -46,13 +42,13 @@ Why Koog 문서가 "기본 기능만 주는 프레임워크와 다른 점"으로
 - Kotlin DSL과 Java API를 둘 다 제공합니다. 1.0부터 stable 모듈은 최소 1년간 깨지는 변경이 없습니다.
 - Spring Boot, Spring AI, Ktor 연동. 멀티플랫폼과 OpenTelemetry 지원.
 
-이 발표는 이 중 그래프 워크플로, 퍼시스턴스, 관측 셋을 직접 돌려 봅니다. 나머지는 14장 표에 출처만 남깁니다.
+아래 여섯 단계는 이 중 그래프 워크플로, 퍼시스턴스, 관측 셋을 직접 돌려 봅니다. 나머지는 14장 표에 출처만 있습니다.
 
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
 ## 5. 기능 범위
 
-공식 문서 목차를 주제별로 다시 묶은 표입니다(문서는 버전 구분 없이 최신판, 현재 1.3.0). 굵은 여덟 개가 이 발표에서 직접 돌려 보는 기능입니다. 나머지는 자료로만 공유합니다.
+공식 문서 목차를 주제별로 다시 묶은 표입니다(문서는 버전 구분 없이 최신판, 현재 1.3.0). 굵은 여덟 개가 여섯 단계에서 직접 돌려 보는 기능입니다.
 
 | 범주 | 기능 |
 |---|---|
@@ -83,7 +79,7 @@ Why Koog 문서가 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 목적은 4장에서 Koog가 내세운 것 중 셋, 그래프 워크플로와 퍼시스턴스와 관측을 Spring AI 스택에서 확인하는 것입니다. 그 위에 만드는 것은 일정과 회사 말투를 아는 작은 비서입니다.
 
-배치는 세 층입니다. 맨 아래가 이미 쓰는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)입니다. 가운데 브리지(koog-spring-ai-starter)가 그 빈들을 Koog 인터페이스로 포장합니다. 맨 위에서 Koog의 dispatch 전략 하나가 비서 에이전트와 스킬 에이전트를 지휘합니다. Spring AI를 재사용하는 것은 Koog의 전제가 아니라 이 발표의 선택입니다.
+배치는 세 층입니다. 맨 아래가 이미 쓰는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)입니다. 가운데 브리지(koog-spring-ai-starter)가 그 빈들을 Koog 인터페이스로 포장합니다. 맨 위에서 Koog의 dispatch 전략 하나가 비서 에이전트와 스킬 에이전트를 지휘합니다. Spring AI를 재사용하는 것은 Koog의 전제가 아니라 이 구성의 선택입니다.
 
 ```mermaid
 flowchart TB
@@ -167,9 +163,9 @@ toolRegistry = ToolRegistry { tools(calendar) }
 ```
 
 - 도구는 원래 JSON 스키마로 모델에게 알려야 합니다. 여기서는 스키마를 한 줄도 쓰지 않았습니다. 함수 이름이 도구 이름이고, 파라미터가 스키마이고, 애노테이션이 설명입니다. Spring AI의 @Tool과 같은 방식입니다.
-- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴의 add(day, time, title)도 있어 Demo에서 추가한 뒤 조회합니다.
+- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴의 add(day, time, title)도 있습니다. 13장에서 씁니다.
 - 도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 처리합니다.
-- 캘린더는 발표용 가짜입니다. 진짜 연동이면 return 안쪽만 바꾸면 됩니다.
+- 캘린더는 메모리 안의 가짜입니다. 진짜 연동이면 return 안쪽만 바꾸면 됩니다.
 
 > [!info] 터미널의 흐린 줄 읽는 법
 > 답 위에 흐리게 찍히는 줄은 Koog 이벤트 핸들러로 남기는 실행 흐름입니다(Trace.kt).
@@ -346,7 +342,7 @@ $ koog
 모델이 답을 만드는 도중에 프로세스를 죽였습니다. 죽인 시점의 화면에 `LLM #2` 줄이 없습니다. 다시 뜨자마자 "중단된 실행 발견, verify 다음부터"가 찍히고, 모델을 다시 부르지도 도구를 다시 부르지도 않고 마지막 호출 하나로 답을 끝냈습니다.
 
 - 저장 키는 run의 둘째 인자(runId)입니다. 문서는 에이전트에 묶인다고 쓰지만 1.3.0 코드는 이 값으로 저장하고 찾습니다. 챗 메모리의 세션 ID와 같은 값이라, 세션 하나가 대화 이력과 실행 상태를 함께 가집니다.
-- 저장소는 인터페이스 하나입니다. 인메모리, 파일(이 발표), JDBC(Postgres · MySQL · H2) 구현체가 있고 JDBC는 DataSource를 받습니다.
+- 저장소는 인터페이스 하나입니다. 인메모리, 파일(이 구성), JDBC(Postgres · MySQL · H2) 구현체가 있고 JDBC는 DataSource를 받습니다.
 - 되돌리기는 다음 장입니다.
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/) · 완료 표시와 파일 저장소는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에 있음 · JDBC 구현체는 [agents-features-persistence-jdbc 1.3.0](https://repo1.maven.org/maven2/ai/koog/agents-features-persistence-jdbc/1.3.0/), 문서에는 아직 없음
@@ -395,7 +391,7 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
 
 ## 14. Spring AI와 다른 점
 
-모델 호출, 도구, 챗 메모리, 관측은 Spring AI에도 같은 역할로 있습니다. 이 발표에서 한 것 중 Spring AI 코어에 없는 것은 셋입니다. 스킬 카탈로그(커뮤니티 spring-ai-agent-utils에는 있음), 노드와 엣지가 자료구조인 전략 그래프, 노드 단위 체크포인트로 복구하고 되돌리는 퍼시스턴스입니다.
+모델 호출, 도구, 챗 메모리, 관측은 Spring AI에도 같은 역할로 있습니다. 여섯 단계에서 쓴 것 중 Spring AI 코어에 없는 것은 셋입니다. 스킬 카탈로그(커뮤니티 spring-ai-agent-utils에는 있음), 노드와 엣지가 자료구조인 전략 그래프, 노드 단위 체크포인트로 복구하고 되돌리는 퍼시스턴스입니다.
 
 | 기능 | Spring AI | Koog | 본 곳 |
 |---|---|---|---|
@@ -408,23 +404,23 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
 | 관측 | Micrometer 관측 | EventHandler. Tracing과 OpenTelemetry는 출처만 | 전 단계 |
 | 그 밖 | 모델 호출 재시도 | 히스토리 압축 전략, 재시도 기능, LLM 전환(이력 재작성), GOAP·LLM 플래너 | 출처만 |
 
-압축 전략, 재시도 기능, 이력까지 옮기는 LLM 전환, 플래너는 이 발표에서 돌려 보지 않았습니다. 출처만 남깁니다.
+압축 전략, 재시도 기능, 이력까지 옮기는 LLM 전환, 플래너는 돌려 보지 않았습니다. 출처만 있습니다.
 
-Koog를 꺼내는 지점은 모델 호출이 아니라 그 바깥입니다. 실행 논리를 그래프로 두고 그 상태를 남겨야 할 때입니다. 이것이 공식 주장이고, 이 발표에서 그 셋을 돌려 봤습니다.
+Koog를 꺼내는 지점은 모델 호출이 아니라 그 바깥입니다. 실행 논리를 그래프로 두고 그 상태를 남겨야 할 때입니다. 이것이 공식 주장이고, 여섯 단계에서 그 셋을 확인했습니다.
 
 출처: [Why Koog](https://docs.koog.ai/why-koog/) · Spring AI 열은 1.1.6 코어 모듈 기준 · 스킬의 커뮤니티 구현은 [spring-ai-agent-utils](https://github.com/spring-ai-community/spring-ai-agent-utils)의 SkillsTool
 
 ## 15. Demo
 
-다 만든 비서입니다. 직접 시켜 보고 싶은 것을 불러 주시면 그 자리에서 입력합니다.
+완성한 비서에 넣는 입력입니다.
 
 > [!info] 입력 규칙
 > - "판교 사투리"가 들어간 문장은 스킬 에이전트로 갑니다. 스킬 에이전트는 대화 이력이 없고, 대신 직전 비서 답변이 "바꿀 원문"으로 붙어 넘어갑니다. 콜론이 있으면 콜론 뒤 문장을 바꾸고, 없으면 직전 답변을 바꿉니다. 강도는 꼭 적고, 공지는 7을 권합니다. 11은 SKILL.md의 예시 문구가 섞일 때가 있습니다.
 > - 나머지 문장은 비서로 가고 기억이 있으며, 일정 질문이면 캘린더 도구를 부릅니다.
-> - 캘린더는 발표용 가짜입니다. 기본 일정은 "내일"에만 두 건 있고 다른 날짜는 "없음"입니다. add로 추가한 일정은 그 날짜 문자열에 붙고 프로세스 메모리에만 있습니다. 같은 시각에 다른 일정이 있으면 13장처럼 롤백됩니다.
+> - 캘린더는 메모리 안의 가짜입니다. 기본 일정은 "내일"에만 두 건 있고 다른 날짜는 "없음"입니다. add로 추가한 일정은 그 날짜 문자열에 붙고 프로세스 메모리에만 있습니다. 같은 시각에 다른 일정이 있으면 13장처럼 롤백됩니다.
 > - 4B 모델이라 긴 문장, 영어 섞인 문장, 여러 요청을 한 줄에 넣은 문장은 흔들립니다. 한 줄에 한 가지만 받습니다.
 
-미리 돌려 본 입력:
+돌려 본 입력:
 
 | 입력 | 보여주는 것 |
 |---|---|
@@ -438,7 +434,7 @@ Koog를 꺼내는 지점은 모델 호출이 아니라 그 바깥입니다. 실�
 | `오늘 점심 뭐 먹을까?` | 일정 아닌 질문은 도구 없이 비서가 답함 |
 | `판교사투리란?` | 스킬 요청은 띄어쓰기와 무관하게 스킬 에이전트로. 질문도 파일을 읽고 답함 |
 
-## 자주 나올 질문
+## 질문과 답
 
 - **진짜 캘린더면?** @Tool 자리를 MCP 도구 레지스트리로 바꾸면 됩니다. Koog가 MCP 서버의 도구를 같은 ToolRegistry로 가져옵니다(5장의 MCP).
 - **LangChain4j와 차이는?** 그래프를 1급 자료구조로 두느냐가 갈림길입니다. 10장과 12장이 그 자리입니다.
