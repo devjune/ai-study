@@ -532,7 +532,7 @@ askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo
 <span class="hi">}</span>
 checkpoints.getLatestCheckpoint(<span class="s">"demo"</span>)?.takeUnless { it.isTombstone() }?.let {
     traceLine(<span class="s">"persistence"</span>, <span class="s">"중단된 실행 발견, $node 다음부터 이어감"</span>)
-    println(assistantAgent().run(<span class="s">""</span>, <span class="s">"demo"</span>))
+    println(agents.assistantAgent().run(<span class="s">""</span>, <span class="s">"demo"</span>))
 }</pre>
       <pre class="err">❯ 내일 일정 알려 주고, 일정마다 준비할 것을 다섯 가지씩 이유와 함께 제안해 줘
   dispatch    → assistant

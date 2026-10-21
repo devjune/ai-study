@@ -322,7 +322,7 @@ install(Persistence) {
 }
 checkpoints.getLatestCheckpoint("demo")?.takeUnless { it.isTombstone() }?.let {
     traceLine("persistence", "중단된 실행 발견, $node 다음부터 이어감")
-    println(assistantAgent().run("", "demo"))
+    println(agents.assistantAgent().run("", "demo"))
 }
 ```
 

@@ -206,7 +206,7 @@ PersistenceTest 2건: 중단된 세션 재개는 모델 호출 1회(메시지 4�
 붙이는 실험(filterMessages로 시스템 메시지 제외)은 실패: 4B가 SKILL.md를 읽지 않고
 앞 대화 말투를 따라갔고, 그 수다스러운 답이 세션 이력에 저장돼 비서 답변까지 물들었다.
 대신 라우터가 스킬 요청에 historyProvider의 마지막 비서 답변을 "[판교 사투리로 바꿀
-원문]"으로 붙여 넘긴다(Harness12.withLastAnswer). 라벨이 "직전 비서 답변"이면 참고
+원문]"으로 붙여 넘긴다(DemoAgents.withLastAnswer, 당시 Harness12 안에 있었음). 라벨이 "직전 비서 답변"이면 참고
 자료로 읽혀 11에서 없는 사실(순연, 야근)을 보탰고, "바꿀 원문"이면 사실을 지켰다.
 강도를 안 적으면 원문을 그대로 돌려주므로(SKILL.md의 기본 11 규칙을 4B가 안 따름)
 데모에서는 강도를 적는다.
@@ -301,3 +301,11 @@ back", "removeUser tool should take the same exact arguments as createUser"가 �
 jar에 묻어 들어가므로 쓰지 않는다. 루트 .gitignore의 `data/`가 이미 이 폴더를 무시한다.
 IntelliJ 실행 구성과 koog CLI 모두 작업 디렉터리가 demo-phase3라 같은 자리를 쓴다.
 발표는 전부 IntelliJ에서 하고 12장 중단은 슬라이드 캡처로 설명하는 것으로 정리, 시나리오를 줄였다.
+
+## 2026-10-21 Harness12 분리
+
+run() 하나에 스킬 카탈로그 준비, 에이전트 셋 생성, 직전 답변 붙이기, 재개 검사, 입력 루프가 다
+있었다. DemoAgents(라우터·비서·스킬 에이전트 생성, 스킬 카탈로그, withLastAnswer), Repl(JLine
+루프), Harness12(배선과 재개 검사)로 나눴다. 슬라이드 11~13의 코드는 DemoAgents에서 그대로
+나오고, 슬라이드 12의 재개 코드만 `agents.assistantAgent()`로 한 단어 바뀌었다. 세션 ID "demo"는
+슬라이드에 그대로 보이도록 상수로 빼지 않았다.
