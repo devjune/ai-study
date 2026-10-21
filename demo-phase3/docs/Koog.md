@@ -363,7 +363,7 @@ $ koog
 
 비서에 전략을 하나 줬습니다. 평소 경로는 receive, request, execute, verify, report 순서입니다. 도구를 실행한 뒤에 검증 노드 verify가 하나 더 있습니다.
 
-검증 노드입니다. 도구를 실행한 뒤 add가 있었으면 겹침을 보고, 겹치면 도구 실행 전 체크포인트로 롤백을 요청합니다.
+검증 노드입니다. 도구를 실행한 뒤 add가 있었으면 conflict으로 보고, 도구 실행 전 체크포인트로 롤백을 요청합니다.
 
 ```kotlin
 val verify by node<ReceivedToolResults, ReceivedToolResults>("verify") { results ->
@@ -417,6 +417,8 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/)의 Rolling back all side-effects produced by tools · 롤백 뒤 실행 위치와 시작 노드 제외는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에서 확인
 
 ## Spring AI와 다른 점
+
+여기까지가 여섯 단계입니다. 일정과 회사 말투를 아는 비서가 됐고, 중단 뒤 이어서 하기와 겹치는 일정 되돌리기까지 봤습니다. 그 과정에서 쓴 기능을 Spring AI와 나란히 놓으면 아래 표가 됩니다.
 
 모델 호출, 도구, 챗 메모리, 관측은 Spring AI에도 같은 역할로 있습니다. 여섯 단계에서 쓴 것 가운데 Spring AI 코어에 없는 것은 셋입니다. 스킬 카탈로그(커뮤니티 spring-ai-agent-utils에는 있음), 노드와 엣지가 자료구조인 전략 그래프, 노드 단위 체크포인트로 복구하고 되돌리는 퍼시스턴스입니다.
 
