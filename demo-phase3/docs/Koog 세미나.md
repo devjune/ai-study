@@ -143,6 +143,7 @@ REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 �
 ```kotlin
 class CalendarToolSet : ToolSet {
     private val entries = mutableMapOf("내일" to mutableListOf("10:00 팀 싱크", "14:00 디자인 리뷰"))
+    
     @Tool
     @LLMDescription("날짜의 일정 목록을 돌려준다. 없으면 없음")
     fun schedules(@LLMDescription("날짜, 예: 내일") day: String): String {
@@ -172,7 +173,7 @@ toolRegistry = ToolRegistry { tools(calendar) }
 - 캘린더는 메모리에만 있는 가짜입니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
 
 > [!info] 실행 기록 줄 읽는 법
-> 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다. 터미널에서는 흐리게 찍힙니다.
+> 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.
 >
 > - `dispatch → …`: 라우터 전략이 들어간 노드. 판교 사투리는 skill, 나머지는 assistant(오케스트레이션)
 > - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. 결정은 "도구 호출 이름(인자)" 아니면 "답". 도구 왕복이면 #1이 도구 호출, #2가 답. 첫 호출의 "(이력 M개)"는 챗 메모리가 실어 준 앞 대화 수(챗 메모리)
