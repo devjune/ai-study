@@ -37,21 +37,21 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
-## Key features
+## 기능 범위
 
 공식 문서 목차를 주제별로 다시 묶은 표이고, 굵은 여덟 기능은 여섯 단계에서 직접 돌려 봅니다.
 
-| 범주 | 기능 |
-|---|---|
-| 에이전트 | **기본형**, 그래프, 함수형, 플래너 β |
-| 전략 | **커스텀 그래프**, 기본 제공 노드, 기본 제공 전략, 병렬 노드, 서브그래프, 노드 간 데이터 전달 |
-| 도구 | **애노테이션**, 클래스 기반, 내장 도구, 커스텀 스키마 |
-| 기능 | **챗 메모리**, **이벤트 핸들러**, 트레이싱, 장기 기억, **퍼시스턴스**, OpenTelemetry, 커스텀 기능 |
-| 프롬프트 | 히스토리 압축, 멀티모달, 캐시 제어, 실패 처리, 응답 캐싱, 이력 직접 관리 |
-| 프로토콜 | MCP, A2A, ACP, **Agent Skills** |
-| 통합 | **Spring AI**, Spring Boot, Ktor, Bedrock AgentCore |
-| 그 외 | 임베딩, RAG, 구조화 출력, 스트리밍, 커스텀 노드, 모더레이션, 직렬화, 테스트 |
-| 플랫폼 | JVM, JS, WasmJS, Android, iOS |
+| 범주   | 기능                                                                    |
+| ---- | --------------------------------------------------------------------- |
+| 에이전트 | **기본형**, 그래프, 함수형, 플래너 β                                              |
+| 전략   | **커스텀 그래프**, 기본 제공 노드, 기본 제공 전략, 병렬 노드, 서브그래프, 노드 간 데이터 전달            |
+| 도구   | **애노테이션**, 클래스 기반, 내장 도구, 커스텀 스키마                                     |
+| 기능   | **챗 메모리**, **이벤트 핸들러**, 트레이싱, 장기 기억, **퍼시스턴스**, OpenTelemetry, 커스텀 기능 |
+| 프롬프트 | 히스토리 압축, 멀티모달, 캐시 제어, 실패 처리, 응답 캐싱, 이력 직접 관리                          |
+| 프로토콜 | MCP, A2A, ACP, **Agent Skills**                                       |
+| 통합   | **Spring AI**, Spring Boot, Ktor, Bedrock AgentCore                   |
+| 그 외  | 임베딩, RAG, 구조화 출력, 스트리밍, 커스텀 노드, 모더레이션, 직렬화, 테스트                       |
+| 플랫폼  | JVM, JS, WasmJS, Android, iOS                                         |
 
 직접 돌려 보는 여덟 기능의 한 줄 설명(문서 설명을 줄인 것):
 
@@ -141,6 +141,7 @@ REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 �
 @Tool 캘린더 함수를 더하고 도구 호출 왕복을 확인합니다.
 
 ```kotlin
+@LLMDescription("캘린더")
 class CalendarToolSet(private val store: Path) : ToolSet {
     private val entries = load()   // 텍스트 파일 하나. 없으면 내일 두 건으로 시작
 
@@ -175,12 +176,10 @@ toolRegistry = ToolRegistry { tools(calendar) }
 > [!info] 실행 기록 줄 읽는 법
 > 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.
 >
-> - `dispatch → …`: 라우터 전략이 들어간 노드. 판교 사투리는 skill, 나머지는 assistant(오케스트레이션)
-> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. 결정은 "도구 호출 이름(인자)" 아니면 "답". 도구 왕복이면 #1이 도구 호출, #2가 답. 첫 호출의 "(이력 M개)"는 챗 메모리가 실어 준 앞 대화 수(챗 메모리)
-> - `도구이름 → 결과`: 도구가 돌려준 값. 파일은 글자 수
-> - `완료 시간`: 담당 에이전트의 실행 전체
-> - `persistence 중단된 실행 발견, … 다음부터 이어감`: 기동 때 완료 표시 없는 체크포인트를 찾음(퍼시스턴스)
-> - `검증: …`, `롤백 뒤 …`: 비서 전략의 verify 노드와 reject 노드가 찍는 줄(롤백)
+> - `dispatch → assistant`: 라우터 전략이 요청을 보낸 노드
+> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. 결정은 "도구 호출 이름(인자)" 아니면 "답". 도구 왕복이면 #1이 도구 호출, #2가 답
+> - `schedules → …`: 도구가 돌려준 값
+> - `완료 시간`: 에이전트 실행 전체
 
 출처: [Annotation-based tools](https://docs.koog.ai/tools/annotation-based-tools/)
 
