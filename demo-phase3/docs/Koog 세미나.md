@@ -34,7 +34,6 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 - Kotlin DSL과 Java API를 둘 다 제공합니다. 1.0부터 stable 모듈은 최소 1년간 깨지는 변경이 없습니다.
 - Spring Boot, Spring AI, Ktor 연동. 멀티플랫폼과 OpenTelemetry 지원.
 
-여섯 단계에서는 이 중 그래프 워크플로, 퍼시스턴스, 관측을 직접 돌려 봅니다. 나머지는 마지막 표에 출처만 적었습니다.
 
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
