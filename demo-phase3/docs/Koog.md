@@ -306,7 +306,7 @@ askAssistant = { assistantAgent().run(it, "demo") }
 ```
 
 - 비서 에이전트에 ChatMemory 기능을 install로 붙였습니다. 설정은 이력을 어디에 둘지 정하는 chatHistoryProvider 하나뿐입니다. 여기서는 브리지의 챗 메모리 스타터(koog-spring-ai-starter-chat-memory)가 Spring AI의 ChatMemoryRepository를 감싼 빈을 등록합니다. 저장소는 Spring AI 것을 그대로 씁니다.
-- run의 둘째 인자가 세션 ID입니다. 실행이 시작될 때 이 세션의 이력을 읽고, 끝날 때 이번 대화를 저장합니다. 세션 ID가 다르면 이력도 따로 갑니다.
+- run의 둘째 인자("demo")가 세션 ID입니다. 실행이 시작될 때 이 세션의 이력을 읽고, 끝날 때 이번 대화를 저장합니다. 세션 ID가 다르면 이력도 따로 갑니다.
 - 에이전트는 요청마다 새로 만드는데도 대화가 이어집니다. 이력은 ChatHistoryProvider가 쥐고 있기 때문입니다.
 - 출력을 보면 모델 호출 한 번에 메시지가 4개이고 그중 2개가 이력입니다. 2단계의 질문과 답입니다. 도구를 부르지 않고 바로 답했습니다.
 
