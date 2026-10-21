@@ -34,7 +34,6 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 - Kotlin DSL과 Java API를 둘 다 제공합니다. 1.0부터 stable 모듈은 최소 1년간 깨지는 변경이 없습니다.
 - Spring Boot, Spring AI, Ktor 연동. 멀티플랫폼과 OpenTelemetry 지원.
 
-
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
 ## 기능 범위
@@ -70,7 +69,7 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 Why Koog가 내세운 것 가운데 그래프 워크플로, 퍼시스턴스, 관측 셋을 Spring AI 스택에서 확인합니다. 그 위에 일정과 회사 말투를 아는 작은 비서를 만듭니다.
 
-구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 전략 그래프 하나(dispatch)가 요청을 비서 에이전트(assistant)와 스킬 에이전트(skill)에 나눠 보냅니다. 괄호 안은 실행 기록에 찍히는 이름입니다. 이 그래프는 오케스트레이션 단계에서 만듭니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
+구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 전략 그래프 하나(dispatch)가 요청을 비서 에이전트(assistant)와 스킬 에이전트(skill)에 나눠 보냅니다. dispatch, assistant, skill은 실행 기록에 찍히는 이름입니다. 이 그래프는 오케스트레이션 단계에서 만듭니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
 
 ```mermaid
 flowchart TB
@@ -108,7 +107,7 @@ flowchart TB
 
 ## 1/6 기본 에이전트: AIAgent 하나로 시작
 
-AIAgent 하나와 입력 루프로 시작합니다. REPL이 "5"라고 답하면 됩니다.
+AIAgent 하나와 입력 루프(REPL, Read-Eval-Print Loop)로 시작합니다. "2 더하기 3은?"에 "5"라고 답하면 됩니다.
 
 ```kotlin
 val agent = AIAgent(
@@ -133,8 +132,6 @@ $ koog step1
 - `promptExecutor`가 눈여겨볼 자리입니다. 모델 호출을 맡는 Koog 인터페이스로, Spring AI의 ChatModel에 해당합니다.
 - 브리지는 Koog가 배포하는 Spring AI 연동 스타터(koog-spring-ai-starter-model-chat)로, ChatModel을 LLMClient로 감싼 PromptExecutor 빈을 등록합니다. Ollama 주소는 application.properties의 값을 그대로 쓰고, 모델 이름은 코드의 LLModel이 호출마다 지정합니다.
 - 여기까지는 입력과 답뿐인 단일 호출입니다. 다음 단계부터 도구, 스킬, 오케스트레이션, 메모리, 체크포인트를 차례로 더합니다.
-
-REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 일을 반복하는 대화형 루프입니다.
 
 ## 2/6 도구: 시그니처가 곧 스키마
 
@@ -168,24 +165,24 @@ toolRegistry = ToolRegistry { tools(calendar) }
 내일은 10:00 팀 싱크, 14:00 디자인 리뷰가 있습니다.
 ```
 
+> [!info] 실행 기록 줄 읽는 법
+> 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.
+>
+> - `dispatch → assistant`: 요청이 비서 에이전트(assistant)로 갔다는 기록. 보내는 쪽 dispatch는 오케스트레이션 절에서
+> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. N은 보낸 메시지 수로, 이 출력에서는 #1이 시스템 메시지와 질문 둘, #2가 도구 호출과 결과가 붙어 넷. 결정은 "도구 호출 이름(인자)" 아니면 "답"
+> - `schedules → …`: 도구가 돌려준 값
+> - `완료 시간`: 에이전트 실행 전체
+
 - 도구는 원래 JSON 스키마로 모델에게 알려야 합니다. 여기서는 스키마를 한 줄도 쓰지 않았습니다. 함수 이름이 도구 이름, 파라미터가 스키마, 애노테이션이 설명이 됩니다. Spring AI의 @Tool도 같은 방식입니다.
 - 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 롤백 절에서 씁니다.
 - 도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 맡습니다.
 - 캘린더는 텍스트 파일 하나에 저장하는 가짜입니다. 추가한 일정은 재시작 뒤에도 남습니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
 
-> [!info] 실행 기록 줄 읽는 법
-> 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.
->
-> - `dispatch → assistant`: 요청이 비서 에이전트(assistant)로 갔다는 기록. 보내는 쪽 dispatch는 오케스트레이션 절에서
-> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. N은 보낸 메시지 수로, #1은 시스템 메시지와 질문 둘, #2는 도구 호출과 결과가 붙어 넷. 결정은 "도구 호출 이름(인자)" 아니면 "답"
-> - `schedules → …`: 도구가 돌려준 값
-> - `완료 시간`: 에이전트 실행 전체
-
 출처: [Annotation-based tools](https://docs.koog.ai/tools/annotation-based-tools/)
 
 ## 3/6 스킬: 필요할 때 읽는 SKILL.md
 
-더하는 것은 SKILL.md와 파일 읽기 도구입니다. 확인할 것은 판교 사투리 변환입니다.
+SKILL.md와 파일 읽기 도구를 더합니다. 판교 사투리로 바꾸는지 확인합니다.
 
 ```markdown
 ---
@@ -227,7 +224,7 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
 조건 엣지 두 줄을 더합니다. 판교 사투리는 skill로, 나머지는 assistant로 가는지 확인합니다.
 
-2단계의 캘린더 도구와 3단계의 스킬을 한 에이전트에 다 주면, 4B 로컬 모델은 프롬프트로 아무리 일러도 엉뚱한 도구를 짚습니다. 그래서 담당을 나눴습니다. 비서는 캘린더만, 스킬 에이전트는 스킬만 가집니다. 요청을 담당에게 보내는 길이 아래 전략입니다.
+2단계의 캘린더 도구와 3단계의 스킬을 한 에이전트에 다 주면, 4B 로컬 모델은 프롬프트로 아무리 일러도 엉뚱한 도구를 짚습니다. 그래서 담당을 나눴습니다. 비서는 캘린더만, 스킬 에이전트는 스킬만 가집니다. 요청을 담당에게 보내는 전략이 아래 코드입니다.
 
 ```kotlin
 fun dispatchRouter(
@@ -255,12 +252,12 @@ dispatchRouter(
   dispatch    → assistant
 ```
 
-노드 둘이 각각 담당 에이전트를 부르고, 분기는 if문 대신 엣지로 선언합니다. 판교 사투리가 들어 있으면 skill로, 나머지는 assistant로 갑니다. 에이전트 둘을 그래프 하나가 지휘합니다. Why Koog에서 말한 멀티 에이전트 오케스트레이션의 가장 작은 형태입니다. 스킬 쪽에는 직전 비서 답변을 바꿀 원문으로 붙여 넘기므로 방금 들은 일정을 그대로 판교 사투리로 바꿀 수 있습니다.
+노드 둘이 각각 담당 에이전트를 부르고, 분기는 if문 대신 엣지로 선언합니다. 에이전트 둘을 그래프 하나가 지휘합니다. Why Koog에서 말한 멀티 에이전트 오케스트레이션의 가장 작은 형태입니다. 스킬 쪽(withLastAnswer)은 요청에 콜론 뒤 원문이 없으면 직전 비서 답변을 바꿀 원문으로 붙여 넘깁니다. 그래서 방금 들은 일정을 그대로 판교 사투리로 바꿀 수 있습니다.
 
 엣지 규칙:
 
 - 엣지는 선언한 순서대로 검사됩니다.
-- 넓은 조건(`onCondition { true }`)은 마지막에 둡니다. 앞에 오면 뒤 분기를 가립니다. 분기를 빠뜨려도 컴파일러는 모릅니다. when과는 다릅니다.
+- 넓은 조건(`onCondition { true }`)은 마지막에 둡니다. 앞에 오면 뒤 분기를 가리는데, 분기를 빠뜨려도 컴파일러는 모릅니다. 가지를 다 채웠는지 검사하는 when과 다른 점입니다.
 - edge 줄은 실행문이 아니라 자료구조를 만듭니다. 그래서 `asMermaidDiagram()` 한 번에 아래 그림이 나옵니다. 이벤트도 노드 단위로 잡히고 퍼시스턴스의 체크포인트도 노드 단위로 붙습니다.
 
 ```mermaid
@@ -275,7 +272,7 @@ stateDiagram
     assistant --> [*]
 ```
 
-위 그림은 `dispatchRouter().asMermaidDiagram()`의 출력입니다. 전략이 자료구조라서 실행 전에 그릴 수 있습니다. 그리기 위해 방향 지시만 더했습니다.
+위 그림은 dispatchRouter가 돌려주는 전략에 `asMermaidDiagram()`을 호출한 출력이고, 가로로 그리려고 `direction LR` 한 줄만 더했습니다.
 
 출처: [Custom strategy graphs](https://docs.koog.ai/custom-strategy-graphs/)의 조건 분기(onCondition) 예제와 같은 꼴
 
@@ -308,7 +305,7 @@ askAssistant = { assistantAgent().run(it, "demo") }
 10:00 팀 싱크입니다.
 ```
 
-- 비서 에이전트에 ChatMemory 기능을 install로 붙였습니다. 설정은 이력을 어디에 둘지 정하는 chatHistoryProvider 하나뿐입니다. 여기서는 브리지의 챗 메모리 스타터가 Spring AI의 ChatMemoryRepository를 감싼 빈을 등록합니다. 저장소는 Spring AI 것을 그대로 씁니다.
+- 비서 에이전트에 ChatMemory 기능을 install로 붙였습니다. 설정은 이력을 어디에 둘지 정하는 chatHistoryProvider 하나뿐입니다. 여기서는 브리지의 챗 메모리 스타터(koog-spring-ai-starter-chat-memory)가 Spring AI의 ChatMemoryRepository를 감싼 빈을 등록합니다. 저장소는 Spring AI 것을 그대로 씁니다.
 - run의 둘째 인자가 세션 ID입니다. 실행이 시작될 때 이 세션의 이력을 읽고, 끝날 때 이번 대화를 저장합니다. 세션 ID가 다르면 이력도 따로 갑니다.
 - 에이전트는 요청마다 새로 만드는데도 대화가 이어집니다. 이력은 ChatHistoryProvider가 쥐고 있기 때문입니다.
 - 출력을 보면 모델 호출 한 번에 메시지가 4개이고 그중 2개가 이력입니다. 2단계의 질문과 답입니다. 도구를 부르지 않고 바로 답했습니다.
@@ -317,9 +314,11 @@ askAssistant = { assistantAgent().run(it, "demo") }
 
 ## 6/6 퍼시스턴스: 노드마다 체크포인트
 
+비서에 전략을 하나 줬습니다. 평소 경로는 receive, request, execute, verify, report 순서이고, 도구를 실행하는 execute 뒤에 검증 노드 verify를 끼웠습니다. 아래 두 절은 이 전략 위에서 돕니다.
+
 ### 중단 뒤 이어서
 
-Why Koog에서 공식이 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
+Why Koog 문서가 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
 
 ```kotlin
 val checkpoints = JVMFilePersistenceStorageProvider(Path.of("data/koog-checkpoints"))
@@ -328,6 +327,7 @@ install(Persistence) {
     enableAutomaticPersistence = true
 }
 checkpoints.getLatestCheckpoint("demo")?.takeUnless { it.isTombstone() }?.let {
+    val node = it.graphProperties?.nodePath?.substringAfterLast('/')
     traceLine("persistence", "중단된 실행 발견, $node 다음부터 이어감")
     println(agents.assistantAgent().run("", "demo"))
 }
@@ -349,21 +349,19 @@ $ koog
 1. **10:00 팀 싱크** …
 ```
 
-모델이 답을 만드는 도중에 프로세스를 죽였습니다. 죽인 시점의 화면에는 `LLM #2` 줄이 없습니다. 다시 뜨자마자 "중단된 실행 발견, verify 다음부터"가 찍혔습니다. 앞서 끝난 모델 호출과 도구 호출은 다시 하지 않고, 남은 마지막 호출 하나로 답을 끝냈습니다.
+모델이 답을 만드는 도중에 프로세스를 죽였습니다. 죽인 시점의 화면에는 `LLM #2` 줄이 없습니다. 다시 뜨자마자 "중단된 실행 발견, verify 다음부터"가 찍혔습니다. 앞서 끝난 모델 호출과 도구 호출은 다시 하지 않고, 남은 마지막 호출 하나로 답을 끝냈습니다. 재시작 뒤의 `LLM #1`은 새 프로세스가 다시 센 번호이고, 메시지 8개는 체크포인트에서 복원한 프롬프트(시스템 메시지, 앞 대화 4개, 질문, 도구 호출, 도구 결과)입니다.
 
 - 저장 키는 run의 둘째 인자(runId)입니다. 문서는 에이전트에 묶인다고 쓰지만 1.3.0 코드는 이 값으로 저장하고 찾습니다. 챗 메모리의 세션 ID와 같은 값이라 세션 하나가 대화 이력과 실행 상태를 함께 가집니다.
 - 저장소는 인터페이스 하나입니다. 인메모리, 파일(이 구성), JDBC(Postgres, MySQL, H2) 구현체가 있고 JDBC는 DataSource를 받습니다.
-- 되돌리기는 다음 절에서 다룹니다.
+- 롤백은 다음 절에서 다룹니다.
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/) · 완료 표시와 파일 저장소는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에 있음 · JDBC 구현체는 [agents-features-persistence-jdbc 1.3.0](https://repo1.maven.org/maven2/ai/koog/agents-features-persistence-jdbc/1.3.0/), 문서에는 아직 없음
 
 ### 롤백과 반대 도구
 
-같은 체크포인트로 되돌리기도 합니다. 이번에 더하는 것은 검증 노드와 반대 도구 등록이고, 겹치는 일정이 들어오면 도구 실행 전으로 되돌아가는지 봅니다.
+같은 체크포인트로 롤백도 합니다. 검증 노드와 반대 도구 등록을 더하고, 겹치는 일정이 들어오면 도구 실행 전으로 되돌아가는지 봅니다.
 
-비서에 전략을 하나 줬습니다. 평소 경로는 receive, request, execute, verify, report 순서입니다. 도구를 실행한 뒤에 검증 노드 verify가 하나 더 있습니다.
-
-검증 노드입니다. 도구를 실행한 뒤 add가 있었으면 conflict으로 보고, 도구 실행 전 체크포인트로 롤백을 요청합니다.
+verify는 도구 결과에 add가 있으면 같은 시각의 다른 일정이 있는지 확인하고, 겹치면 도구 실행 전 체크포인트로 롤백을 요청합니다.
 
 ```kotlin
 val verify by node<ReceivedToolResults, ReceivedToolResults>("verify") { results ->
@@ -407,12 +405,13 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
   assistant   add → 추가됨: 내일 14:00 치과
   assistant   검증: 14:00 치과 겹침 (14:00 디자인 리뷰) → 도구 실행 전 체크포인트로 롤백
   assistant   롤백 뒤 내일 일정: 10:00 팀 싱크, 14:00 디자인 리뷰
+  assistant   완료 2.4s
 내일 14:00은 이미 디자인 리뷰 시간이라 치과 일정을 추가하지 않았습니다.
 ```
 
-- add가 돌아서 일정이 추가됐고, 검증이 디자인 리뷰와 겹친다며 롤백했습니다. 롤백 뒤 목록에서 치과가 빠졌습니다. 코드 어디에도 remove를 부르는 줄이 없습니다. Persistence가 불렀습니다.
-- 프롬프트와 실행 지점도 receive 다음으로 돌아갔습니다. receive의 첫 엣지가 reject로 보내 모델 호출 없이 답했습니다. 이 턴은 이력에 남지 않습니다.
-- 되돌리기는 노드가 끝난 뒤에 적용됩니다. verify 안에서 목록을 찍으면 아직 그대로입니다. 반대 도구 호출은 이벤트에 잡히지 않아 트레이스에 remove 줄이 없습니다.
+- add가 돌아서 일정이 추가됐고, 검증이 디자인 리뷰와 겹친다며 롤백했습니다. 롤백 뒤 목록에서 치과가 빠졌습니다. 코드에는 remove를 직접 부르는 줄이 없습니다. 짝만 등록했고 Persistence가 불렀습니다.
+- 프롬프트와 실행 지점도 receive 다음으로 돌아갔습니다. receive의 첫 엣지가 reject로 보내 모델 호출 없이 답했습니다. 요청 메시지는 request 노드가 프롬프트에 넣는데 그 전으로 돌아갔으니 이 턴은 이력에 남지 않습니다.
+- 롤백은 노드가 끝난 뒤에 적용됩니다. verify 안에서 목록을 찍으면 아직 그대로입니다. 반대 도구 호출은 이벤트에 잡히지 않아 실행 기록에 remove 줄이 없습니다.
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/)의 Rolling back all side-effects produced by tools · 롤백 뒤 실행 위치와 시작 노드 제외는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에서 확인
 
@@ -435,6 +434,6 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
 
 압축 전략, 재시도 기능, 이력까지 옮기는 LLM 전환, 플래너는 돌려 보지 않았고 출처만 적었습니다.
 
-공식 주장에 따르면 Koog를 꺼낼 자리는 모델 호출 바깥입니다. 실행 논리를 그래프로 두고 그 상태를 남겨야 하는 곳입니다. 여섯 단계에서 그 셋을 확인했습니다.
+공식 주장에 따르면 Koog를 꺼낼 자리는 모델 호출 바깥입니다. 실행 논리를 그래프로 두고 그 상태를 남겨야 하는 곳입니다. 여섯 단계에서 그래프 워크플로, 퍼시스턴스, 관측 셋을 확인했습니다.
 
 출처: [Why Koog](https://docs.koog.ai/why-koog/) · Spring AI 열은 1.1.6 코어 모듈 기준 · 스킬의 커뮤니티 구현은 [spring-ai-agent-utils](https://github.com/spring-ai-community/spring-ai-agent-utils)의 SkillsTool
