@@ -66,6 +66,7 @@ class CalendarToolSet(private val store: Path) : ToolSet {
     }
 
     private fun save() {
+        store.parent?.let { Files.createDirectories(it) }
         Files.writeString(store, entries.flatMap { (day, list) -> list.map { "$day\t$it" } }.joinToString("\n"))
     }
 

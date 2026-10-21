@@ -51,8 +51,8 @@ class Harness12(
         }.absolutePath
         val skills = discoverSkills(JVMFileSystemProvider.ReadOnly, listOf(skillsRoot))
         val skillsPrompt = generateSkillsPrompt(skills, SkillsPromptFormat.XML)
-        // 체크포인트는 재시작 뒤에도 남아야 하므로 지우지 않는다.
-        val checkpoints = JVMFilePersistenceStorageProvider(Path.of("/tmp/koog-checkpoints"))
+        // 체크포인트는 재시작 뒤에도 남아야 하므로 지우지 않는다. data/는 git이 무시한다.
+        val checkpoints = JVMFilePersistenceStorageProvider(Path.of("data/koog-checkpoints"))
 
         fun skillAgent() = AIAgent(
             promptExecutor = promptExecutor,
@@ -67,7 +67,7 @@ class Harness12(
         }
 
         // 일정은 파일에 남아 재시작 뒤에도 유지된다. 요청마다 새로 만드는 에이전트가 같은 캘린더를 쥔다.
-        val calendar = CalendarToolSet(Path.of("/tmp/koog-calendar.txt"))
+        val calendar = CalendarToolSet(Path.of("data/koog-calendar.txt"))
 
         fun assistantAgent() = AIAgent(
             promptExecutor = promptExecutor,

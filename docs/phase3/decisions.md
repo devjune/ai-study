@@ -293,3 +293,11 @@ back", "removeUser tool should take the same exact arguments as createUser"가 �
 다시 넣으면 겹침으로 잡혀 롤백된다. 같은 제목이 이미 있는 경우도 겹침으로 본다
 (conflictOfLastAdded가 같은 시각 항목이 둘 이상이면 겹침). 생성자에서 파일 경로를 받으므로
 테스트는 임시 경로(tempCalendar)를 쓴다. 발표 준비의 rm 대상에 캘린더 파일을 더했다. 테스트 18건.
+
+## 2026-10-21 런타임 파일을 demo-phase3/data/로
+
+체크포인트와 캘린더 파일을 /tmp에서 작업 디렉터리의 `data/`(koog-checkpoints, koog-calendar.txt)로
+옮겼다. IntelliJ 프로젝트 트리에서 파일을 열어 보이기 위해서다. resources 아래는 빌드 입력이라
+jar에 묻어 들어가므로 쓰지 않는다. 루트 .gitignore의 `data/`가 이미 이 폴더를 무시한다.
+IntelliJ 실행 구성과 koog CLI 모두 작업 디렉터리가 demo-phase3라 같은 자리를 쓴다.
+발표는 전부 IntelliJ에서 하고 12장 중단은 슬라이드 캡처로 설명하는 것으로 정리, 시나리오를 줄였다.

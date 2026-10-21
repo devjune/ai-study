@@ -151,7 +151,7 @@ class CalendarToolSet : ToolSet {
     }
     // add(day, time, title)는 같은 꼴. entries[day]에 넣고 파일에 저장
 }
-val calendar = CalendarToolSet(Path.of("/tmp/koog-calendar.txt"))
+val calendar = CalendarToolSet(Path.of("data/koog-calendar.txt"))
 toolRegistry = ToolRegistry { tools(calendar) }
 ```
 
@@ -315,7 +315,7 @@ askAssistant = { assistantAgent().run(it, "demo") }
 Why Koog에서 공식이 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
 
 ```kotlin
-val checkpoints = JVMFilePersistenceStorageProvider(Path.of("/tmp/koog-checkpoints"))
+val checkpoints = JVMFilePersistenceStorageProvider(Path.of("data/koog-checkpoints"))
 install(Persistence) {
     storage = checkpoints
     enableAutomaticPersistence = true

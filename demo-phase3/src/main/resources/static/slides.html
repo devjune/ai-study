@@ -358,7 +358,7 @@
     }
     <span class="cm">// add(day, time, title)는 같은 꼴. entries[day]에 넣고 파일에 저장</span>
 }
-<span class="k">val</span> calendar = CalendarToolSet(Path.of(<span class="s">"/tmp/koog-calendar.txt"</span>))
+<span class="k">val</span> calendar = CalendarToolSet(Path.of(<span class="s">"data/koog-calendar.txt"</span>))
 toolRegistry = ToolRegistry { tools(calendar) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
   dispatch    → assistant
@@ -525,7 +525,7 @@ askAssistant = { assistantAgent().run(it, <span class="hi"><span class="s">"demo
   <p class="contract">추가: Persistence 기능 · 확인: 강제 종료 뒤 재시작하면 중단 지점부터 완료</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">val</span> checkpoints = JVMFilePersistenceStorageProvider(Path.of(<span class="s">"/tmp/koog-checkpoints"</span>))
+      <pre><span class="k">val</span> checkpoints = JVMFilePersistenceStorageProvider(Path.of(<span class="s">"data/koog-checkpoints"</span>))
 <span class="hi">install(Persistence) {</span>
 <span class="hi">    storage = checkpoints</span>
 <span class="hi">    enableAutomaticPersistence = <span class="k">true</span></span>
