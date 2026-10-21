@@ -349,7 +349,7 @@
   <p class="contract">추가: @Tool 캘린더 함수 · 확인: 도구 호출 왕복</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">class</span> CalendarToolSet : ToolSet {
+      <pre><span class="k">class</span> CalendarToolSet(<span class="k">private val</span> store: Path) : ToolSet {
     <span class="k">private val</span> entries = load()   <span class="cm">// 텍스트 파일 하나. 없으면 내일 두 건으로 시작</span>
     <span class="k">@Tool</span>
     <span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다. 없으면 없음"</span>)

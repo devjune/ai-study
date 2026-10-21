@@ -1,4 +1,4 @@
-# Koog 세미나: Kotlin-native AI agents on the JVM
+# Koog : Kotlin-native AI agents on the JVM
 
 FDE팀 스터디 · 2026.10
 
@@ -6,12 +6,12 @@ FDE팀 스터디 · 2026.10
 
 LLM 에이전트 프레임워크는 파이썬 생태계에서 먼저 나왔습니다. 2022년에 LangChain이 나왔고 2023년에는 LangGraph와 CrewAI가 뒤따랐습니다. JVM 쪽은 2023년의 LangChain4j가 처음입니다. 저장소 소개문은 이 프로젝트를 "idiomatic Java"(Java다운 관용 스타일) 라이브러리라고 설명합니다. 2025년에는 JetBrains가 Kotlin 네이티브 프레임워크 Koog를 공개했습니다.
 
-| 시기 | 연혁 |
-|---|---|
-| 2025.05 | 공개(Released) |
-| 2026.03 | Java API |
+| 시기      | 연혁                          |
+| ------- | --------------------------- |
+| 2025.05 | 공개(Released)                |
+| 2026.03 | Java API                    |
 | 2026.05 | 1.0. stable 모듈은 최소 1년 호환 보장 |
-| 2026.09 | 1.3.0 |
+| 2026.09 | 1.3.0                       |
 
 출처: 연도는 GitHub 저장소 생성일 기준(langchain 2022-10, langchain4j 2023-06, langgraph 2023-08, crewAI 2023-10, koog 2025-05). "idiomatic Java"는 [langchain4j](https://github.com/langchain4j/langchain4j) 저장소 소개문. 공식 글 [Meet Koog](https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · [KotlinConf 2026](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog Comes to Java](https://blog.jetbrains.com/ai/2026/03/koog-comes-to-java/) · [Releases](https://github.com/JetBrains/koog/releases)
 
@@ -19,7 +19,7 @@ LLM 에이전트 프레임워크는 파이썬 생태계에서 먼저 나왔습�
 
 > [!quote] "Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents …"
 >
-> 예측 가능하고, 장애를 견디고, 기업 환경에서 쓸 수 있는 에이전트. GitHub 저장소 소개문의 첫 문장입니다.
+> 예측 가능하고, 장애를 견디고, 엔터프라이즈 환경에서 쓸 수 있는 에이전트. GitHub 저장소 소개문의 첫 문장입니다.
 
 Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로 네 가지를 꼽습니다.
 
@@ -37,9 +37,9 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
-## 기능 범위
+## Key features
 
-공식 문서 목차를 주제별로 다시 묶었습니다. 문서는 버전 구분 없이 최신판(현재 1.3.0)입니다. 굵게 표시한 여덟 기능은 여섯 단계에서 직접 돌려 봅니다.
+공식 문서 목차를 주제별로 다시 묶은 표이고, 굵은 여덟 기능은 여섯 단계에서 직접 돌려 봅니다.
 
 | 범주 | 기능 |
 |---|---|
@@ -64,7 +64,7 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 - Agent Skills: SKILL.md 명세 지원. 폴더에서 찾고 카탈로그 프롬프트를 만듦
 - Spring AI 통합: 기존 Spring AI 빈을 PromptExecutor로 잇는 브리지
 
-출처: [docs.koog.ai](https://docs.koog.ai/) 목차 · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)
+출처: [docs.koog.ai](https://docs.koog.ai/) 목차(버전 구분 없는 최신판, 현재 1.3.0) · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)
 
 ## Spring AI 위에 Koog, 여섯 단계로
 
@@ -141,9 +141,9 @@ REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 �
 @Tool 캘린더 함수를 더하고 도구 호출 왕복을 확인합니다.
 
 ```kotlin
-class CalendarToolSet : ToolSet {
+class CalendarToolSet(private val store: Path) : ToolSet {
     private val entries = load()   // 텍스트 파일 하나. 없으면 내일 두 건으로 시작
-    
+
     @Tool
     @LLMDescription("날짜의 일정 목록을 돌려준다. 없으면 없음")
     fun schedules(@LLMDescription("날짜, 예: 내일") day: String): String {
