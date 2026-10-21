@@ -83,11 +83,24 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 ```mermaid
 flowchart TB
-    K["KOOG<br/>dispatch 전략, 비서 에이전트, 스킬 에이전트"]
-    B["브리지 koog-spring-ai-starter<br/>Spring AI 빈을 Koog 인터페이스로 포장"]
-    S["SPRING AI<br/>ChatModel(Ollama, qwen3:4b-instruct), ChatMemoryRepository(인메모리)"]
-    K -- "PromptExecutor" --> B -- "ChatModel" --> S
-    K -- "ChatHistoryProvider" --> B -- "ChatMemoryRepository" --> S
+    subgraph K["KOOG"]
+        direction LR
+        D["dispatch 전략"] --> A["비서 에이전트"]
+        D --> SK["스킬 에이전트"]
+    end
+    subgraph B["브리지 (koog-spring-ai-starter)"]
+        direction LR
+        PE["PromptExecutor"]
+        HP["ChatHistoryProvider"]
+    end
+    subgraph SA["SPRING AI"]
+        direction LR
+        CM["ChatModel (Ollama, qwen3:4b-instruct)"]
+        MR["ChatMemoryRepository (인메모리)"]
+    end
+    A --> PE --> CM
+    A --> HP --> MR
+    SK --> PE
 ```
 
 | 단계 | 주제 | 더하는 것 |
