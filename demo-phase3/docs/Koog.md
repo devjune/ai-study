@@ -70,14 +70,14 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 Why Koog가 내세운 것 가운데 그래프 워크플로, 퍼시스턴스, 관측 셋을 Spring AI 스택에서 확인합니다. 그 위에 일정과 회사 말투를 아는 작은 비서를 만듭니다.
 
-구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 전략 그래프 하나가 요청을 비서 에이전트와 스킬 에이전트에 나눠 보냅니다. 이 그래프는 오케스트레이션 단계에서 만듭니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
+구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 전략 그래프 하나(dispatch)가 요청을 비서 에이전트(assistant)와 스킬 에이전트(skill)에 나눠 보냅니다. 괄호 안은 실행 기록에 찍히는 이름입니다. 이 그래프는 오케스트레이션 단계에서 만듭니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
 
 ```mermaid
 flowchart TB
     subgraph K["KOOG"]
         direction LR
-        D["전략 그래프 (요청 라우팅)"] --> A["비서 에이전트"]
-        D --> SK["스킬 에이전트"]
+        D["전략 그래프 dispatch (요청 라우팅)"] --> A["비서 에이전트 assistant"]
+        D --> SK["스킬 에이전트 skill"]
     end
     subgraph B["브리지 (koog-spring-ai-starter)"]
         direction LR
@@ -176,7 +176,7 @@ toolRegistry = ToolRegistry { tools(calendar) }
 > [!info] 실행 기록 줄 읽는 법
 > 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.
 >
-> - `dispatch → assistant`: 라우터 전략이 요청을 보낸 노드
+> - `dispatch → assistant`: 요청이 비서 에이전트(assistant)로 갔다는 기록. 보내는 쪽 dispatch는 오케스트레이션 절에서
 > - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. N은 보낸 메시지 수로, #1은 시스템 메시지와 질문 둘, #2는 도구 호출과 결과가 붙어 넷. 결정은 "도구 호출 이름(인자)" 아니면 "답"
 > - `schedules → …`: 도구가 돌려준 값
 > - `완료 시간`: 에이전트 실행 전체
