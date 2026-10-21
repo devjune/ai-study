@@ -76,7 +76,7 @@ Why Koog가 내세운 것 가운데 그래프 워크플로, 퍼시스턴스, 관
 flowchart TB
     subgraph K["KOOG"]
         direction LR
-        D["전략 그래프 (요청 분배)"] --> A["비서 에이전트"]
+        D["전략 그래프 (요청 라우팅)"] --> A["비서 에이전트"]
         D --> SK["스킬 에이전트"]
     end
     subgraph B["브리지 (koog-spring-ai-starter)"]
