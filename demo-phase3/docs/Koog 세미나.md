@@ -70,13 +70,13 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 Why Koog가 내세운 것 가운데 그래프 워크플로, 퍼시스턴스, 관측 셋을 Spring AI 스택에서 확인합니다. 그 위에 일정과 회사 말투를 아는 작은 비서를 만듭니다.
 
-구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 dispatch 전략 하나가 비서 에이전트와 스킬 에이전트를 지휘합니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
+구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 전략 그래프 하나가 요청을 비서 에이전트와 스킬 에이전트에 나눠 보냅니다. 이 그래프는 오케스트레이션 단계에서 만듭니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
 
 ```mermaid
 flowchart TB
     subgraph K["KOOG"]
         direction LR
-        D["dispatch 전략"] --> A["비서 에이전트"]
+        D["전략 그래프 (요청 분배)"] --> A["비서 에이전트"]
         D --> SK["스킬 에이전트"]
     end
     subgraph B["브리지 (koog-spring-ai-starter)"]
