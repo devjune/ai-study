@@ -568,13 +568,13 @@ $ koog
   <p class="contract">추가: 검증 노드와 반대 도구 등록 · 확인: 겹치는 일정은 도구 실행 전으로 되돌림</p>
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
-      <pre><span class="k">val</span> verify <span class="k">by</span> node&lt;ReceivedToolResults, ReceivedToolResults&gt;(<span class="s">"verify"</span>) { results -&gt;
+      <pre><span class="k">suspend fun</span> checkpointAfter(runId: String, node: String) = checkpoints.getCheckpoints(runId)
+    .filter { it.graphProperties?.nodePath?.endsWith(<span class="s">"/$node"</span>) == <span class="k">true</span> }
+    .maxBy { it.createdAt }.checkpointId
+<span class="k">val</span> verify <span class="k">by</span> node&lt;ReceivedToolResults, ReceivedToolResults&gt;(<span class="s">"verify"</span>) { results -&gt;
     <span class="k">if</span> (results.toolResults.any { it.tool == <span class="s">"add"</span> }) conflict = calendar.conflictOfLastAdded()
     <span class="k">if</span> (conflict != <span class="k">null</span>) {
-        <span class="k">val</span> before = checkpoints.getCheckpoints(runId)
-            .filter { it.graphProperties?.nodePath?.endsWith(<span class="s">"/receive"</span>) == <span class="k">true</span> }
-            .maxBy { it.createdAt }
-        <span class="hi">persistence().rollbackToCheckpoint(before.checkpointId, <span class="k">this</span>)</span>
+        <span class="hi">persistence().rollbackToCheckpoint(checkpointAfter(runId, <span class="s">"receive"</span>), <span class="k">this</span>)</span>
     }
     results
 }

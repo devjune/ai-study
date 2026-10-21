@@ -25,6 +25,11 @@ import ai.koog.agents.snapshot.providers.PersistenceStorageProvider
 fun assistantStrategy(calendar: CalendarToolSet, checkpoints: PersistenceStorageProvider<*>): AIAgentGraphStrategy<String, String> {
     var conflict: String? = null
     return strategy<String, String>("assistant") {
+        /** 이 실행의 체크포인트 중 node 뒤에 남은 최신 것의 id. 자동 체크포인트는 노드가 끝날 때마다 남는다. */
+        suspend fun checkpointAfter(runId: String, node: String) = checkpoints.getCheckpoints(runId)
+            .filter { it.graphProperties?.nodePath?.endsWith("/$node") == true }
+            .maxBy { it.createdAt }.checkpointId
+
         val receive by node<String, String>("receive") { input: String -> input }
         val request by nodeLLMRequest("request")
         val execute by nodeExecuteTools("execute")
@@ -33,10 +38,7 @@ fun assistantStrategy(calendar: CalendarToolSet, checkpoints: PersistenceStorage
             if (conflict != null) {
                 val added = calendar.lastAdded!!
                 traceLine("assistant", "검증: ${added.time} ${added.title} 겹침 ($conflict) → 도구 실행 전 체크포인트로 롤백")
-                val before = checkpoints.getCheckpoints(runId)
-                    .filter { it.graphProperties?.nodePath?.endsWith("/receive") == true }
-                    .maxBy { it.createdAt }
-                persistence().rollbackToCheckpoint(before.checkpointId, this)
+                persistence().rollbackToCheckpoint(checkpointAfter(runId, "receive"), this)
             }
             results
         }

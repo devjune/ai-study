@@ -196,12 +196,12 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 # 판교 사투리 변환
 
 입력 문장을 지정된 강도의 판교 사투리로 바꾼다. 의미와 사실은 유지한다.
+...
 
 ## 강도
 - 1~3: 부드러운 사내 메모. 존댓말, 짧게. 판교 어휘는 한두 개만(공유, 이슈, 싱크).
 - 4~6: 공지 문체. "안내드립니다", "협조 부탁드립니다". 슬랙·지라 같은 도구 이름이 등장.
-- 7~9: 전사 공지. 명사화("진행 예정"), "~하고자 합니다", 판교 어휘가 섞임(얼라인, 싱크, 팔로업, 리소스, 듀데잇).
-- 10: 경영진 메시지. C레벨 어휘(시너지, 임팩트, 마일스톤, 전사적 역량).
+...
 - 11: 기업 특이점. 모든 명사는 이니셔티브, 모든 모임은 싱크, 모든 실수는 레슨런이 된다. 당연한 일일수록 거창하게 포장하고, 사소한 부탁도 전사 프로젝트처럼 말한다. 과장을 최대로.
 ```
 
@@ -236,6 +236,7 @@ fun dispatchRouter(
 ) = strategy<String, String>("dispatch") {
     val skill by node<String, String>("skill") { askSkill(it) }
     val assistant by node<String, String>("assistant") { askAssistant(it) }
+    
     edge(nodeStart forwardTo skill onCondition { "판교사투리" in it.replace(" ", "") })
     edge(nodeStart forwardTo assistant onCondition { true })
     edge(skill forwardTo nodeFinish)
@@ -362,25 +363,42 @@ $ koog
 
 비서에 전략을 하나 줬습니다. 평소 경로는 receive, request, execute, verify, report 순서입니다. 도구를 실행한 뒤에 검증 노드 verify가 하나 더 있습니다.
 
+검증 노드입니다. 도구를 실행한 뒤 add가 있었으면 겹침을 보고, 겹치면 도구 실행 전 체크포인트로 롤백을 요청합니다.
+
 ```kotlin
 val verify by node<ReceivedToolResults, ReceivedToolResults>("verify") { results ->
     if (results.toolResults.any { it.tool == "add" }) conflict = calendar.conflictOfLastAdded()
     if (conflict != null) {
-        val before = checkpoints.getCheckpoints(runId)
-            .filter { it.graphProperties?.nodePath?.endsWith("/receive") == true }
-            .maxBy { it.createdAt }
-        persistence().rollbackToCheckpoint(before.checkpointId, this)
+        persistence().rollbackToCheckpoint(checkpointAfter(runId, "receive"), this)
     }
     results
 }
+```
+
+`checkpointAfter`는 이 실행의 체크포인트 중 그 노드 뒤에 남은 최신 것의 id를 돌려줍니다. 자동 체크포인트는 노드가 끝날 때마다 남으므로 receive 뒤의 것이 "도구 실행 전"입니다.
+
+```kotlin
+suspend fun checkpointAfter(runId: String, node: String) = checkpoints.getCheckpoints(runId)
+    .filter { it.graphProperties?.nodePath?.endsWith("/$node") == true }
+    .maxBy { it.createdAt }.checkpointId
+```
+
+롤백 뒤에는 실행이 receive 다음부터 다시 흐르므로, receive의 첫 엣지가 겹침일 때 reject로 보냅니다.
+
+```kotlin
 edge(receive forwardTo reject onCondition { conflict != null })
+```
+
+반대 도구 등록은 `install(Persistence)` 안에 있습니다. add의 반대가 remove라고 알려 두면, 되돌릴 때 Koog가 체크포인트 뒤의 add 호출마다 remove를 같은 인자로 부릅니다.
+
+```kotlin
 rollbackToolRegistry = RollbackToolRegistry.builder()
     .registerRollback(calendar::add, calendar::remove).build()
 ```
 
-- verify: 추가한 일정이 같은 시각의 다른 일정과 겹치면 도구 실행 전 체크포인트를 골라 `rollbackToCheckpoint` 한 줄로 되돌립니다. 체크포인트는 노드 뒤마다 남으므로 "도구 실행 전"은 요청을 받는 receive 노드 뒤의 것입니다. 시작 노드에는 체크포인트가 남지 않아 받는 노드를 따로 뒀습니다.
-- 엣지 한 줄: 롤백 뒤에는 실행이 receive 다음부터 다시 흐릅니다. 그래서 receive의 첫 엣지가 겹침일 때 reject로 보냅니다. reject는 모델을 부르지 않고 겹쳐서 추가하지 않았다는 문장을 만듭니다.
-- 반대 도구 등록: install(Persistence) 안에서 add의 반대가 remove라고 등록합니다. 되돌릴 때 Koog는 체크포인트 뒤의 도구 호출마다 반대 도구를 같은 인자로 역순 호출합니다. 공식 문서에 있는 규칙입니다.
+- 시작 노드에는 체크포인트가 남지 않아 요청을 받기만 하는 receive 노드를 따로 뒀습니다.
+- reject는 모델을 부르지 않고 겹쳐서 추가하지 않았다는 문장을 만듭니다.
+- 반대 도구는 역순으로, 같은 인자로 호출됩니다. 공식 문서에 있는 규칙입니다.
 
 ```text
 ❯ 내일 14시에 치과 추가해 줘
