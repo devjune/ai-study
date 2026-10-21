@@ -350,15 +350,15 @@
   <div class="cols w">
     <div style="display:flex; flex-direction:column; gap:9px">
       <pre><span class="k">class</span> CalendarToolSet : ToolSet {
-    <span class="k">private val</span> entries = mutableMapOf(<span class="s">"내일"</span> to mutableListOf(<span class="s">"10:00 팀 싱크"</span>, <span class="s">"14:00 디자인 리뷰"</span>))
+    <span class="k">private val</span> entries = load()   <span class="cm">// 텍스트 파일 하나. 없으면 내일 두 건으로 시작</span>
     <span class="k">@Tool</span>
     <span class="k">@LLMDescription</span>(<span class="s">"날짜의 일정 목록을 돌려준다. 없으면 없음"</span>)
     <span class="k">fun</span> schedules(<span class="k">@LLMDescription</span>(<span class="s">"날짜, 예: 내일"</span>) day: String): String {
         <span class="k">return</span> entries[day]?.sorted()?.joinToString(<span class="s">", "</span>) ?: <span class="s">"없음"</span>
     }
-    <span class="cm">// add(day, time, title)는 같은 꼴. entries[day]에 넣는다</span>
+    <span class="cm">// add(day, time, title)는 같은 꼴. entries[day]에 넣고 파일에 저장</span>
 }
-<span class="k">val</span> calendar = CalendarToolSet()
+<span class="k">val</span> calendar = CalendarToolSet(Path.of(<span class="s">"/tmp/koog-calendar.txt"</span>))
 toolRegistry = ToolRegistry { tools(calendar) }</pre>
       <pre class="err">❯ 내일 일정 알려줘
   dispatch    → assistant

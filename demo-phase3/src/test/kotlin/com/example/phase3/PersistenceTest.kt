@@ -56,7 +56,7 @@ class PersistenceTest(
         val session = "persist-${System.nanoTime()}"
         val calls = mutableListOf<Int>()
 
-        val result = assistantAgent(CalendarToolSet(), calls).run("내일 일정 알려줘", session)
+        val result = assistantAgent(tempCalendar(), calls).run("내일 일정 알려줘", session)
 
         val saved = checkpoints.getCheckpoints(session).sortedBy { it.createdAt }
         saved.forEach {
@@ -77,7 +77,7 @@ class PersistenceTest(
         val pending = checkpoints.getLatestCheckpoint(session)
         println("PersistenceTest 중단 시점: node=${pending?.graphProperties?.nodePath} tombstone=${pending?.isTombstone()} / 첫 실행 LLM 호출: $firstCalls")
 
-        val calendar = CalendarToolSet()
+        val calendar = tempCalendar()
         val secondCalls = mutableListOf<Int>()
         val result = assistantAgent(calendar, secondCalls).run("다시 시작", session)
 

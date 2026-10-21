@@ -35,7 +35,7 @@ class ChatMemoryTest(
     }
 
     test("같은 세션이면 새로 만든 에이전트도 앞 대화를 이어받는다") {
-        val calendar = CalendarToolSet()
+        val calendar = tempCalendar()
         val session = "memory-${System.nanoTime()}"
 
         assistantAgent(calendar).run("내일 일정 알려줘", session)
@@ -50,7 +50,7 @@ class ChatMemoryTest(
         val sessionA = "memory-a-${System.nanoTime()}"
         val sessionB = "memory-b-${System.nanoTime()}"
 
-        assistantAgent(CalendarToolSet()).run("내일 일정 알려줘", sessionA)
+        assistantAgent(tempCalendar()).run("내일 일정 알려줘", sessionA)
 
         val storedA = chatMemoryRepository.findByConversationId(sessionA)
         storedA.forEach { println("ChatMemoryTest 저장된 행: ${it.messageType} | ${it.text}") }

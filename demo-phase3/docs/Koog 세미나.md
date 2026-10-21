@@ -142,16 +142,16 @@ REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 �
 
 ```kotlin
 class CalendarToolSet : ToolSet {
-    private val entries = mutableMapOf("내일" to mutableListOf("10:00 팀 싱크", "14:00 디자인 리뷰"))
+    private val entries = load()   // 텍스트 파일 하나. 없으면 내일 두 건으로 시작
     
     @Tool
     @LLMDescription("날짜의 일정 목록을 돌려준다. 없으면 없음")
     fun schedules(@LLMDescription("날짜, 예: 내일") day: String): String {
         return entries[day]?.sorted()?.joinToString(", ") ?: "없음"
     }
-    // add(day, time, title)는 같은 꼴. entries[day]에 넣는다
+    // add(day, time, title)는 같은 꼴. entries[day]에 넣고 파일에 저장
 }
-val calendar = CalendarToolSet()
+val calendar = CalendarToolSet(Path.of("/tmp/koog-calendar.txt"))
 toolRegistry = ToolRegistry { tools(calendar) }
 ```
 
@@ -170,7 +170,7 @@ toolRegistry = ToolRegistry { tools(calendar) }
 - 도구는 원래 JSON 스키마로 모델에게 알려야 합니다. 여기서는 스키마를 한 줄도 쓰지 않았습니다. 함수 이름이 도구 이름, 파라미터가 스키마, 애노테이션이 설명이 됩니다. Spring AI의 @Tool도 같은 방식입니다.
 - 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 롤백 절에서 씁니다.
 - 도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 맡습니다.
-- 캘린더는 메모리에만 있는 가짜입니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
+- 캘린더는 텍스트 파일 하나에 저장하는 가짜입니다. 추가한 일정은 재시작 뒤에도 남습니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
 
 > [!info] 실행 기록 줄 읽는 법
 > 출력에서 답 위에 들여쓴 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다.

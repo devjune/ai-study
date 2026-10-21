@@ -66,8 +66,8 @@ class Harness12(
             install(EventHandler, trace("skill"))
         }
 
-        // 일정은 프로세스가 사는 동안 유지된다. 요청마다 새로 만드는 에이전트가 같은 캘린더를 쥔다.
-        val calendar = CalendarToolSet()
+        // 일정은 파일에 남아 재시작 뒤에도 유지된다. 요청마다 새로 만드는 에이전트가 같은 캘린더를 쥔다.
+        val calendar = CalendarToolSet(Path.of("/tmp/koog-calendar.txt"))
 
         fun assistantAgent() = AIAgent(
             promptExecutor = promptExecutor,

@@ -282,3 +282,14 @@ docs.koog.ai Agent persistence 페이지는 인메모리·파일·직접 구현�
 createUser tool call there will be a removeUser invocation in the reverse order when rolling
 back", "removeUser tool should take the same exact arguments as createUser"가 있다. 롤백 뒤
 실행이 어디서 이어지는지는 문서에 없고 위 바이트코드로 확인했다. 테스트 17건.
+
+## 2026-10-21 캘린더를 파일에 저장
+
+"15시 치과"를 추가하고 재시작한 뒤 같은 입력을 넣으면 그냥 또 추가됐다. 캘린더가 프로세스
+메모리에만 있어서였는데, 퍼시스턴스 데모 직후라 "영구적인 게 아닌데?"로 보인다. 체크포인트가
+남기는 것은 실행 상태(이력, 노드, 출력)이고 도구가 바깥에 남긴 데이터는 도구 저장소의 몫이라는
+구분을 말로만 하면 발표자가 거짓말하는 것처럼 들린다. 그래서 캘린더를 텍스트 파일
+(/tmp/koog-calendar.txt, 한 줄에 "날짜<탭>시각 제목")에 저장하게 바꿨다. 재시작 뒤 같은 시각을
+다시 넣으면 겹침으로 잡혀 롤백된다. 같은 제목이 이미 있는 경우도 겹침으로 본다
+(conflictOfLastAdded가 같은 시각 항목이 둘 이상이면 겹침). 생성자에서 파일 경로를 받으므로
+테스트는 임시 경로(tempCalendar)를 쓴다. 발표 준비의 rm 대상에 캘린더 파일을 더했다. 테스트 18건.

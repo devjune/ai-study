@@ -36,7 +36,7 @@ class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
     }
 
     test("비서가 캘린더 도구로 일정을 답한다") {
-        val calendar = CalendarToolSet()
+        val calendar = tempCalendar()
         val agent = AIAgent(
             promptExecutor = promptExecutor,
             llmModel = KoogModels.QWEN3_4B_INSTRUCT,
@@ -53,7 +53,7 @@ class ToolsTest(val promptExecutor: PromptExecutor) : FunSpec({
     }
 
     test("추가한 일정은 그 날짜 조회에만 나온다") {
-        val calendar = CalendarToolSet()
+        val calendar = tempCalendar()
         calendar.add("내일", "16:00", "치과")
 
         calendar.schedules("내일") shouldBe "10:00 팀 싱크, 14:00 디자인 리뷰, 16:00 치과"
