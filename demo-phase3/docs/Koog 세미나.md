@@ -18,6 +18,7 @@ LLM 에이전트 프레임워크는 파이썬 생태계에서 먼저 나왔습�
 ## Why Koog? 공식적으로 내세우는 것
 
 > [!quote] "Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents …"
+>
 > 예측 가능하고, 장애를 견디고, 기업 환경에서 쓸 수 있는 에이전트. GitHub 저장소 소개문의 첫 문장입니다.
 
 Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로 네 가지를 꼽습니다.
