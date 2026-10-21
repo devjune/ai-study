@@ -2,16 +2,7 @@
 
 FDE팀 스터디 · 2026.10
 
-## 2. 목차
-
-| 구간 | 내용 | 장 | 시간 |
-|---|---|---|---|
-| 01 | Koog가 내세우는 것 | 3~5 | 2분 |
-| 02 | Spring AI 스택에서 여섯 단계 | 6~13 | 7분 |
-| 03 | Spring AI와 다른 점 | 14 | 1분 |
-| 04 | Demo · 질의 | 15 | 3분 + 2분 |
-
-## 3. Koog 소개
+## Koog 소개
 
 LLM 에이전트 프레임워크는 파이썬 생태계에서 먼저 나왔습니다. 2022년에 LangChain이 나왔고 2023년에는 LangGraph와 CrewAI가 뒤따랐습니다. JVM 쪽은 2023년의 LangChain4j가 처음입니다. 저장소 소개문은 이 프로젝트를 "idiomatic Java"(Java다운 관용 스타일) 라이브러리라고 설명합니다. 2025년에는 JetBrains가 Kotlin 네이티브 프레임워크 Koog를 공개했습니다.
 
@@ -24,7 +15,7 @@ LLM 에이전트 프레임워크는 파이썬 생태계에서 먼저 나왔습�
 
 출처: 연도는 GitHub 저장소 생성일 기준(langchain 2022-10, langchain4j 2023-06, langgraph 2023-08, crewAI 2023-10, koog 2025-05). "idiomatic Java"는 [langchain4j](https://github.com/langchain4j/langchain4j) 저장소 소개문. 공식 글 [Meet Koog](https://blog.jetbrains.com/ai/2025/05/meet-koog-empowering-kotlin-developers-to-build-ai-agents/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · [KotlinConf 2026](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog Comes to Java](https://blog.jetbrains.com/ai/2026/03/koog-comes-to-java/) · [Releases](https://github.com/JetBrains/koog/releases)
 
-## 4. Why Koog? 공식적으로 내세우는 것
+## Why Koog? 공식적으로 내세우는 것
 
 > [!quote] "Koog is a JVM (Java and Kotlin) framework for building predictable, fault-tolerant and enterprise-ready AI agents …"
 > 예측 가능하고, 장애를 견디고, 기업 환경에서 쓸 수 있는 에이전트. GitHub 저장소 소개문의 첫 문장입니다.
@@ -42,11 +33,11 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 - Kotlin DSL과 Java API를 둘 다 제공합니다. 1.0부터 stable 모듈은 최소 1년간 깨지는 변경이 없습니다.
 - Spring Boot, Spring AI, Ktor 연동. 멀티플랫폼과 OpenTelemetry 지원.
 
-여섯 단계에서는 이 중 그래프 워크플로, 퍼시스턴스, 관측을 직접 돌려 봅니다. 나머지는 14장 표에 출처만 적었습니다.
+여섯 단계에서는 이 중 그래프 워크플로, 퍼시스턴스, 관측을 직접 돌려 봅니다. 나머지는 마지막 표에 출처만 적었습니다.
 
 출처: [GitHub 저장소 소개(인용문)](https://github.com/JetBrains/koog) · [Why Koog](https://docs.koog.ai/why-koog/) · [KotlinConf 2026 키노트](https://blog.jetbrains.com/kotlin/2026/05/kotlinconf26-keynote-highlights/) · [Koog 1.0](https://blog.jetbrains.com/ai/2026/05/koog-1-0-is-out-stable-core-better-interop-and-multiplatform-observability/) · 예제 [Banking](https://docs.koog.ai/examples/Banking/) · [Chess](https://docs.koog.ai/examples/Chess/) · [MCP](https://docs.koog.ai/examples/GoogleMapsMcp/) · [Langfuse](https://docs.koog.ai/examples/Langfuse/)
 
-## 5. 기능 범위
+## 기능 범위
 
 공식 문서 목차를 주제별로 다시 묶었습니다. 문서는 버전 구분 없이 최신판(현재 1.3.0)입니다. 굵게 표시한 여덟 기능은 여섯 단계에서 직접 돌려 봅니다.
 
@@ -75,9 +66,9 @@ Why Koog 문서는 "기본 기능만 주는 프레임워크와 다른 점"으로
 
 출처: [docs.koog.ai](https://docs.koog.ai/) 목차 · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)
 
-## 6. Spring AI 위에 Koog, 여섯 단계로
+## Spring AI 위에 Koog, 여섯 단계로
 
-4장의 주장 가운데 그래프 워크플로, 퍼시스턴스, 관측 셋을 Spring AI 스택에서 확인합니다. 그 위에 일정과 회사 말투를 아는 작은 비서를 만듭니다.
+Why Koog가 내세운 것 가운데 그래프 워크플로, 퍼시스턴스, 관측 셋을 Spring AI 스택에서 확인합니다. 그 위에 일정과 회사 말투를 아는 작은 비서를 만듭니다.
 
 구성은 세 층입니다. 맨 아래는 이미 쓰고 있는 Spring AI로, 모델(Ollama의 qwen3:4b-instruct)과 대화 저장소(인메모리)가 여기 있습니다. 가운데 브리지(koog-spring-ai-starter)가 이 빈들을 Koog 인터페이스로 감쌉니다. 맨 위에서는 Koog의 dispatch 전략 하나가 비서 에이전트와 스킬 에이전트를 지휘합니다. Spring AI 재사용은 이 구성의 선택입니다. Koog의 전제는 아닙니다.
 
@@ -115,7 +106,7 @@ flowchart TB
 
 출처: [Why Koog](https://docs.koog.ai/why-koog/)의 Spring AI 통합 항목 · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)
 
-## 7. 1/6 기본 에이전트: AIAgent 하나로 시작
+## 1/6 기본 에이전트: AIAgent 하나로 시작
 
 AIAgent 하나와 입력 루프로 시작합니다. REPL이 "5"라고 답하면 됩니다.
 
@@ -145,7 +136,7 @@ $ koog step1
 
 코드는 Harness07.kt에 있습니다. REPL(Read-Eval-Print Loop)은 한 줄씩 읽어 실행하고 결과를 찍는 일을 반복하는 대화형 루프입니다.
 
-## 8. 2/6 도구: 시그니처가 곧 스키마
+## 2/6 도구: 시그니처가 곧 스키마
 
 @Tool 캘린더 함수를 더하고 도구 호출 왕복을 확인합니다.
 
@@ -176,23 +167,23 @@ toolRegistry = ToolRegistry { tools(calendar) }
 ```
 
 - 도구는 원래 JSON 스키마로 모델에게 알려야 합니다. 여기서는 스키마를 한 줄도 쓰지 않았습니다. 함수 이름이 도구 이름, 파라미터가 스키마, 애노테이션이 설명이 됩니다. Spring AI의 @Tool도 같은 방식입니다.
-- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 13장에서 씁니다.
+- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 롤백 장에서 씁니다.
 - 도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 맡습니다.
 - 캘린더는 메모리에만 있는 가짜입니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
 
 > [!info] 터미널의 흐린 줄 읽는 법
 > 답 위에 흐리게 찍히는 줄은 Koog 이벤트 핸들러로 남긴 실행 기록입니다(Trace.kt).
 >
-> - `dispatch → …`: 라우터 전략이 들어간 노드. 판교 사투리는 skill, 나머지는 assistant(10장)
-> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. 결정은 "도구 호출 이름(인자)" 아니면 "답". 도구 왕복이면 #1이 도구 호출, #2가 답. 첫 호출의 "(이력 M개)"는 챗 메모리가 실어 준 앞 대화 수(11장)
+> - `dispatch → …`: 라우터 전략이 들어간 노드. 판교 사투리는 skill, 나머지는 assistant(오케스트레이션)
+> - `LLM #n 메시지 N개 → 결정  시간`: 모델 호출 하나. 결정은 "도구 호출 이름(인자)" 아니면 "답". 도구 왕복이면 #1이 도구 호출, #2가 답. 첫 호출의 "(이력 M개)"는 챗 메모리가 실어 준 앞 대화 수(챗 메모리)
 > - `도구이름 → 결과`: 도구가 돌려준 값. 파일은 글자 수
 > - `완료 시간`: 담당 에이전트의 실행 전체
-> - `persistence 중단된 실행 발견, … 다음부터 이어감`: 기동 때 완료 표시 없는 체크포인트를 찾음(12장)
-> - `검증: …`, `롤백 뒤 …`: 비서 전략의 verify 노드와 reject 노드가 찍는 줄(13장)
+> - `persistence 중단된 실행 발견, … 다음부터 이어감`: 기동 때 완료 표시 없는 체크포인트를 찾음(퍼시스턴스)
+> - `검증: …`, `롤백 뒤 …`: 비서 전략의 verify 노드와 reject 노드가 찍는 줄(롤백)
 
 출처: [Annotation-based tools](https://docs.koog.ai/tools/annotation-based-tools/)
 
-## 9. 3/6 스킬: 필요할 때 읽는 SKILL.md
+## 3/6 스킬: 필요할 때 읽는 SKILL.md
 
 더하는 것은 SKILL.md와 파일 읽기 도구입니다. 확인할 것은 판교 사투리 변환입니다.
 
@@ -225,7 +216,7 @@ description: 평범한 한국어 문장을 판교 사투리(IT 회사 말투)로
 
 출처: [Agent Skills](https://docs.koog.ai/skills/) (Koog) · 표준 명세 [agentskills.io](https://agentskills.io) (Anthropic)
 
-## 10. 4/6 오케스트레이션: 담당 에이전트 둘을 그래프로
+## 4/6 오케스트레이션: 담당 에이전트 둘을 그래프로
 
 조건 엣지 두 줄을 더합니다. 판교 사투리는 skill로, 나머지는 assistant로 가는지 확인합니다.
 
@@ -256,13 +247,13 @@ dispatchRouter(
   dispatch    → assistant
 ```
 
-노드 둘이 각각 담당 에이전트를 부르고, 분기는 if문 대신 엣지로 선언합니다. 판교 사투리가 들어 있으면 skill로, 나머지는 assistant로 갑니다. 에이전트 둘을 그래프 하나가 지휘합니다. 4장에서 말한 멀티 에이전트 오케스트레이션의 가장 작은 형태입니다. 스킬 쪽에는 직전 비서 답변을 바꿀 원문으로 붙여 넘기므로 방금 들은 일정을 그대로 판교 사투리로 바꿀 수 있습니다.
+노드 둘이 각각 담당 에이전트를 부르고, 분기는 if문 대신 엣지로 선언합니다. 판교 사투리가 들어 있으면 skill로, 나머지는 assistant로 갑니다. 에이전트 둘을 그래프 하나가 지휘합니다. Why Koog에서 말한 멀티 에이전트 오케스트레이션의 가장 작은 형태입니다. 스킬 쪽에는 직전 비서 답변을 바꿀 원문으로 붙여 넘기므로 방금 들은 일정을 그대로 판교 사투리로 바꿀 수 있습니다.
 
 엣지 규칙:
 
 - 엣지는 선언한 순서대로 검사됩니다.
 - 넓은 조건(`onCondition { true }`)은 마지막에 둡니다. 앞에 오면 뒤 분기를 가립니다. 분기를 빠뜨려도 컴파일러는 모릅니다. when과는 다릅니다.
-- edge 줄은 실행문이 아니라 자료구조를 만듭니다. 그래서 `asMermaidDiagram()` 한 번에 아래 그림이 나옵니다. 이벤트도 노드 단위로 잡히고 12장의 체크포인트도 노드 단위로 붙습니다.
+- edge 줄은 실행문이 아니라 자료구조를 만듭니다. 그래서 `asMermaidDiagram()` 한 번에 아래 그림이 나옵니다. 이벤트도 노드 단위로 잡히고 퍼시스턴스의 체크포인트도 노드 단위로 붙습니다.
 
 ```mermaid
 stateDiagram
@@ -280,7 +271,7 @@ stateDiagram
 
 출처: [Custom strategy graphs](https://docs.koog.ai/custom-strategy-graphs/)의 조건 분기(onCondition) 예제와 같은 꼴
 
-## 11. 5/6 챗 메모리: 세션 ID로 이어지는 대화
+## 5/6 챗 메모리: 세션 ID로 이어지는 대화
 
 여기까지 비서는 요청마다 처음 보는 것처럼 답했습니다. ChatMemory 기능과 세션 ID를 붙이면 앞서 말한 일정을 도구 호출 없이 답할 수 있어야 합니다.
 
@@ -316,9 +307,9 @@ askAssistant = { assistantAgent().run(it, "demo") }
 
 출처: [Chat memory](https://docs.koog.ai/features/chat-memory/) · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)의 Chat Memory Starter
 
-## 12. 6/6 퍼시스턴스: 중단 뒤 이어서
+## 6/6 퍼시스턴스: 중단 뒤 이어서
 
-4장에서 공식이 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
+Why Koog에서 공식이 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
 
 ```kotlin
 val checkpoints = JVMFilePersistenceStorageProvider(Path.of("/tmp/koog-checkpoints"))
@@ -356,7 +347,7 @@ $ koog
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/) · 완료 표시와 파일 저장소는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에 있음 · JDBC 구현체는 [agents-features-persistence-jdbc 1.3.0](https://repo1.maven.org/maven2/ai/koog/agents-features-persistence-jdbc/1.3.0/), 문서에는 아직 없음
 
-## 13. 6/6 퍼시스턴스: 롤백과 반대 도구
+## 6/6 퍼시스턴스: 롤백과 반대 도구
 
 같은 체크포인트로 되돌리기도 합니다. 이번에 더하는 것은 검증 노드와 반대 도구 등록이고, 겹치는 일정이 들어오면 도구 실행 전으로 되돌아가는지 봅니다.
 
@@ -398,7 +389,7 @@ rollbackToolRegistry = RollbackToolRegistry.builder()
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/)의 Rolling back all side-effects produced by tools · 롤백 뒤 실행 위치와 시작 노드 제외는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에서 확인
 
-## 14. Spring AI와 다른 점
+## Spring AI와 다른 점
 
 모델 호출, 도구, 챗 메모리, 관측은 Spring AI에도 같은 역할로 있습니다. 여섯 단계에서 쓴 것 가운데 Spring AI 코어에 없는 것은 셋입니다. 스킬 카탈로그(커뮤니티 spring-ai-agent-utils에는 있음), 노드와 엣지가 자료구조인 전략 그래프, 노드 단위 체크포인트로 복구하고 되돌리는 퍼시스턴스입니다.
 
