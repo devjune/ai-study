@@ -265,10 +265,6 @@ dispatchRouter(
 - edge 줄은 실행문이 아니라 자료구조를 만듭니다. 그래서 `asMermaidDiagram()` 한 번에 아래 그림이 나옵니다. 이벤트도 노드 단위로 잡히고 12장의 체크포인트도 노드 단위로 붙습니다.
 
 ```mermaid
----
-config:
-  theme: neutral
----
 stateDiagram
     direction LR
     state "skill" as skill
@@ -280,7 +276,7 @@ stateDiagram
     assistant --> [*]
 ```
 
-위 그림은 `dispatchRouter().asMermaidDiagram()`의 출력입니다. 전략이 자료구조라서 실행 전에 그릴 수 있습니다. 그리기 위해 방향과 테마 지시만 더했습니다.
+위 그림은 `dispatchRouter().asMermaidDiagram()`의 출력입니다. 전략이 자료구조라서 실행 전에 그릴 수 있습니다. 그리기 위해 방향 지시만 더했습니다.
 
 출처: [Custom strategy graphs](https://docs.koog.ai/custom-strategy-graphs/)의 조건 분기(onCondition) 예제와 같은 꼴
 
