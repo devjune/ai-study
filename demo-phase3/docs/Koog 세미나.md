@@ -168,7 +168,7 @@ toolRegistry = ToolRegistry { tools(calendar) }
 ```
 
 - 도구는 원래 JSON 스키마로 모델에게 알려야 합니다. 여기서는 스키마를 한 줄도 쓰지 않았습니다. 함수 이름이 도구 이름, 파라미터가 스키마, 애노테이션이 설명이 됩니다. Spring AI의 @Tool도 같은 방식입니다.
-- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 롤백 장에서 씁니다.
+- 파라미터를 더하면 스키마도 따라 바뀝니다. 같은 꼴로 만든 add(day, time, title)는 롤백 절에서 씁니다.
 - 도구를 고르고, 부르고, 결과로 답을 만드는 왕복은 기본 전략이 맡습니다.
 - 캘린더는 메모리에만 있는 가짜입니다. 실제 캘린더에 연동하려면 return 안쪽만 바꾸면 됩니다.
 
@@ -308,7 +308,9 @@ askAssistant = { assistantAgent().run(it, "demo") }
 
 출처: [Chat memory](https://docs.koog.ai/features/chat-memory/) · [Spring AI integration](https://docs.koog.ai/spring-ai-integration/)의 Chat Memory Starter
 
-## 6/6 퍼시스턴스: 중단 뒤 이어서
+## 6/6 퍼시스턴스: 노드마다 체크포인트
+
+### 중단 뒤 이어서
 
 Why Koog에서 공식이 가장 세게 내세우는 기능입니다. Persistence를 붙이고, 강제 종료 뒤 재시작하면 중단 지점부터 마저 끝내는지 봅니다.
 
@@ -344,11 +346,11 @@ $ koog
 
 - 저장 키는 run의 둘째 인자(runId)입니다. 문서는 에이전트에 묶인다고 쓰지만 1.3.0 코드는 이 값으로 저장하고 찾습니다. 챗 메모리의 세션 ID와 같은 값이라 세션 하나가 대화 이력과 실행 상태를 함께 가집니다.
 - 저장소는 인터페이스 하나입니다. 인메모리, 파일(이 구성), JDBC(Postgres, MySQL, H2) 구현체가 있고 JDBC는 DataSource를 받습니다.
-- 되돌리기는 다음 장에서 다룹니다.
+- 되돌리기는 다음 절에서 다룹니다.
 
 출처: [Agent persistence](https://docs.koog.ai/features/agent-persistence/) · 완료 표시와 파일 저장소는 문서에 없고 [1.3.0 소스](https://github.com/JetBrains/koog/tree/1.3.0)에 있음 · JDBC 구현체는 [agents-features-persistence-jdbc 1.3.0](https://repo1.maven.org/maven2/ai/koog/agents-features-persistence-jdbc/1.3.0/), 문서에는 아직 없음
 
-## 6/6 퍼시스턴스: 롤백과 반대 도구
+### 롤백과 반대 도구
 
 같은 체크포인트로 되돌리기도 합니다. 이번에 더하는 것은 검증 노드와 반대 도구 등록이고, 겹치는 일정이 들어오면 도구 실행 전으로 되돌아가는지 봅니다.
 
