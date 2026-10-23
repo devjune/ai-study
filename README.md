@@ -9,8 +9,8 @@ Spring AI를 주제로 단계(phase)를 나눠 진행한다. 각 phase는 학습
 | Phase | 주제 | 상태 | 문서 | 데모 |
 | --- | --- | --- | --- | --- |
 | 1 | Spring AI 2.0 — 개념부터 에이전트까지 | 완료 | [docs/phase1](./docs/phase1) | [demo-phase1](./demo-phase1) |
-| 2 | 에이전틱 패턴 (Spring AI 구현) | 진행 중 | [docs/phase2](./docs/phase2) | [demo-phase2](./demo-phase2) |
-| 3 | MCP 상호운용 (외부 에이전트 결합) | 예정 | — | — |
+| 2 | 에이전틱 패턴 (Spring AI 구현) | 완료 | [docs/phase2](./docs/phase2) | [demo-phase2](./demo-phase2) |
+| 3 | Koog: Spring AI 위에 얹는 에이전트 프레임워크 | 완료 (2026-10 발표) | [docs/phase3](./docs/phase3) | [demo-phase3](./demo-phase3) |
 
 ### Phase 1 — Spring AI 2.0 개념부터 에이전트까지
 
@@ -33,6 +33,16 @@ Spring AI 2.0.1(2026-08) 기준으로 핵심 개념과 사용법을 처음부터
 - [오프라인 반입 키트](./docs/phase2/offline-kit.md) — 외부망이 막힌 사내망에서 돌리기
 - [설계 문서](./docs/superpowers/specs/2026-09-04-phase2-local-llm-design.md)
 
+### Phase 3 — Koog: Spring AI 위에 얹는 에이전트 프레임워크
+
+JetBrains의 Kotlin 에이전트 프레임워크 [Koog](https://github.com/JetBrains/koog) 1.3.0을 공식 Spring AI 브리지로 기존 스택(Spring Boot 3.5, Spring AI 1.1.6, 로컬 Ollama) 위에 얹는다. Koog가 내세우는 그래프 워크플로, 퍼시스턴스, 관측을 여섯 단계(기본 에이전트, 도구, 스킬, 오케스트레이션, 챗 메모리, 퍼시스턴스)로 직접 돌려 보고, 끝에 Spring AI와 다른 점을 표로 정리한다. 퍼시스턴스는 강제 종료 뒤 재개와 겹치는 일정의 롤백(반대 도구 자동 호출)까지 실측했다.
+
+- [발표 문서](./demo-phase3/docs/Koog.md) — 청중이 같이 읽는 본문. 코드와 출력은 데모와 같다. 위키 포팅 대상
+- [발표 스크립트](./demo-phase3/docs/발표%20스크립트.md) · [데모 시나리오](./demo-phase3/docs/데모%20시나리오.md) — 할 말과 단계별 입력·실측 답
+- [결정 로그](./docs/phase3/decisions.md) — 버전 고정, 체크포인트 키, 롤백 내부 동작처럼 코드로 확인한 것
+- [실습: 망가뜨리며 배우기](./docs/phase3/실습%20—%20망가뜨리며%20배우기.md) · [Koog 읽기 가이드](./docs/phase3/koog-reading-guide.md)
+- [본문 초안(9장)](./docs/phase3/Koog%20—%20Spring%20AI%20위에%20얹는%20에이전트%20프레임워크.md) — 2026-09 학습 자료 초안. 발표는 위 발표 문서로 갈음
+
 ## 데모
 
 phase마다 **독립된 Gradle 프로젝트**다. 서로 의존하지 않으므로 각각 따로 열고 따로 실행한다.
@@ -41,9 +51,11 @@ phase마다 **독립된 Gradle 프로젝트**다. 서로 의존하지 않으므�
 | --- | --- | --- |
 | [demo-phase1](./demo-phase1) | Anthropic (claude-sonnet-4-5) | `ANTHROPIC_API_KEY` 필요 |
 | [demo-phase2](./demo-phase2) | 로컬 Ollama | **API 키 불필요.** Ollama와 모델만 있으면 된다. 21개 패턴을 실행해 볼 수 있다 |
+| [demo-phase3](./demo-phase3) | 로컬 Ollama + Koog 1.3.0 | **API 키 불필요.** 터미널 REPL이라 포트를 안 쓴다. 비서 에이전트 하나로 여섯 단계를 돌린다 |
 
 ```bash
-cd demo-phase2 && ./gradlew bootRun    # 둘 다 8080 포트라 동시에 띄우지 않는다
+cd demo-phase2 && ./gradlew bootRun    # phase1과 둘 다 8080 포트라 동시에 띄우지 않는다
+cd demo-phase3 && ./gradlew bootRun --args='--spring.profiles.active=harness'   # 터미널 REPL
 ```
 
 ## 관통하는 두 테마
